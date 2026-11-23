@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/535_phase_commit_drops_own_plan_artifact/plans/01_containment-carve-out-reconciliation.md",
-      "summary": "3-phase plan (2.5h) narrowing the record to a mechanism-sentence correction in git-staging-scope.md plus two additive regression cases in test-git-commit-phase.sh, after re-verifying the code carve-out is already landed."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 9,
   "metadata": {
-    "session_id": "sess_1795400947_bb64cf_535",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 2.5,
-    "dependency_waves": 2
-  },
-  "memory_candidates": [
-    {
-      "content": "To prove a post-commit completeness check RAN (rather than being silently skipped by an upstream filter that emptied its input list), do not assert the absence of skip-family warning strings -- that is via-negativa and weak. Instead plant a .git/hooks/pre-commit that reverts one target path inside the temporary partial index (git update-index --cacheinfo <pre-commit-blob-sha> <path>), so the path is dirty against HEAD after the commit. The check then exits non-zero naming that path if and only if it ran, giving a positive observable. This generalizes to any post-action verification gate whose clean path is silent.",
-      "category": "PATTERN",
-      "source_artifact": "specs/535_phase_commit_drops_own_plan_artifact/plans/01_containment-carve-out-reconciliation.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["completeness-check", "pre-commit-hook", "update-index", "positive-observable", "silent-gate", "regression-fixture"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 535 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1795400947_bb64cf",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

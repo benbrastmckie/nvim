@@ -1,7 +1,7 @@
 # Implementation Plan: Task #535
 
 - **Task**: 535 - Carve a task's own specs/ artifacts out of git-commit-phase.sh's containment filter, so a task's own plan file is never dropped from its own phase commit.
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: port_containment_strip_to_git_commit_scoped (567) — already completed; satisfied in fact, no edge needed
 - **Research Inputs**: specs/535_phase_commit_drops_own_plan_artifact/reports/01_containment-filter-carve-out.md
@@ -147,48 +147,58 @@ No `roadmap_path` was supplied in the dispatch context; no roadmap consultation 
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Pin dotfile-at-root admission and completeness-check execution [NOT STARTED]
+### Phase 1: Pin dotfile-at-root admission and completeness-check execution [COMPLETED]
 
 **Goal**: Extend `scripts/tests/test-git-commit-phase.sh` with the two regression shapes the
 record's acceptance criteria name and the suite does not yet carry, each demonstrated to fail
 against a deliberately-reverted copy of the carve-out before passing against the real one.
 
 **Tasks**:
-- [ ] Re-read the live tail of `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`
+- [x] Re-read the live tail of `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`
       and record the current highest case number; author the new cases strictly after it. Do not
-      renumber, reorder, or alter any existing case.
-- [ ] Re-read Case 15 (own-task-directory admission) and Case 1 (the planted-`pre-commit`-hook
-      `exit 6` fixture) as the two shape templates the new cases follow.
-- [ ] Add a dotfile-at-task-directory-root case: a fixture whose declared, non-empty `file_scope`
+      renumber, reorder, or alter any existing case. *(completed: highest case was 39/98
+      assertions; new cases appended as 40/41)*
+- [x] Re-read Case 15 (own-task-directory admission) and Case 1 (the planted-`pre-commit`-hook
+      `exit 6` fixture) as the two shape templates the new cases follow. *(completed)*
+- [x] Add a dotfile-at-task-directory-root case: a fixture whose declared, non-empty `file_scope`
       names only source paths (`src/a.txt`-family, as the existing fixtures do), whose
       `files_touched` carries `specs/999_probe/.return-meta.json` and
       `specs/999_probe/.orchestrator-handoff.json` — both dotfiles directly at the task-directory
       root, with no intervening named subdirectory. Assert, for each: `rc=0`; the path appears in
       `git show --name-only --format= HEAD`; no `dropping out-of-scope path '<path>'` warning is
       emitted; and no `scope excursion` row is written to the fixture's `issues.jsonl`.
-- [ ] Add a completeness-check-runs case: a fixture whose sole `files_touched` entry is the task's
+      *(completed: Case 40)*
+- [x] Add a completeness-check-runs case: a fixture whose sole `files_touched` entry is the task's
       own plan artifact (`specs/999_probe/plans/01_probe-plan.md`), with a planted `pre-commit`
       hook that reverts that path inside the temporary partial index via
       `git update-index --cacheinfo` against its pre-commit blob sha, exactly as Case 1 does.
       Assert: `rc=6`; the plan path is named in the completeness-check failure output; and the
       commit is still created (HEAD advances by 1). An `exit 6` here is only reachable if
       `run_completeness_check` survived containment filtering — that is the point of the case.
-- [ ] Add a sibling assertion in the same fixture family confirming the ordinary (unhooked)
+      *(completed: Case 41)*
+- [x] Add a sibling assertion in the same fixture family confirming the ordinary (unhooked)
       single-plan-file run returns `rc=0` with none of the four skip-family warning strings
       present (`progress file not found`, `progress file is not valid JSON`, `nothing to derive`,
       `completeness check failed`), so the pair reads as "the check ran, and it ran clean".
-- [ ] Fails-first demonstration: copy `scripts/git-commit-phase.sh` to a scratch path outside the
+      *(completed: Case 41 sibling, unhooked)*
+- [x] Fails-first demonstration: copy `scripts/git-commit-phase.sh` to a scratch path outside the
       source store, delete the `file_scope_arr+=("${task_dir}/")` line (and the engine-written-state
       allowlist splice) from the COPY only, point the new cases at the copy, and confirm each new
       assertion fails. Record the observed pre-fix behaviour in the implementation notes. Restore
       the cases to the real script path and confirm green. The real
-      `scripts/git-commit-phase.sh` is never edited.
-- [ ] Add a short header comment above each new case stating what it pins and, for the
+      `scripts/git-commit-phase.sh` is never edited. *(completed: Case 40 dropped both dotfiles
+      with warnings pre-fix; Case 41 returned rc=5 (git-commit-scoped.sh's own V8 partial-commit
+      mismatch) instead of the expected rc=6 pre-fix, since the plan path never survived
+      containment to reach the completeness check at all. Both pass against the real script;
+      `git diff -- agent-system/extensions/core/scripts/git-commit-phase.sh` stayed empty
+      throughout.)*
+- [x] Add a short header comment above each new case stating what it pins and, for the
       completeness-check case, that `exit 6` is the positive observable for the check having run.
       Cite durable anchors only — function names (`is_contained`), variable names
       (`files_touched`, `file_scope_arr`, `run_completeness_check`), file names. No task-number
-      references, no record-versioning language.
-- [ ] Run the full suite and confirm every pre-existing case stays green alongside the additions.
+      references, no record-versioning language. *(completed)*
+- [x] Run the full suite and confirm every pre-existing case stays green alongside the additions.
+      *(completed: 104 passed, 0 failed)*
 
 **Timing**: 1.5 hours
 

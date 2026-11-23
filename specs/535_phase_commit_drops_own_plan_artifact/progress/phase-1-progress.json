@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Pin dotfile-at-root admission and completeness-check execution",
+  "started_at": "2026-11-22T00:00:00Z",
+  "last_updated": "2026-11-22T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read live tail of test-git-commit-phase.sh, record highest case number", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-read Case 15 and Case 1 as shape templates", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add dotfile-at-task-directory-root case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 4, "description": "Add completeness-check-runs case (hooked exit 6)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 5, "description": "Add sibling unhooked assertion confirming rc=0 clean", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 6, "description": "Fails-first demonstration against scratch-reverted copy", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Add header comments citing durable anchors", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 8, "description": "Run full suite, confirm all green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

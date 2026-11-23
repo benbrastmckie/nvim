@@ -1662,6 +1662,132 @@ else
   common_test_fail "Case 39: expected no issues.jsonl; got $(cat "$repo39/specs/999_probe/issues.jsonl" 2>/dev/null)"
 fi
 
+# =====================================================================
+# Case 40 (dotfile-at-task-directory-root admission): files_touched paths that are dotfiles
+# sitting DIRECTLY at the committing task's resolved directory root --
+# specs/999_probe/.return-meta.json and specs/999_probe/.orchestrator-handoff.json, with no
+# intervening named subdirectory -- land in the phase commit with no drop warning and zero
+# recorded scope-excursion issues, exactly as the named-subdirectory path in Case 15 already
+# does. `is_contained()`'s own case-pattern test ("$entry"/* against the admitted
+# "${task_dir}/" member) is plain string matching, so a leading dot in the basename is not a
+# separate code path -- this case pins that it is not, rather than assuming it from reading the
+# predicate alone.
+# =====================================================================
+common_test_info "=== Case 40: dotfiles directly at the task-directory root land with no drop warning ==="
+
+repo40="$(build_repo)"
+echo '{"phases_completed":0,"phases_total":0,"status":"implemented","summary":"baseline","blockers":[]}' > "$repo40/specs/999_probe/.orchestrator-handoff.json"
+git -C "$repo40" add specs/999_probe/.orchestrator-handoff.json
+git -C "$repo40" commit -q -m "seed baseline orchestrator-handoff dotfile"
+write_progress "$repo40" 1 '[{"id":1,"status":"done","files_touched":["specs/999_probe/.return-meta.json","specs/999_probe/.orchestrator-handoff.json"]}]'
+echo '{"status":"implemented","artifacts":[]}' > "$repo40/specs/999_probe/.return-meta.json"
+echo '{"phases_completed":1,"phases_total":1,"status":"implemented","summary":"updated","blockers":[]}' > "$repo40/specs/999_probe/.orchestrator-handoff.json"
+
+out40="$(run_phase_commit "$repo40" --task 999 --project probe --phase 1 --message "case40" --session sess_40 2>&1)"
+rc40=$?
+show40="$(git -C "$repo40" show --name-only --format= HEAD)"
+
+if [ "$rc40" -eq 0 ] \
+  && ! echo "$out40" | grep -q "dropping out-of-scope path 'specs/999_probe/.return-meta.json'" \
+  && ! echo "$out40" | grep -q "dropping out-of-scope path 'specs/999_probe/.orchestrator-handoff.json'" \
+  && echo "$show40" | grep -qF "specs/999_probe/.return-meta.json" \
+  && echo "$show40" | grep -qF "specs/999_probe/.orchestrator-handoff.json"; then
+  common_test_pass "Case 40: both task-directory-root dotfiles land with no drop warning"
+else
+  common_test_fail "Case 40: expected rc=0, both dotfiles committed, no drop warning; got rc=$rc40 show='$show40' out=$out40"
+fi
+
+if [ ! -f "$repo40/specs/999_probe/issues.jsonl" ] || ! grep -q "scope excursion" "$repo40/specs/999_probe/issues.jsonl" 2>/dev/null; then
+  common_test_pass "Case 40: no scope-excursion issue record for either task-directory-root dotfile"
+else
+  common_test_fail "Case 40: expected no scope-excursion issue record; got $(cat "$repo40/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+# =====================================================================
+# Case 41 (acceptance: the post-commit completeness check RUNS in the single-own-file case,
+# rather than being silently disarmed): a phase whose SOLE files_touched entry is the task's own
+# plan artifact (specs/999_probe/plans/01_probe-plan.md) still reaches `exit 6` when that one
+# path is reverted inside the temporary partial index by a planted pre-commit hook -- the same
+# planted-hook technique Case 1 uses. `exit 6` is reachable here if and only if the own-task-
+# directory admission kept this path in `files_touched` for `run_completeness_check` to test --
+# with the admission removed, `files_touched` would empty out, `run_completeness_check` would
+# flip to false, and the same fixture would return `rc=0` instead (see the Phase 1
+# fails-first-demonstration implementation notes for the observed pre-admission behavior). A
+# sibling, unhooked run of the identical fixture confirms the ordinary case reads as "the check
+# ran, and it ran clean": rc=0, with none of the four skip-family warning strings
+# ("progress file not found", "progress file is not valid JSON", "nothing to derive",
+# "completeness check failed").
+# =====================================================================
+common_test_info "=== Case 41: the completeness check runs (not disarmed) when the sole files_touched path is the task's own plan artifact ==="
+
+repo41="$(build_repo)"
+mkdir -p "$repo41/specs/999_probe/plans"
+echo "baseline plan" > "$repo41/specs/999_probe/plans/01_probe-plan.md"
+git -C "$repo41" add specs/999_probe/plans/01_probe-plan.md
+git -C "$repo41" commit -q -m "seed baseline own-task-directory plan"
+write_progress "$repo41" 1 '[{"id":1,"status":"done","files_touched":["specs/999_probe/plans/01_probe-plan.md"]}]'
+echo "updated plan" > "$repo41/specs/999_probe/plans/01_probe-plan.md"
+
+stale_sha_41=$(git -C "$repo41" rev-parse HEAD:specs/999_probe/plans/01_probe-plan.md)
+mkdir -p "$repo41/.git/hooks"
+cat > "$repo41/.git/hooks/pre-commit" <<HOOK_EOF
+#!/usr/bin/env bash
+git update-index --cacheinfo 100644 ${stale_sha_41} specs/999_probe/plans/01_probe-plan.md
+exit 0
+HOOK_EOF
+chmod +x "$repo41/.git/hooks/pre-commit"
+
+before41=$(git -C "$repo41" rev-list --count HEAD)
+out41="$(run_phase_commit "$repo41" --task 999 --project probe --phase 1 --message "case41" --session sess_41 2>&1)"
+rc41=$?
+after41=$(git -C "$repo41" rev-list --count HEAD)
+
+if [ "$rc41" -eq 6 ]; then
+  common_test_pass "Case 41: exit code is 6 -- the completeness check ran against the sole own-task-directory files_touched path rather than being disarmed"
+else
+  common_test_fail "Case 41: expected exit 6 (proving the completeness check ran), got $rc41. Output:
+$out41"
+fi
+
+if echo "$out41" | grep -qF "specs/999_probe/plans/01_probe-plan.md"; then
+  common_test_pass "Case 41: the reverted own-task-directory plan path is named in the completeness-check failure output"
+else
+  common_test_fail "Case 41: expected the plan path named in output:
+$out41"
+fi
+
+if [ "$after41" -eq $((before41 + 1)) ]; then
+  common_test_pass "Case 41: the commit is still created despite the incompleteness"
+else
+  common_test_fail "Case 41: expected HEAD to advance by 1; before=$before41 after=$after41"
+fi
+
+rm -f "$repo41/.git/hooks/pre-commit"
+
+# Case 41 (sibling, unhooked): the identical fixture with no planted hook returns rc=0 and emits
+# none of the four skip-family warning strings -- the pair reads as "the check ran, and it ran
+# clean" alongside Case 41's positive-exit-6 observable above.
+repo41b="$(build_repo)"
+mkdir -p "$repo41b/specs/999_probe/plans"
+echo "baseline plan" > "$repo41b/specs/999_probe/plans/01_probe-plan.md"
+git -C "$repo41b" add specs/999_probe/plans/01_probe-plan.md
+git -C "$repo41b" commit -q -m "seed baseline own-task-directory plan"
+write_progress "$repo41b" 1 '[{"id":1,"status":"done","files_touched":["specs/999_probe/plans/01_probe-plan.md"]}]'
+echo "updated plan" > "$repo41b/specs/999_probe/plans/01_probe-plan.md"
+
+out41b="$(run_phase_commit "$repo41b" --task 999 --project probe --phase 1 --message "case41b" --session sess_41b 2>&1)"
+rc41b=$?
+
+if [ "$rc41b" -eq 0 ] \
+  && ! echo "$out41b" | grep -q "progress file not found" \
+  && ! echo "$out41b" | grep -q "progress file is not valid JSON" \
+  && ! echo "$out41b" | grep -q "nothing to derive" \
+  && ! echo "$out41b" | grep -q "completeness check failed"; then
+  common_test_pass "Case 41 (sibling, unhooked): the ordinary single-plan-file run returns rc=0 with none of the four skip-family warnings"
+else
+  common_test_fail "Case 41 (sibling, unhooked): expected rc=0 and no skip-family warning text; got rc=$rc41b out=$out41b"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================
