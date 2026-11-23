@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 675,
+  "phase": "plan",
+  "session_id": "sess_1795451386_ec8465_675",
+  "dispatch_seq": 20,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a four-phase implementation plan for the branch-topology documentation-parity task. Phase 1 rewrites git-workflow-narrative.md's Branch Strategy section to the implemented integration-branch contract; Phase 2 adds the missing point-of-use branch rule to rules/git-workflow.md; Phase 3 acts on the sweep by fixing conclusion-stage.md and shared-worktree-discipline.md; Phase 4 re-verifies parity against the live scripts, confirms the two already-current pages, regenerates line counts and redeploys. Plan-time re-verification against the live scripts and .claude-extensions.json confirmed every research premise, including that ref-plumbing-landing.md and repo-level-declarations.md are already current and need no rewrite.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/675_branch_topology_documentation_parity/plans/01_branch-topology-doc-parity.md",
+      "summary": "Four-phase plan: narrative rewrite, point-of-use branch rule, sweep fixes, parity verification plus redeploy."
+    }
+  ]
+}
