@@ -13,9 +13,9 @@ next_project_number: 685
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,484,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,669,679,680,684 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,486,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,671 | 383,390,410,431,438,452,453,484,511,519,539,542,563,577,586,599,629,669 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,472,480,492,508,513,561,588,594 | 439,479,486,491,509,552,556,570,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,486,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,669,679,680,684 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,439,474,479,481,508,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,671 | 383,390,410,431,438,452,453,486,511,519,539,542,563,577,586,599,629,669 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,486,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,571,596,642 | 501,518,595,641 | core-agent-system, agent-system |
 | 6 | 536 | 524 | agent-system |
@@ -95,10 +95,9 @@ next_project_number: 685
 
 ### File Scope Lifecycle
 
-484 [IMPLEMENTING] — Collapse per-path scope excursion issue rows into one record...
-  └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
-    └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
-    └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
+486 [NOT STARTED] — Stop a required extension manifest.json registration being...
+  └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
+  └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
 ### Lean Extension
@@ -7605,7 +7604,7 @@ TERRITORY EDGES -- git-commit-phase.sh is SHARED FILE TERRITORY with three open 
 ---
 
 ### 484. Collapse per-path scope excursion issue rows into one record per drop event
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 430, Task 446, Task 469, Task 477, Task 541
