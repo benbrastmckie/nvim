@@ -391,31 +391,31 @@ edits and recorded as a deviation.
 
 ---
 
-### Phase 4: Redeploy and close [IN PROGRESS]
+### Phase 4: Redeploy and close [COMPLETED]
 
 **Goal**: The deployed tree carries the admission gate and documents, and the task's whole
 touched set is verified against it.
 
 **Tasks**:
-- [ ] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` and check its
+- [x] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` and check its
       exit status and reported result. Its `line_count` auto-repair should report nothing to
       correct for the two documents; if it corrects either, the regenerated
-      `index-entries.json` is staged in this phase's commit.
-- [ ] Confirm the deployed copies exist: `.claude/scripts/lib/batch-admission-lib.sh`,
+      `index-entries.json` is staged in this phase's commit. *(completed)*
+- [x] Confirm the deployed copies exist: `.claude/scripts/lib/batch-admission-lib.sh`,
       `.claude/scripts/tests/test-batch-admission-lib.sh`, and the two documents under
-      `.claude/context/standards/`.
-- [ ] Run the deployed cycle-plan script once with `--dry-run` in this repository (both keys
+      `.claude/context/standards/`. *(completed)*
+- [x] Run the deployed cycle-plan script once with `--dry-run` in this repository (both keys
       undeclared) and confirm: one advisory naming `integration_branch`, no `stop`, no batch
-      record written.
-- [ ] Confirm the three owned criteria against suite evidence and record where each is pinned:
+      record written. *(completed)*
+- [x] Confirm the three owned criteria against suite evidence and record where each is pinned:
       off-branch or dirty refusal; loud `batch` refusal naming the held work; both schema rows
-      with live versus unimplemented values.
-- [ ] Confirm `.claude-extensions.json` in this repository declares neither key
-      (`jq 'has("integration_branch"), has("worktree_isolation")'` prints `false` twice).
-- [ ] Run the task-reference lint and the record-versioning lint over every file this task
-      edited under `agent-system/**`.
-- [ ] Record issues and wins with `issue-record.sh` as they arise in every phase; if a phase has
-      none, say so in the summary.
+      with live versus unimplemented values. *(completed)*
+- [x] Confirm `.claude-extensions.json` in this repository declares neither key
+      (`jq 'has("integration_branch"), has("worktree_isolation")'` prints `false` twice). *(completed)*
+- [x] Run the task-reference lint and the record-versioning lint over every file this task
+      edited under `agent-system/**`. *(completed)*
+- [x] Record issues and wins with `issue-record.sh` as they arise in every phase; if a phase has
+      none, say so in the summary. *(completed)*
 
 **Timing**: 1 hour
 
@@ -443,24 +443,24 @@ touched set is verified against it.
 
 ## Testing & Validation
 
-- [ ] An invocation off the declared integration branch is refused with `off_integration_branch`
-      (library suite and cycle-plan suite).
-- [ ] An invocation with tracked dirt outside `specs/`, `.claude-extensions.json` and `.memory/`
+- [x] An invocation off the declared integration branch is refused with `off_integration_branch`
+      (library suite and cycle-plan suite). *(completed)*
+- [x] An invocation with tracked dirt outside `specs/`, `.claude-extensions.json` and `.memory/`
       is refused with `dirty_primary_tree`, listing the paths; dirt only inside that set, and
-      untracked files anywhere, admit.
-- [ ] `worktree_isolation: batch` and any unknown value are refused with
-      `isolation_unimplemented`, the message naming `batch_worktree_creation_when_isolation_on`.
-- [ ] With `integration_branch` undeclared: one advisory, no refusal, existing suite output
-      otherwise unchanged.
-- [ ] Exactly one batch record per session; later cycles neither rewrite it nor re-test dirt;
-      the branch test still runs every cycle.
-- [ ] `--dry-run` and every refusal write no record and no plan cache.
-- [ ] A non-`git` project root skips silently; all pre-existing cycle-plan suite groups pass.
-- [ ] Both schema sections present; `off` stated live, `batch` stated not implemented.
-- [ ] `skills/skill-orchestrate/SKILL.md` and `commands/orchestrate.md` byte-identical.
-- [ ] No task number, literal branch name, consumer-repository path or record-versioning
-      phrasing in any file under `agent-system/**` touched by this task.
-- [ ] Neither key declared in any `.claude-extensions.json`.
+      untracked files anywhere, admit. *(completed)*
+- [x] `worktree_isolation: batch` and any unknown value are refused with
+      `isolation_unimplemented`, the message naming `batch_worktree_creation_when_isolation_on`. *(completed)*
+- [x] With `integration_branch` undeclared: one advisory, no refusal, existing suite output
+      otherwise unchanged. *(completed)*
+- [x] Exactly one batch record per session; later cycles neither rewrite it nor re-test dirt;
+      the branch test still runs every cycle. *(completed)*
+- [x] `--dry-run` and every refusal write no record and no plan cache. *(completed)*
+- [x] A non-`git` project root skips silently; all pre-existing cycle-plan suite groups pass. *(completed)*
+- [x] Both schema sections present; `off` stated live, `batch` stated not implemented. *(completed)*
+- [x] `skills/skill-orchestrate/SKILL.md` and `commands/orchestrate.md` byte-identical. *(completed)*
+- [x] No task number, literal branch name, consumer-repository path or record-versioning
+      phrasing in any file under `agent-system/**` touched by this task. *(completed)*
+- [x] Neither key declared in any `.claude-extensions.json`. *(completed)*
 
 ## Artifacts & Outputs
 

@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "summary": "Wrote a four-phase, 6.5-hour plan: schema rows and batch-record registration, a shared admission library with its own suite, wiring into orchestrate-cycle-plan.sh via the existing stop object, then redeploy. Branch and dirty refusals arm only when integration_branch is declared, as the amending record rules. The stored file_scope still names two batch-worktree paths that belong to held task 686 and are absent from the plan.",
+  "status": "implemented",
+  "summary": "All four phases complete and redeployed. orchestrate-cycle-plan.sh now runs an admission gate (lib/batch-admission-lib.sh) that refuses worktree_isolation batch and, when integration_branch is declared, an off-branch or dirty primary tree, and writes one batch record per invocation. The task's suites are green; the complete gate set was deferred to the batch stage per the dispatch's Batch Gate Deferral. One out-of-scope file (test-force-phases.sh) was touched and landed in a scoped follow-up commit.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/669_integration_branch_admission_and_batch_worktree/plans/01_integration-branch-admission.md",
-      "summary": "Four-phase plan for integration-branch admission, the worktree_isolation declaration and the per-invocation batch record, verified with isolation off."
+      "type": "summary",
+      "path": "specs/669_integration_branch_admission_and_batch_worktree/summaries/01_integration-branch-admission-summary.md",
+      "summary": "Implementation summary: changes, decisions, deviations, verification evidence."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
-  "next_action_hint": "Dispatch implement for task 669, phase 1.",
-  "dispatch_seq": 2
+  "next_action_hint": "Run postflight for task 669. Its stored file_scope still names two batch-worktree paths owned by held task 686 and lacks scripts/tests/test-force-phases.sh (see proposed_file_scope).",
+  "dispatch_seq": 3
 }

@@ -1,8 +1,121 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
-  "started_at": "2026-11-23T10:05:00Z",
-  "artifacts": [],
+  "started_at": "2026-11-23T09:45:00Z",
+  "completed_at": "2026-11-23T10:53:51Z",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/669_integration_branch_admission_and_batch_worktree/summaries/01_integration-branch-admission-summary.md",
+      "summary": "Admission gate, the two declarations and the per-invocation batch record: what changed, decisions, deviations and verification evidence."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "orchestrate-cycle-plan.sh now runs an admission gate from the new lib/batch-admission-lib.sh: it refuses worktree_isolation batch (isolation_unimplemented) and, when integration_branch is declared, an off-branch or dirty primary tree; on admit it writes one batch record per invocation under specs/.orchestration/batch/. Both declarations and the record are documented in the standards documents, covered by a new 81-assertion suite and a 28-assertion cycle-plan group, and redeployed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lib/batch-admission-lib.sh",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "To keep a long local command alive across several Bash tool calls in a dispatched agent, start it with `setsid nohup bash job.sh > log 2>&1 < /dev/null &` and have job.sh print its own PID as its first line; wait on that PID with a `kill -0` loop under `timeout 160`, in calls kept under about 170 seconds. Plain nohup children die when the starting call returns, and under setsid `$!` is the wrapper, not the job.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/669_integration_branch_admission_and_batch_worktree/summaries/01_integration-branch-admission-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "setsid",
+        "nohup",
+        "bounded wait",
+        "kill -0",
+        "background",
+        "bash tool"
+      ]
+    },
+    {
+      "content": "A sourced bash library that reports through result variables read only by its caller trips shellcheck SC2034 at -S warning on the last assignment site of each variable; the shellcheck gate accepts an inline `# shellcheck disable=SC2034` with a one-line reason at each flagged assignment, never a file-level disable.",
+      "category": "PATTERN",
+      "source_artifact": "specs/669_integration_branch_admission_and_batch_worktree/summaries/01_integration-branch-admission-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "shellcheck",
+        "SC2034",
+        "sourced library",
+        "result variable",
+        "lint gate"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "orchestration admission arming rule",
+      "predicate": "decision is",
+      "value": "The off-branch and dirty-primary-tree refusals arm only when integration_branch is declared in .claude-extensions.json; an undeclaring repository gets one advisory per session and no refusal. Rationale: the amending decision record (R5 amended, Option L1) says a repository that declares nothing behaves as before, and the task description defers to the record.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/context/standards/repo-level-declarations.md"
+    },
+    {
+      "subject": "admission state territory",
+      "predicate": "decision is",
+      "value": "Exactly specs/, .claude-extensions.json and .memory/. Only tracked changes are tested (git diff --name-only HEAD with exclude pathspecs); untracked files never refuse. .memory/ was added to the record's two-member set because memory-retrieval counters dirty it with no task editing it; source-store index-entries.json files are excluded because they are derived from real edits and naming them would put a repository-specific path in a deliverable.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/lib/batch-admission-lib.sh"
+    },
+    {
+      "subject": "worktree_isolation: batch",
+      "predicate": "status is",
+      "value": "Declared but not implemented. Any declared value other than off (batch, an unknown string, a non-string) stops every /orchestrate invocation with reason isolation_unimplemented, naming batch_worktree_creation_when_isolation_on. This is a deliberate loud exception to the declarations surface's fail-open posture, on the same ground as the unusable closing_gate exception.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/context/standards/repo-level-declarations.md"
+    },
+    {
+      "subject": "batch record at specs/.orchestration/batch/{session_id}.json",
+      "predicate": "design is",
+      "value": "One per invocation by construction: its existence is the first-cycle marker, so later cycles skip the dirty-tree test (the invocation's own dispatches leave dirt) while the branch test still runs every cycle. Never written under --dry-run, on a refusal, or outside a git work tree. The deferred batch-branch name and worktree path arrive later as one additive isolation object; landing_proofs is an append-only array owned by the landing mechanism.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+    },
+    {
+      "subject": "sync-manifest-scripts.sh --write",
+      "predicate": "measured behaviour is",
+      "value": "It enumerates an extension's scripts with git ls-files, so a newly created, untracked script is invisible and --write reports 0 missing. Running git add -N on the explicit paths first makes it insert the entries.",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/sync-manifest-scripts.sh"
+    },
+    {
+      "subject": "suites that sandbox orchestrate-cycle-plan.sh",
+      "predicate": "correction is",
+      "value": "Three suites, not two, need every newly hard-sourced library staged explicitly: test-orchestrate-cycle-plan.sh, test-orchestrate-unwind-dispatch.sh and test-force-phases.sh. The third overlays source-store copies of individual libraries on a wholesale copy of the DEPLOYED lib directory, so it fails only before a redeploy and a search for explicit library lists misses it.",
+      "ko_type": "correction",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-force-phases.sh"
+    },
+    {
+      "subject": "test-gate-cache-equivalence.sh",
+      "predicate": "measured behaviour is",
+      "value": "Its fixture is a detached git worktree of HEAD, so it judges committed content, not the working tree: an uncommitted lint fix does not reach it, and it reported shellcheck findings that the live tree no longer had. It passed 17/0 once the fix was committed.",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795425897_6a25f2",
     "agent_type": "general-implementation-agent",
@@ -11,9 +124,8 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
-  },
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/tests/test-force-phases.sh"
-  ]
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }

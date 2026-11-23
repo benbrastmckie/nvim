@@ -2,14 +2,17 @@
   "phase": 4,
   "phase_name": "Redeploy and close",
   "started_at": "2026-11-23T10:13:00Z",
-  "last_updated": "2026-11-23T10:36:07Z",
+  "last_updated": "2026-11-23T10:52:34Z",
   "objectives": [
-    {"id": 1, "description": "Redeploy from the source store; repair what the deploy's fast gates reject", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/batch-admission-lib.sh", "agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh"], "note": "First redeploy landed with the shellcheck gate red (three SC2034 findings on the library's result variables); inline exceptions added, second redeploy landed_verify_clean. The new suite lacked its exec bit and was skipped by run-all; chmod +x."},
-    {"id": 2, "description": "Confirm deployed copies, dry-run, declarations, lints", "status": "in_progress", "files_touched": []},
-    {"id": 3, "description": "Scoped verification over the full touched set", "status": "in_progress", "files_touched": []}
+    {"id": 1, "description": "Redeploy from the source store; repair what the deploy's fast gates reject", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/batch-admission-lib.sh", "agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh"], "note": "First redeploy landed with the shellcheck gate red (three SC2034 findings on the library's result variables); inline exceptions added, second redeploy landed_verify_clean. The new suite lacked its exec bit and was skipped by run-all; chmod +x, third redeploy landed_verify_clean. line_count auto-repair corrected 0 entries."},
+    {"id": 2, "description": "Confirm deployed copies, dry-run, declarations, lints", "status": "done", "files_touched": [], "note": "Deployed library, suite and both documents present. Deployed cycle-plan --dry-run here: one ADVISORY naming integration_branch, stop null, no batch record. .claude-extensions.json has neither key. Task-reference lint 0; record-versioning lint 0 BLOCKING on all nine edited files."},
+    {"id": 3, "description": "Scoped verification over the full touched set", "status": "done", "files_touched": [], "note": "verify-touched.sh with eleven explicit paths: 75 suites selected, 73 passed, 0 NEW failures, 1 skipped (new suite, exec bit), 1 expected failure (test-gate-cache-equivalence.sh, known load-sensitive, 600s timeout plus shellcheck findings from the then-uncommitted fix). Both re-run individually after the fix commit: 1 passed via run-all --only; 17 passed / 0 failed."}
   ],
-  "current_objective": 2,
-  "approaches_tried": [],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "nohup background process waited on across tool calls", "result": "failed", "reason": "A nohup child is killed when the Bash tool call that started it returns; setsid nohup survives, but $! is then the setsid wrapper, so the job must print its own PID."}
+  ],
   "deviations": [],
+  "verification_notes": "Batch Gate Deferral honoured: this phase declares Verification Tier full; the complete gate set (verify-deploy.sh unflagged) was NOT run independently in this dispatch and is deferred to the once-per-invocation batch-level stage. Scoped discharge: verify-touched.sh over the task's own eleven touched paths (see objective 3) plus deploy-headless.sh's own fast-gate pass (landed_verify_clean). sync-manifest-scripts.sh --check rc 0.",
   "handoff_count": 0
 }
