@@ -31,7 +31,7 @@ FAILED=0
 
 
 # --- Loud-skip discipline: verify every required script exists before running anything. ---
-REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh commit-source-store-path.sh lib/common.sh lib/task-lookup-lib.sh lib/engine-written-state-paths-lib.sh lib/source-store-path-lib.sh)
+REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh commit-source-store-path.sh lib/common.sh lib/task-lookup-lib.sh lib/engine-written-state-paths-lib.sh lib/source-store-path-lib.sh lib/derived-artifact-probe-lib.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -62,7 +62,7 @@ build_repo() {
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     mkdir -p "$repo/.claude/scripts/$(dirname "$f")"
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/source-store-path-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/source-store-path-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   cat > "$repo/.gitignore" <<'GITIGNORE_EOF'
@@ -1474,15 +1474,13 @@ fi
 # Case 35 (derived-output-prefix admit case): a files_touched path under a DECLARED
 # derived_artifact_probes.derived_output_dirs prefix survives the Containment Self-Check and
 # lands in the commit even though it is NOT in the task's own declared file_scope -- mirroring
-# the identical widening Containment Site 3 (git-commit-scoped.sh's V10) already carries. The
-# library is installed into this one fixture's sandbox ad hoc (REQUIRED_SCRIPTS/build_repo do
-# not yet carry it -- that formal declaration is this plan's next phase).
+# the identical widening Containment Site 3 (git-commit-scoped.sh's V10) already carries.
+# lib/derived-artifact-probe-lib.sh is part of build_repo()'s standard sandbox (REQUIRED_SCRIPTS
+# above), so no ad hoc install is needed here.
 # =====================================================================
 common_test_info "=== Case 35: a declared derived-output-prefix path is admitted, not dropped ==="
 
 repo35="$(build_repo)"
-mkdir -p "$repo35/.claude/scripts/lib"
-cp "$SRC_SCRIPTS_DIR/lib/derived-artifact-probe-lib.sh" "$repo35/.claude/scripts/lib/derived-artifact-probe-lib.sh"
 cat > "$repo35/.claude-extensions.json" <<'EXT_EOF'
 {"derived_artifact_probes":[{"component":"probe-inventory","check_command":"true","derived_output_dirs":["derived/"]}]}
 EXT_EOF
@@ -1522,8 +1520,6 @@ fi
 common_test_info "=== Case 36: with no declaration, the identical path is still dropped (inert case) ==="
 
 repo36="$(build_repo)"
-mkdir -p "$repo36/.claude/scripts/lib"
-cp "$SRC_SCRIPTS_DIR/lib/derived-artifact-probe-lib.sh" "$repo36/.claude/scripts/lib/derived-artifact-probe-lib.sh"
 mkdir -p "$repo36/derived"
 echo "stale inventory" > "$repo36/derived/inventory.md"
 git -C "$repo36" add derived/inventory.md
@@ -1555,6 +1551,111 @@ if echo "$proposed36" | jq -e 'index("derived/inventory.md") != null' >/dev/null
   common_test_pass "Case 36: derived/inventory.md was still deposited into proposed_file_scope"
 else
   common_test_fail "Case 36: expected derived/inventory.md in proposed_file_scope; got $proposed36"
+fi
+
+# =====================================================================
+# Case 37 (staleness backstop, failing probe): a fixture declaring a derived_artifact_probes
+# entry whose check_command exits non-zero emits the named warning and an issue row, with the
+# script's own exit code IDENTICAL to the same fixture without the declaration at all.
+# =====================================================================
+common_test_info "=== Case 37: a declared failing probe is named at the phase commit, exit code unchanged ==="
+
+repo37a="$(build_repo)"
+cat > "$repo37a/.claude-extensions.json" <<'EXT_EOF'
+{"derived_artifact_probes":[{"component":"flaky-check","check_command":"false","derived_output_dirs":["derived/"]}]}
+EXT_EOF
+git -C "$repo37a" add .claude-extensions.json
+git -C "$repo37a" commit -q -m "seed failing probe declaration"
+write_progress "$repo37a" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt"]}]'
+echo "mod a" > "$repo37a/src/a.txt"
+
+out37a="$(run_phase_commit "$repo37a" --task 999 --project probe --phase 1 --message "case37a" --session sess_37a 2>&1)"
+rc37a=$?
+
+repo37b="$(build_repo)"
+write_progress "$repo37b" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt"]}]'
+echo "mod a" > "$repo37b/src/a.txt"
+run_phase_commit "$repo37b" --task 999 --project probe --phase 1 --message "case37b" --session sess_37b >/dev/null 2>&1
+rc37b=$?
+
+if echo "$out37a" | grep -q "DERIVED-STALENESS: component 'flaky-check'"; then
+  common_test_pass "Case 37: the library's own DERIVED-STALENESS line fires for the failing probe"
+else
+  common_test_fail "Case 37: expected a DERIVED-STALENESS line naming 'flaky-check'; got out=$out37a"
+fi
+
+if echo "$out37a" | grep -q "WARNING: git-commit-phase.sh: a declared derived-artifact probe is stale"; then
+  common_test_pass "Case 37: the named warning fires for the stale declared probe"
+else
+  common_test_fail "Case 37: expected the named stale-probe warning; got out=$out37a"
+fi
+
+if [ -f "$repo37a/specs/999_probe/issues.jsonl" ] && grep -q "derived-surface staleness" "$repo37a/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 37: an issue row is recorded under the 'derived-surface staleness' class"
+else
+  common_test_fail "Case 37: expected an issue row under 'derived-surface staleness'; got $(cat "$repo37a/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+if [ "$rc37a" -eq "$rc37b" ]; then
+  common_test_pass "Case 37: exit code ($rc37a) is identical to the same fixture without the declaration"
+else
+  common_test_fail "Case 37: expected identical exit codes; got declared=$rc37a undeclared=$rc37b"
+fi
+
+# =====================================================================
+# Case 38 (staleness backstop, passing probe): a fixture declaring a probe whose check_command
+# exits 0 emits no warning, no issue row, and an unchanged exit code.
+# =====================================================================
+common_test_info "=== Case 38: a declared passing probe stays silent ==="
+
+repo38="$(build_repo)"
+cat > "$repo38/.claude-extensions.json" <<'EXT_EOF'
+{"derived_artifact_probes":[{"component":"healthy-check","check_command":"true","derived_output_dirs":["derived/"]}]}
+EXT_EOF
+git -C "$repo38" add .claude-extensions.json
+git -C "$repo38" commit -q -m "seed passing probe declaration"
+write_progress "$repo38" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt"]}]'
+echo "mod a" > "$repo38/src/a.txt"
+
+out38="$(run_phase_commit "$repo38" --task 999 --project probe --phase 1 --message "case38" --session sess_38 2>&1)"
+rc38=$?
+
+if [ "$rc38" -eq 0 ] && ! echo "$out38" | grep -q "DERIVED-STALENESS" && ! echo "$out38" | grep -q "derived-artifact probe is stale"; then
+  common_test_pass "Case 38: a passing declared probe produces no staleness warning, exit 0"
+else
+  common_test_fail "Case 38: expected rc=0 and no staleness output; got rc=$rc38 out=$out38"
+fi
+
+if [ ! -f "$repo38/specs/999_probe/issues.jsonl" ] || ! grep -q "derived-surface staleness" "$repo38/specs/999_probe/issues.jsonl" 2>/dev/null; then
+  common_test_pass "Case 38: no 'derived-surface staleness' issue row was written"
+else
+  common_test_fail "Case 38: expected no 'derived-surface staleness' issue row; got $(cat "$repo38/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+# =====================================================================
+# Case 39 (staleness backstop, inert case): a fixture declaring no probes at all executes no
+# probe and produces no staleness-related output whatsoever, unchanged from the pre-phase
+# baseline.
+# =====================================================================
+common_test_info "=== Case 39: no declared probes -- the backstop is a strict no-op ==="
+
+repo39="$(build_repo)"
+write_progress "$repo39" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt"]}]'
+echo "mod a" > "$repo39/src/a.txt"
+
+out39="$(run_phase_commit "$repo39" --task 999 --project probe --phase 1 --message "case39" --session sess_39 2>&1)"
+rc39=$?
+
+if [ "$rc39" -eq 0 ] && ! echo "$out39" | grep -q "DERIVED-STALENESS" && ! echo "$out39" | grep -q "derived-artifact probe is stale"; then
+  common_test_pass "Case 39: with no declared probes, the backstop executes nothing and emits nothing"
+else
+  common_test_fail "Case 39: expected rc=0 and no staleness-related output; got rc=$rc39 out=$out39"
+fi
+
+if [ ! -f "$repo39/specs/999_probe/issues.jsonl" ]; then
+  common_test_pass "Case 39: no issues.jsonl was written at all for this undeclared-probe fixture"
+else
+  common_test_fail "Case 39: expected no issues.jsonl; got $(cat "$repo39/specs/999_probe/issues.jsonl" 2>/dev/null)"
 fi
 
 # task-ref-ok:end

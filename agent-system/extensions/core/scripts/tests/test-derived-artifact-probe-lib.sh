@@ -251,6 +251,42 @@ else
   common_test_fail "timed-out probe: expected a failure line naming compSlow and 'timed out', got <<<$(cat "$WORKDIR/timeout-stderr.txt" 2>/dev/null)>>>"
 fi
 
+# =====================================================================
+# Case: the phase-commit-path notice prefix is fail-open and build-free on an absent/empty
+# declaration -- pins the dispatch's own VERIFY condition for the non-blocking phase-commit
+# backstop (scripts/git-commit-phase.sh) at this library's own suite, not only at the
+# integration site. No .claude-extensions.json at all (absent) and an empty
+# derived_artifact_probes array (present-but-empty) both return 0, execute no command, and emit
+# no stderr noise whatsoever under the exact notice prefix the phase-commit call site uses.
+# =====================================================================
+C_PHASECOMMIT_ABSENT="$WORKDIR/phasecommit-absent"
+mkdir -p "$C_PHASECOMMIT_ABSENT"
+rc_pc_absent=0
+(
+  # shellcheck disable=SC1090
+  . "$LIB"
+  derived_probe_run_all "$C_PHASECOMMIT_ABSENT" "git-commit-phase.sh:"
+) >"$WORKDIR/pc-absent-stdout.txt" 2>"$WORKDIR/pc-absent-stderr.txt" || rc_pc_absent=$?
+if [ "$rc_pc_absent" -eq 0 ] && [ ! -s "$WORKDIR/pc-absent-stderr.txt" ] && [ ! -s "$WORKDIR/pc-absent-stdout.txt" ]; then
+  common_test_pass "phase-commit prefix, absent declaration: rc=0, no probe executed, no stderr/stdout noise"
+else
+  common_test_fail "phase-commit prefix, absent declaration: expected rc=0 and silent output; got rc=$rc_pc_absent stdout=<<<$(cat "$WORKDIR/pc-absent-stdout.txt" 2>/dev/null)>>> stderr=<<<$(cat "$WORKDIR/pc-absent-stderr.txt" 2>/dev/null)>>>"
+fi
+
+C_PHASECOMMIT_EMPTY="$WORKDIR/phasecommit-empty"
+write_fixture "$C_PHASECOMMIT_EMPTY" '{"derived_artifact_probes":[]}'
+rc_pc_empty=0
+(
+  # shellcheck disable=SC1090
+  . "$LIB"
+  derived_probe_run_all "$C_PHASECOMMIT_EMPTY" "git-commit-phase.sh:"
+) >"$WORKDIR/pc-empty-stdout.txt" 2>"$WORKDIR/pc-empty-stderr.txt" || rc_pc_empty=$?
+if [ "$rc_pc_empty" -eq 0 ] && [ ! -s "$WORKDIR/pc-empty-stderr.txt" ] && [ ! -s "$WORKDIR/pc-empty-stdout.txt" ]; then
+  common_test_pass "phase-commit prefix, empty declaration: rc=0, no probe executed, no stderr/stdout noise"
+else
+  common_test_fail "phase-commit prefix, empty declaration: expected rc=0 and silent output; got rc=$rc_pc_empty stdout=<<<$(cat "$WORKDIR/pc-empty-stdout.txt" 2>/dev/null)>>> stderr=<<<$(cat "$WORKDIR/pc-empty-stderr.txt" 2>/dev/null)>>>"
+fi
+
 echo ""
 echo "Results: ${PASSED} passed, ${FAILED} failed"
 

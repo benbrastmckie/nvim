@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # derived-artifact-probe-lib.sh - Single home of the repo-declared, build-free derived-artifact
-# staleness probe mechanism both implement-postflight engines (orchestrate-cycle-postflight.sh,
-# the multi-task engine, and command-gate-out.sh, the single-task engine) call before their own
-# status write. Modelled structurally on scripts/lib/deploy-freshness-lib.sh: a header stating
-# the contract, the fail-open posture, and the list of consumers; sourced, never executed; sets
-# no shell options a caller inherits; exports nothing a caller must guess at.
+# staleness probe mechanism. The two implement-postflight engines (orchestrate-cycle-postflight.sh,
+# the multi-task engine, and command-gate-out.sh, the single-task engine) call it before their own
+# status write; scripts/git-commit-phase.sh additionally calls it at the mid-dispatch phase-commit
+# site, as a non-blocking detection backstop rather than a status-write gate -- see the full
+# consumer list below for the per-consumer posture. Modelled structurally on
+# scripts/lib/deploy-freshness-lib.sh: a header stating the contract, the fail-open posture, and
+# the list of consumers; sourced, never executed; sets no shell options a caller inherits; exports
+# nothing a caller must guess at.
 #
 # Declaration point (see context/standards/repo-level-declarations.md for the full writeup): a
 # consumer repo's own <repo_root>/.claude-extensions.json may carry a hand-authored, sibling
@@ -55,9 +58,11 @@
 # the overwhelming common case; the bound is generous headroom against an occasional slow disk
 # or cold cache, not a tuning knob for a genuinely slow command).
 #
-# Consumers (both MUST source this file, never re-implement any part of its algorithm):
+# Consumers (all MUST source this file, never re-implement any part of its algorithm):
 #   - scripts/orchestrate-cycle-postflight.sh (multi-task engine)
 #   - scripts/command-gate-out.sh (single-task engine)
+#   - scripts/git-commit-phase.sh (phase-commit site: the non-blocking staleness backstop and
+#     the Containment Self-Check's derived-output-prefix widening, both at the same source site)
 
 # Single named bound, Decision 4: a declared check_command is build-free by the repo's own
 # declaration, so this is headroom against incidental slowness, not a budget for a genuinely

@@ -177,6 +177,25 @@
 # collides with, this script's own (0-6) -- the two are never compared or forwarded to each
 # other, only inspected by this wiring's own three-way case split above.
 #
+# NON-BLOCKING DERIVED-ARTIFACT STALENESS BACKSTOP
+# --------------------------------------------------
+# Runs once, immediately AFTER the second-repository commit block above and BEFORE the
+# post-commit completeness check below, so it reaches every path that gets as far as a commit
+# attempt -- including the one that exits 6. Calls the SAME repo-declared, build-free staleness
+# probe `scripts/lib/derived-artifact-probe-lib.sh`'s `derived_probe_run_all` already backs for
+# its two existing consumers (`orchestrate-cycle-postflight.sh`, `command-gate-out.sh`), reused
+# here rather than re-implemented, under the SAME fail-open contract: a repository declaring no
+# `derived_artifact_probes` key executes zero probes and this block is a strict no-op, and every
+# declared `check_command` is build-free by the repo's own declaration. On a non-zero result, one
+# named `warn()` line is emitted pointing at the library's own `DERIVED-STALENESS:` line(s) just
+# printed above it and stating the remedy (re-run that surface's own regeneration entry point and
+# land it with a scoped follow-up commit), and a non-fatal `issue-record.sh` row is written under
+# a `derived-surface staleness` class, outside the seed enum exactly as this script's own
+# pre-existing `scope excursion` and `source store excursion` classes already are (see
+# `context/formats/issue-log.md`'s extensibility rule). This is DETECTION ONLY: the probe's
+# result is captured and never propagated into this script's own exit code (0-6, documented
+# below) -- never a refusal, never a build.
+#
 # EXIT-CODE MAPPING
 # ------------------
 #   0-5  Passed through verbatim from git-commit-scoped.sh's own exit-code contract (see that
@@ -787,6 +806,31 @@ if [ "${#source_store_commits[@]}" -gt 0 ] && [ -x "${SCRIPT_DIR}/commit-source-
         ;;
     esac
   done
+fi
+
+# --- Non-blocking derived-artifact staleness backstop (see header subsection of the same name
+# above). Reuses whatever `source` Phase 2's Containment Self-Check splice already performed
+# rather than sourcing the library twice; falls back to sourcing it itself when that splice never
+# ran (e.g. the task declared no file_scope at all, which skips the whole Containment Self-Check
+# including its source), so this backstop still reaches every path that gets as far as a commit
+# attempt regardless of whether file_scope was declared. ---
+if ! declare -F derived_probe_run_all >/dev/null 2>&1; then
+  # shellcheck disable=SC1091
+  source "${SCRIPT_DIR}/lib/derived-artifact-probe-lib.sh" 2>/dev/null || true
+fi
+if declare -F derived_probe_run_all >/dev/null 2>&1; then
+  set +e
+  derived_probe_run_all "$PROJECT_ROOT" "git-commit-phase.sh:"
+  derived_probe_rc=$?
+  set -e
+  if [ "$derived_probe_rc" -ne 0 ]; then
+    warn "a declared derived-artifact probe is stale at this phase commit (see the DERIVED-STALENESS line(s) just printed above) -- re-run that surface's own regeneration entry point and land it with a scoped follow-up commit"
+    bash "${SCRIPT_DIR}/issue-record.sh" --task "$task_number" --kind issue \
+      --class "derived-surface staleness" --severity minor \
+      --what-happened "derived_probe_run_all reported a stale declared derived-artifact surface at this phase commit (see the DERIVED-STALENESS line(s) on stderr naming the failing component, check_command, and exit code)." \
+      --phase implement \
+      >/dev/null 2>&1 || warn "issue-record.sh call failed (non-fatal)"
+  fi
 fi
 
 # --- Post-commit completeness check ---

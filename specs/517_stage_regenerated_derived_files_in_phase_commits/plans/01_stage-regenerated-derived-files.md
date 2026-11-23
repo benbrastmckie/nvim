@@ -316,50 +316,53 @@ divergence in the phase's own progress notes rather than silently restructuring 
 
 ---
 
-### Phase 3: Add the Non-Blocking Staleness Backstop at the Phase-Commit Site [NOT STARTED]
+### Phase 3: Add the Non-Blocking Staleness Backstop at the Phase-Commit Site [COMPLETED]
 
 **Goal**: A declared derived surface that is stale at a phase commit is named at that commit
 rather than only at the end of the plan — detection only, never a refusal, never a build, and
 nothing at all in a repository that declares no probes.
 
 **Tasks**:
-- [ ] In `scripts/git-commit-phase.sh`, guardedly `source` `lib/derived-artifact-probe-lib.sh`
+- [x] In `scripts/git-commit-phase.sh`, guardedly `source` `lib/derived-artifact-probe-lib.sh`
       (reusing whatever source already serves Phase 2's splice rather than sourcing it twice) and
       call `derived_probe_run_all "$PROJECT_ROOT" "git-commit-phase.sh:"` once, sited **after** the
       second-repository-commit block and **before** the post-commit completeness check, so it runs
       on every path that reaches a commit — including the one that exits 6.
-- [ ] On a non-zero result: emit a `warn()` in the same named style the Containment Self-Check's
+- [x] On a non-zero result: emit a `warn()` in the same named style the Containment Self-Check's
       drop warning already uses, naming what the library itself printed and stating the remedy
       (re-run the surface's own regeneration entry point and land it with a scoped follow-up
       commit), and record it non-fatally via `issue-record.sh` with `--kind issue --severity minor
       --phase implement` and a class string naming derived-surface staleness. Follow the existing
       precedent in this script, whose `scope excursion` and `source store excursion` classes are
       likewise outside the seed enum (`context/formats/issue-log.md`'s extensibility rule).
-- [ ] Guarantee exit-code invariance explicitly: the probe's result is captured and never
+- [x] Guarantee exit-code invariance explicitly: the probe's result is captured and never
       propagated. This script's documented vocabulary (0-6, with 8/9 passthrough) is unchanged,
       and an `issue-record.sh` or probe failure never alters it.
-- [ ] Document the new call at the top of `scripts/git-commit-phase.sh` as its own header
+- [x] Document the new call at the top of `scripts/git-commit-phase.sh` as its own header
       subsection, stating the non-blocking posture, the build-free property, and that an
       undeclared repository executes no probe.
-- [ ] Update `scripts/lib/derived-artifact-probe-lib.sh`'s header consumer list to name the third
+- [x] Update `scripts/lib/derived-artifact-probe-lib.sh`'s header consumer list to name the third
       consumer and to stop asserting that its consumers are exactly the two postflight engines.
       Keep the fail-open contract text untouched.
-- [ ] Add `lib/derived-artifact-probe-lib.sh` to `scripts/tests/test-git-commit-phase.sh`'s
+- [x] Add `lib/derived-artifact-probe-lib.sh` to `scripts/tests/test-git-commit-phase.sh`'s
       `REQUIRED_SCRIPTS` array **and** to `build_repo`'s sandbox copy set — the new `source` makes
       it a mandatory dependency, which is exactly the drift
-      `scripts/lint/lint-fixture-dependency-declaration.sh` detects.
-- [ ] Add three cases to `scripts/tests/test-git-commit-phase.sh`: (i) a fixture declaring a probe
+      `scripts/lint/lint-fixture-dependency-declaration.sh` detects. *(completed: also removed
+      Case 35/36's earlier ad hoc per-fixture library copy, now redundant)*
+- [x] Add three cases to `scripts/tests/test-git-commit-phase.sh`: (i) a fixture declaring a probe
       whose `check_command` exits non-zero — the named warning is emitted, an issue row is
       written, and the script's exit code is **identical** to the same fixture without the
       declaration; (ii) a fixture declaring a passing probe — no warning, no issue row, exit code
       unchanged; (iii) a fixture declaring no probes — no probe executed at all and output
       unchanged from the pre-phase baseline (the inert case).
-- [ ] Add one case to `scripts/tests/test-derived-artifact-probe-lib.sh` pinning that
+- [x] Add one case to `scripts/tests/test-derived-artifact-probe-lib.sh` pinning that
       `derived_probe_run_all` invoked with the phase-commit notice prefix is fail-open and
       build-free on an absent/empty declaration: returns 0, executes no command, emits no stderr
       noise. This is the dispatch's VERIFY condition for decision (b), pinned at the library's own
       suite rather than only at the integration site.
-- [ ] Confirm no task-number reference and no record-versioning language entered any edited file.
+- [x] Confirm no task-number reference and no record-versioning language entered any edited file.
+      *(completed: grep confirmed zero new hits; "--task 999" fixture literals are pre-existing
+      task-ref-ok-exempted synthetic data, not real task-number references)*
 
 **Timing**: 1.5 hours
 
