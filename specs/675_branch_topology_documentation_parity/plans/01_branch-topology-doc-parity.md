@@ -344,46 +344,46 @@ silently resolved by editing the excluded file.
 
 ---
 
-### Phase 4: Parity verification, already-current confirmations, and redeploy [NOT STARTED]
+### Phase 4: Parity verification, already-current confirmations, and redeploy [COMPLETED]
 
 **Goal**: the rules, the narrative, and the scripts are confirmed to state one contract; the two
 already-current pages are confirmed rather than assumed; the source store is redeployed and the
 deployed tree verified.
 
 **Tasks**:
-- [ ] Parity read-through, scripts first: re-read `scripts/lib/batch-admission-lib.sh`,
+- [x] Parity read-through, scripts first: re-read `scripts/lib/batch-admission-lib.sh`,
       `scripts/orchestrate-cycle-plan.sh`'s admission call site, `scripts/update-task-status.sh`'s
       postflight landing gate, `scripts/task-landing-verify.sh`, and
       `scripts/milestone-review-handoff.sh`, then check each documented claim in
       `git-workflow-narrative.md`, `rules/git-workflow.md`, `conclusion-stage.md`, and
-      `shared-worktree-discipline.md` against them. Any divergence is fixed here, in this phase.
-- [ ] Confirm the two already-current pages against the same scripts rather than against the
+      `shared-worktree-discipline.md` against them. Any divergence is fixed here, in this phase. *(completed: no divergence found)*
+- [x] Confirm the two already-current pages against the same scripts rather than against the
       research report: `context/patterns/ref-plumbing-landing.md` (its "The Landing Mechanism"
       section, and that its concurrency-safety argument survives intact) and
       `context/standards/repo-level-declarations.md` (both declaration rows, the stop reasons,
       the fail-open-on-absence table, and the live-versus-declared-not-implemented distinction
       for `worktree_isolation`). Record the confirmation verdict. Edit only if the confirmation
-      fails or if a Phase 1-3 edit left a dangling or duplicated cross-reference.
-- [ ] Repo-wide staleness re-sweep:
+      fails or if a Phase 1-3 edit left a dangling or duplicated cross-reference. *(completed: both confirmed current, re-read against the live scripts; no edit needed)*
+- [x] Repo-wide staleness re-sweep:
       `grep -rn "refs/heads/milestone\|milestone-ref-land" --include="*.md" agent-system/extensions/core/`
       and `grep -rniE "worktree isolation" --include="*.md" agent-system/extensions/core/` — read
-      every hit and confirm none describes worktree isolation or a batch branch as live.
-- [ ] `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`, then
-      confirm zero drift with `... --check` (or the equivalent check mode the script exposes).
-- [ ] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
-      (whole-tree regeneration — this is why `__WHOLE_TREE__` is declared below).
-- [ ] Scoped touched-path check as this phase's own in-dispatch obligation:
+      every hit and confirm none describes worktree isolation or a batch branch as live. *(completed: no live-machinery claim found)*
+- [x] `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`, then
+      confirm zero drift with `... --check` (or the equivalent check mode the script exposes). *(completed: 608/608 exact match, zero drift)*
+- [x] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
+      (whole-tree regeneration — this is why `__WHOLE_TREE__` is declared below). *(completed: first attempt landed_verify_red on Gate 20 eager-context-budget overage caused by Phase 2's addition -- see deviation note; second attempt landed_verify_clean, 41 checks, 0 failures)*
+- [x] Scoped touched-path check as this phase's own in-dispatch obligation:
       `bash .claude/scripts/verify-touched.sh` over every path this task actually touched
       (the four edited markdown files plus `index-entries.json`), and
       `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
-      for the doc-lint and task-reference-lint gates over the redeployed tree.
-- [ ] Under `/orchestrate`, the complete gate set is DEFERRED to the orchestration close
+      for the doc-lint and task-reference-lint gates over the redeployed tree. *(completed: verify-touched.sh over six touched paths -- 113 passed, 0 failed; verify-deploy.sh --skip-unchanged --only-gate 3,4 -- 3 checks, 0 failures)*
+- [x] Under `/orchestrate`, the complete gate set is DEFERRED to the orchestration close
       (`context/contracts/batch-gate-stage.md`), not run independently here. In a standalone,
       non-orchestrated run with no such close to defer to, run
-      `bash .claude/scripts/verify-deploy.sh` in full instead.
-- [ ] Record the sweep's findings (what was stale, what was fixed, what was confirmed clean,
+      `bash .claude/scripts/verify-deploy.sh` in full instead. *(completed: this dispatch runs under /orchestrate per the dispatch file's Batch Gate Deferral directive; the complete gate set is deferred to the batch close, not run independently here)*
+- [x] Record the sweep's findings (what was stale, what was fixed, what was confirmed clean,
       and that `git-staging-scope.md` was deliberately not edited) in the implementation summary,
-      satisfying the task description's "Report what the sweep found."
+      satisfying the task description's "Report what the sweep found." *(completed, see summary)*
 
 **Timing**: 1 hour
 
