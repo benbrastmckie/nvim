@@ -7626,6 +7626,11 @@
           "path": "specs/486_manifest_registration_dropped_from_phase_commit/plans/01_manifest-containment-splice.md",
           "type": "plan",
           "summary": "3-phase plan: fourth file_scope_arr splice, six pinning fixtures, git-staging-scope.md documentation paragraph plus regenerated index-entries.json line_count."
+        },
+        {
+          "path": "specs/486_manifest_registration_dropped_from_phase_commit/summaries/01_manifest-containment-splice-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the fourth containment-site splice and its Site-3 deviation."
         }
       ],
       "audit_verdict": {
@@ -7873,7 +7878,8 @@
       },
       "last_updated": "2026-11-23T07:50:48Z",
       "session_id": "sess_1795400947_bb64cf",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a fourth, local, non-declared splice to git-commit-phase.sh's and git-commit-scoped.sh's Containment Self-Checks admitting a touched extension's own manifest.json whenever that extension's scripts/ tree (excluding deprecated/) is also touched, pinned by five new fixtures and documented in git-staging-scope.md."
     },
     {
       "project_number": 491,

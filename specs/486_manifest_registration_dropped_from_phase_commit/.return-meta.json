@@ -1,7 +1,89 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/486_manifest_registration_dropped_from_phase_commit/summaries/01_manifest-containment-splice-summary.md",
+      "summary": "Implementation summary for the fourth file_scope_arr splice admitting a touched extension's own manifest.json at both containment sites, with its Site-3 deviation and new fixtures."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a fourth, local, non-declared splice to git-commit-phase.sh's and git-commit-scoped.sh's Containment Self-Checks admitting a touched extension's own manifest.json whenever that extension's scripts/ tree (excluding deprecated/) is also touched, pinned by five new fixtures and documented in git-staging-scope.md."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "git-commit-phase.sh's Containment Self-Check (Site 2) and git-commit-scoped.sh's own independent V10 containment_scope_arr resolution (Site 3) are two separate, non-shared predicates over the same declared file_scope. Widening only one of them to admit a new path does not make that path land -- Site 3 still drops it, turning what was previously a silent, recoverable drop into a loud post-commit completeness-check failure (exit 6). Any future local widening of the containment predicate must be mirrored identically into both sites.",
+      "category": "PATTERN",
+      "source_artifact": "specs/486_manifest_registration_dropped_from_phase_commit/summaries/01_manifest-containment-splice-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "containment",
+        "git-commit-phase",
+        "git-commit-scoped",
+        "file_scope",
+        "V10"
+      ]
+    },
+    {
+      "content": "A structurally-derivable registration obligation (e.g. sync-manifest-scripts.sh's provides.scripts <-> scripts/ tree pairing, enforced by a test) can be admitted into a containment predicate as a pure string derivation over files_touched -- no filesystem/git/jq lookup needed -- keeping the splice fail-open by construction and local to the in-script array only, never written back to the declared file_scope.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/486_manifest_registration_dropped_from_phase_commit/summaries/01_manifest-containment-splice-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "containment-splice",
+        "fail-open",
+        "manifest.json",
+        "structural-derivation"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "git-commit-phase.sh / git-commit-scoped.sh containment sites",
+      "value": "The two scripts maintain fully independent containment predicates over the same declared file_scope (Site 2 in git-commit-phase.sh's file_scope_arr, Site 3 in git-commit-scoped.sh's containment_scope_arr). A local widening applied to only one site does not change what lands in a commit -- the other site's independent re-derivation from raw specs/state.json still drops the path.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9
+    },
+    {
+      "subject": "Extension manifest.json registration drop from phase commits",
+      "value": "sync-manifest-scripts.sh and check-extension-docs.sh's Rule Q already mechanically enforce that an extension's manifest.json provides.scripts entry pair with every file under that extension's scripts/ tree (deprecated/ excluded), post-redeploy. The LIVE failure mode this task fixed was a different one: the manifest.json edit WAS made in the same phase but then dropped by the pre-commit Containment Self-Check as an undeclared scope excursion, costing a separate follow-up commit.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85
+    },
+    {
+      "subject": "Task 486 plan premise error (Phase 2)",
+      "value": "The plan's Non-Goals assumed a Site-2-only (git-commit-phase.sh) splice would suffice to admit the extension manifest.json into a phase commit. Writing the admit fixture disproved this: Site 2's widening alone turned the pre-existing silent drop-and-warn into a loud post-commit completeness-check failure (exit 6), because git-commit-scoped.sh's Site-3 V10 resolution independently re-reads raw specs/state.json with no knowledge of Site 2's splice.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9
+    },
+    {
+      "subject": "Containment fixture design -- collapsed issue-row shape",
+      "value": "Task 484's prior work collapsed the Containment Self-Check's per-path scope-excursion issue-record.sh emission into one row per drop event (naming all dropped paths), not one row per path. Any new fixture asserting a genuine out-of-territory drop must assert that collapsed shape, not a per-path shape, or it silently regresses task 484's fix.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85
+    },
+    {
+      "subject": "Fold-instead-of-duplicate fixture discipline",
+      "value": "When a plan's Scope Hypothesis names a fixture scenario (e.g. trailing-slash directory normalization) that turns out to already be pinned by an existing test case, the correct move is folding the new assertion into that existing case rather than adding a duplicate -- recorded explicitly in the phase's own notes so the fold is traceable.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.75
+    }
+  ],
   "metadata": {
-    "session_id": "sess_1795400947_bb64cf",
+    "session_id": "sess_1795451386_ec8465",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": [
@@ -9,10 +91,12 @@
       "implement",
       "general-implementation-agent"
     ],
-    "task_number": 486
+    "phases_completed": 3,
+    "phases_total": 3
   },
-  "dispatch_seq": 18,
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/git-commit-scoped.sh"
-  ]
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -1,19 +1,20 @@
 {
-  "status": "planned",
-  "task_number": 486,
-  "phase": "plan",
-  "dispatch_seq": 17,
-  "session_id": "sess_1795400947_bb64cf_486",
-  "phases_completed": 0,
-  "phases_total": 3,
-  "summary": "Wrote a 3-phase implementation plan adopting the research round's ruling (dispatch Option 1): a fourth local, non-declared file_scope_arr splice in git-commit-phase.sh's Containment Self-Check that admits a touched extension's own manifest.json whenever that same extension's scripts/ tree (deprecated/ excluded) appears in files_touched. Phase 1 adds the splice with its documenting comment, Phase 2 pins it plus every HARD CONSTRAINT behaviour with six new fixtures in test-git-commit-phase.sh, Phase 3 documents the fourth splice in git-staging-scope.md and redeploys. Re-validated every carried figure: the dispatch's is_contained() line citation (272-305) is stale -- it is now at lines 720-752 -- while the behavioural claim that the trailing-slash defect is closed holds.",
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "summary": "Implemented the research round's Option (1) ruling: a fourth, local, non-declared splice admitting a touched extension's own manifest.json into the Containment Self-Check at both git-commit-phase.sh (Site 2) and git-commit-scoped.sh (Site 3), triggered whenever that extension's scripts/ tree (excluding deprecated/) is also touched. Pinned by five new fixture cases in test-git-commit-phase.sh and documented in git-staging-scope.md's \"Three Containment sites, not one\" section. All three plan phases are closed [COMPLETED] and committed; final scoped verification (verify-touched.sh over all five touched paths) passed 32/32 suites.",
   "blockers": [],
+  "phases_completed": 3,
+  "phases_total": 3,
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/486_manifest_registration_dropped_from_phase_commit/summaries/01_manifest-containment-splice-summary.md",
+      "summary": "Implementation summary for the fourth containment-site splice and its Site-3 deviation."
+    },
     {
       "type": "plan",
       "path": "specs/486_manifest_registration_dropped_from_phase_commit/plans/01_manifest-containment-splice.md",
-      "summary": "3-phase plan: fourth file_scope_arr splice, six pinning fixtures, git-staging-scope.md documentation paragraph plus regenerated index-entries.json line_count."
+      "summary": "Implementation plan, all three phases closed [COMPLETED]."
     }
-  ],
-  "next_steps": "Run /orchestrate 486 to execute the plan"
+  ]
 }

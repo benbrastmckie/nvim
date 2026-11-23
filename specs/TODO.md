@@ -7659,6 +7659,7 @@ SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, neve
 - **Dependencies**: Task 430, Task 446, Task 484, Task 494, Task 541
 - **Research**: [486_manifest_registration_dropped_from_phase_commit/reports/01_manifest-registration-containment-rule.md]
 - **Plan**: [486_manifest_registration_dropped_from_phase_commit/plans/01_manifest-containment-splice.md]
+- **Summary**: [486_manifest_registration_dropped_from_phase_commit/summaries/01_manifest-containment-splice-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
