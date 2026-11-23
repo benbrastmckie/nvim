@@ -286,30 +286,30 @@ edit: before, one non-comment occurrence; after, zero (the literal moves into th
 
 ---
 
-### Phase 3: Convert git-commit-scoped.sh V10 to one record per drop event [NOT STARTED]
+### Phase 3: Convert git-commit-scoped.sh V10 to one record per drop event [COMPLETED]
 
 **Goal**: V10's containment guard emits a single collapsed record over its already-existing
 `containment_dropped` ledger instead of one call per pathspec.
 
 **Tasks**:
-- [ ] Re-derive the emission site and the ledger's declaration/post-loop read before editing; the
+- [x] Re-derive the emission site and the ledger's declaration/post-loop read before editing; the *(completed)*
       ledger already survives the pathspec loop and is read again for the exit-7 decision.
-- [ ] Source the new library beside this script's existing guarded `source … 2>/dev/null` lines,
+- [x] Source the new library beside this script's existing guarded `source … 2>/dev/null` lines, *(completed)*
       same fail-soft posture.
-- [ ] Remove the in-loop `issue-record.sh` call, keeping the per-pathspec `WARN:` echo, the
+- [x] Remove the in-loop `issue-record.sh` call, keeping the per-pathspec `WARN:` echo, the *(completed)*
       `dropped_pathspecs` append, the `containment_dropped` append, and the `continue` untouched.
-- [ ] Capture the first-drop and last-drop timestamps around the loop as in Phase 2.
-- [ ] Fire one library call immediately after the pathspec loop closes and before the V13 and V3
+- [x] Capture the first-drop and last-drop timestamps around the loop as in Phase 2. *(completed)*
+- [x] Fire one library call immediately after the pathspec loop closes and before the V13 and V3 *(completed)*
       exit-code decisions, guarded on a non-empty `containment_dropped`, so the record is written
       on every drop path including the ones that then refuse the commit.
-- [ ] Build this site's own `what_happened` sentence naming the count and pointing at
+- [x] Build this site's own `what_happened` sentence naming the count and pointing at *(completed)*
       `tags.dropped_paths`, keeping it textually distinct from the other emitter's.
-- [ ] Pass this site's task number (the contention task number the existing call already uses) and
+- [x] Pass this site's task number (the contention task number the existing call already uses) and *(completed)*
       no `--phase` argument, matching the current call exactly.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` unmodified
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` unmodified *(completed)*
       first, then add a case where one invocation drops three uncontained pathspecs and asserts
       exactly one `scope excursion` line naming all three.
-- [ ] Add a case covering the drop-then-refuse shape (V3 or exit-7) asserting the single record is
+- [x] Add a case covering the drop-then-refuse shape (V3 or exit-7) asserting the single record is *(completed)*
       still present after the refusal.
 
 **Timing**: 0.75 hours

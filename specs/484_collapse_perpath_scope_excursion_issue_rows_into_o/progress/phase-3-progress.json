@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Convert git-commit-scoped.sh V10 to one record per drop event",
+  "started_at": "2026-11-23T07:25:00Z",
+  "last_updated": "2026-11-23T07:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source the library and accumulate V10 drops with first/last timestamps, firing one post-loop collapsed call before V13/V3", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 2, "description": "Pre-existing suite passes unmodified, plus two new cases (multi-pathspec drop; drop-then-refuse)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "Initial BB1/BB2 cases assumed issue-record.sh present via the suite's shared REQUIRED_SCRIPTS", "result": "failed", "reason": "issue-record.sh is deliberately absent from this suite's REQUIRED_SCRIPTS (every other case relies on that absence); fixed by copying issue-record.sh into the BB1/BB2 scratch repos locally, scoped to those two cases only"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

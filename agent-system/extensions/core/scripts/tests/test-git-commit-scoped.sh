@@ -39,7 +39,7 @@ FAILED=0
 # shellcheck disable=SC2329
 
 # --- Loud-skip discipline: verify all three required scripts exist before running anything. ---
-REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh lib/task-lookup-lib.sh lib/derived-artifact-probe-lib.sh lib/engine-written-state-paths-lib.sh lib/specs-ignore-lib.sh)
+REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh lib/task-lookup-lib.sh lib/derived-artifact-probe-lib.sh lib/engine-written-state-paths-lib.sh lib/specs-ignore-lib.sh lib/scope-excursion-record-lib.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -85,7 +85,7 @@ build_repo() {
     # lib/common.sh, lib/task-lookup-lib.sh, lib/derived-artifact-probe-lib.sh, and
     # lib/engine-written-state-paths-lib.sh are sourced, never executed -- matches the other
     # scripts/lib/*.sh files.
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || [ "$f" = "lib/scope-excursion-record-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   if [ "$mode" = "covered" ]; then
@@ -128,7 +128,7 @@ build_repo_tracked_ignored() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || [ "$f" = "lib/scope-excursion-record-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   mkdir -p "$repo/specs/999_probe/archive"
@@ -203,7 +203,7 @@ build_repo_movable() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || [ "$f" = "lib/scope-excursion-record-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   mkdir -p "$repo/specs/999_probe/reports"
@@ -1991,7 +1991,7 @@ build_repo_cached_untracked() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || [ "$f" = "lib/scope-excursion-record-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   if [ "$mode" = "gitignored" ]; then
@@ -2144,7 +2144,7 @@ git -C "$repo_y6" config user.name "Test Suite"
 mkdir -p "$repo_y6/.claude/scripts/lib"
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   cp "$SRC_SCRIPTS_DIR/$f" "$repo_y6/.claude/scripts/$f"
-  [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo_y6/.claude/scripts/$f"
+  [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || [ "$f" = "lib/scope-excursion-record-lib.sh" ] || chmod +x "$repo_y6/.claude/scripts/$f"
 done
 mkdir -p "$repo_y6/sub"
 echo "a" > "$repo_y6/sub/a.txt"
@@ -2196,7 +2196,7 @@ build_repo_specs_ignored() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || [ "$f" = "lib/scope-excursion-record-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
   # events-append.sh and its hard dependencies (common.sh, deploy-root-guard.sh already copied
   # above via REQUIRED_SCRIPTS) plus its defensively-guarded central-log-lib.sh, so the real
@@ -2237,7 +2237,7 @@ build_repo_specs_partially_ignored() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || [ "$f" = "lib/scope-excursion-record-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
   # events-append.sh and its hard dependencies -- see build_repo_specs_ignored's identical
   # comment above; this builder needs the same copy for AA10 below.
@@ -2370,7 +2370,7 @@ git -C "$repo_aa5" config user.name "Test Suite"
 mkdir -p "$repo_aa5/.claude/scripts/lib"
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   cp "$SRC_SCRIPTS_DIR/$f" "$repo_aa5/.claude/scripts/$f"
-  [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo_aa5/.claude/scripts/$f"
+  [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || [ "$f" = "lib/scope-excursion-record-lib.sh" ] || chmod +x "$repo_aa5/.claude/scripts/$f"
 done
 mkdir -p "$repo_aa5/specs/999_probe"
 printf 'specs/*\n!specs/999_probe/\n' > "$repo_aa5/.gitignore"
@@ -2552,6 +2552,91 @@ if [ "$REAL_EVENTS_SUM_BEFORE" = "$REAL_EVENTS_SUM_AFTER" ]; then
 else
   common_test_fail "Fixture containment: this repository's own specs/events.jsonl CHANGED during AA8/AA9/AA10 -- before=$REAL_EVENTS_SUM_BEFORE after=$REAL_EVENTS_SUM_AFTER"
 fi
+
+# =====================================================================
+# BB1: a single commit invocation dropping three uncontained pathspecs (V10) writes exactly one
+# "scope excursion" issues.jsonl line naming all three, rather than three near-identical lines.
+# =====================================================================
+
+repo_bb1="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+# issue-record.sh is deliberately ABSENT from REQUIRED_SCRIPTS above (every other case in this
+# suite relies on that absence to exercise the library's own non-fatal "script absent" no-op).
+# BB1/BB2 below need it actually present to observe the collapsed record itself, so it is copied
+# in locally, scoped to these two cases only, never added to the shared REQUIRED_SCRIPTS array.
+mkdir -p "$repo_bb1/.claude/scripts"
+cp "$SRC_SCRIPTS_DIR/issue-record.sh" "$repo_bb1/.claude/scripts/issue-record.sh"
+chmod +x "$repo_bb1/.claude/scripts/issue-record.sh"
+echo "modified a" > "$repo_bb1/specs/999_probe/a.txt"
+echo "out1" > "$repo_bb1/specs/998_sibling/out1.txt"
+echo "out2" > "$repo_bb1/specs/998_sibling/out2.txt"
+echo "out3" > "$repo_bb1/specs/998_sibling/out3.txt"
+out_bb1="$(run_commit "$repo_bb1" --message "BB1 probe commit" --session "sess_bb1" --task 999 \
+  -- "specs/999_probe/a.txt" "specs/998_sibling/out1.txt" "specs/998_sibling/out2.txt" "specs/998_sibling/out3.txt" 2>&1)"
+rc_bb1=$?
+issues_bb1="$repo_bb1/specs/999_probe/issues.jsonl"
+
+if [ "$rc_bb1" -eq 7 ]; then
+  common_test_pass "BB1: exit 7 (partial Containment drop with a committable survivor)"
+else
+  common_test_fail "BB1: expected rc=7, got $rc_bb1. Output:
+$out_bb1"
+fi
+
+scope_excursion_lines_bb1="$(grep -c '"class":"scope excursion"' "$issues_bb1" 2>/dev/null || true)"
+if [ "$scope_excursion_lines_bb1" = "1" ] \
+  && grep -q "specs/998_sibling/out1.txt" "$issues_bb1" 2>/dev/null \
+  && grep -q "specs/998_sibling/out2.txt" "$issues_bb1" 2>/dev/null \
+  && grep -q "specs/998_sibling/out3.txt" "$issues_bb1" 2>/dev/null; then
+  common_test_pass "BB1: exactly one 'scope excursion' issues.jsonl line was written, naming all three dropped pathspecs"
+else
+  common_test_fail "BB1: expected exactly 1 scope-excursion line naming all three dropped pathspecs, got $scope_excursion_lines_bb1: $(cat "$issues_bb1" 2>/dev/null)"
+fi
+
+if command -v jq >/dev/null 2>&1; then
+  dropped_paths_bb1="$(jq -r 'select(.class == "scope excursion") | .tags.dropped_paths | @json' "$issues_bb1" 2>/dev/null)"
+  if [ "$dropped_paths_bb1" = '["specs/998_sibling/out1.txt","specs/998_sibling/out2.txt","specs/998_sibling/out3.txt"]' ]; then
+    common_test_pass "BB1: tags.dropped_paths holds exactly the three dropped pathspecs, in drop order"
+  else
+    common_test_fail "BB1: expected tags.dropped_paths with all three pathspecs in order, got $dropped_paths_bb1"
+  fi
+fi
+
+# =====================================================================
+# BB2 (drop-then-refuse shape): every positive pathspec is out of scope, so V3's existing
+# all-dropped refusal fires (exit 2, no commit attempted at all) -- the collapsed
+# scope-excursion record must still be present after the refusal, pinning that V10's record now
+# fires before the V13/V3 decisions regardless of whether a commit is ever attempted.
+# =====================================================================
+
+repo_bb2="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+mkdir -p "$repo_bb2/.claude/scripts"
+cp "$SRC_SCRIPTS_DIR/issue-record.sh" "$repo_bb2/.claude/scripts/issue-record.sh"
+chmod +x "$repo_bb2/.claude/scripts/issue-record.sh"
+echo "out1" > "$repo_bb2/specs/998_sibling/out1.txt"
+echo "out2" > "$repo_bb2/specs/998_sibling/out2.txt"
+before_bb2=$(git -C "$repo_bb2" rev-list --count HEAD)
+out_bb2="$(run_commit "$repo_bb2" --message "BB2 probe commit" --session "sess_bb2" --task 999 \
+  -- "specs/998_sibling/out1.txt" "specs/998_sibling/out2.txt" 2>&1)"
+rc_bb2=$?
+after_bb2=$(git -C "$repo_bb2" rev-list --count HEAD 2>/dev/null || echo "$before_bb2")
+issues_bb2="$repo_bb2/specs/999_probe/issues.jsonl"
+
+if [ "$rc_bb2" -eq 2 ] && [ "$after_bb2" -eq "$before_bb2" ]; then
+  common_test_pass "BB2: the all-dropped shape still hits V3's existing refusal (exit 2, no commit)"
+else
+  common_test_fail "BB2: expected rc=2 with HEAD unchanged; got rc=$rc_bb2 before=$before_bb2 after=$after_bb2. Output:
+$out_bb2"
+fi
+
+scope_excursion_lines_bb2="$(grep -c '"class":"scope excursion"' "$issues_bb2" 2>/dev/null || true)"
+if [ "$scope_excursion_lines_bb2" = "1" ] \
+  && grep -q "specs/998_sibling/out1.txt" "$issues_bb2" 2>/dev/null \
+  && grep -q "specs/998_sibling/out2.txt" "$issues_bb2" 2>/dev/null; then
+  common_test_pass "BB2: the collapsed scope-excursion record naming both dropped pathspecs is still written despite the V3 refusal"
+else
+  common_test_fail "BB2: expected exactly 1 scope-excursion line naming both dropped pathspecs even on V3 refusal; got $scope_excursion_lines_bb2 lines: $(cat "$issues_bb2" 2>/dev/null)"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================

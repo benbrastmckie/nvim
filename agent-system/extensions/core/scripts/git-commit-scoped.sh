@@ -811,6 +811,19 @@ specs_ignore_lib_available=""
 if source "${SCRIPT_DIR}/lib/specs-ignore-lib.sh" 2>/dev/null; then
   specs_ignore_lib_available="1"
 fi
+# Batched scope-excursion record library (see scripts/lib/scope-excursion-record-lib.sh): one
+# non-fatal issue-record.sh call per drop event, carrying every dropped path through
+# --tags-json, rather than one call per dropped path. Guarded source, same fail-soft posture as
+# specs-ignore-lib.sh immediately above -- V10 below guards on `declare -F
+# scope_excursion_record_emit` before calling it.
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/scope-excursion-record-lib.sh" 2>/dev/null || true
+# scope_excursion_first_seen/last_seen: measured first-drop/last-drop timestamps for V10's own
+# collapsed record, mirroring git-commit-phase.sh's own accumulator (Phase 2 of the plan this
+# was built against). Declared here, before the V2 loop, since containment_dropped itself
+# already survives the loop and is read again below for the exit-7 decision.
+scope_excursion_first_seen=""
+scope_excursion_last_seen=""
 for p in "${pathspecs[@]}"; do
   case "$p" in
     :\(exclude\)*)
@@ -878,16 +891,16 @@ for p in "${pathspecs[@]}"; do
           # Uncontained: drop with a WARN textually distinct from both case 3's and V9's. Added to
           # NEITHER add_pathspecs NOR filtered_pathspecs -- this is what keeps it out of the `git
           # add` call. Recorded in BOTH dropped_pathspecs (V6 still sees this as a drop) and
-          # containment_dropped (the new exit-7 decision's own ledger). The issue-record.sh call
-          # mirrors git-commit-phase.sh's own non-fatal scope-excursion recording and tolerates the
-          # script being absent entirely (it is absent in this suite's scratch repos).
+          # containment_dropped (the new exit-7 decision's own ledger). The collapsed
+          # issue-record.sh call fires once, after this loop closes (see
+          # scope_excursion_record_emit below), rather than once per dropped pathspec here.
           echo "WARN: git-commit-scoped.sh dropping out-of-scope pathspec '${p}' (resolves to '${p_norm_rel}', not contained in task #${contention_task_number}'s declared file_scope); this path will NOT be part of the commit." >&2
           dropped_pathspecs+=("$p")
           containment_dropped+=("$p")
-          bash "$SCRIPT_DIR/issue-record.sh" --task "$contention_task_number" --kind issue \
-            --class "scope excursion" --severity minor \
-            --what-happened "git-commit-scoped.sh dropped '${p}' from a commit pathspec: not contained in task #${contention_task_number}'s declared file_scope." \
-            >/dev/null 2>&1 || true
+          _ser_now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          [ -z "$scope_excursion_first_seen" ] && scope_excursion_first_seen="$_ser_now"
+          scope_excursion_last_seen="$_ser_now"
+          unset _ser_now
           continue
         fi
       fi
@@ -953,6 +966,17 @@ for p in "${pathspecs[@]}"; do
       ;;
   esac
 done
+
+# V10 collapsed scope-excursion record: one post-loop issue-record.sh call for the whole drop
+# event, guarded on a non-empty containment_dropped, firing BEFORE the V13/V3 exit-code
+# decisions below so the record is written whether the commit that follows succeeds, fails, or
+# is never attempted at all (mirrors git-commit-phase.sh's own post-loop, pre-commit placement).
+if [ "${#containment_dropped[@]}" -gt 0 ] && declare -F scope_excursion_record_emit >/dev/null 2>&1; then
+  scope_excursion_record_emit "$SCRIPT_DIR" "$contention_task_number" \
+    "git-commit-scoped.sh dropped ${#containment_dropped[@]} pathspec(s) from a commit: not contained in task #${contention_task_number}'s declared file_scope. See tags.dropped_paths for the full list." \
+    "$scope_excursion_first_seen" "$scope_excursion_last_seen" \
+    -- "${containment_dropped[@]}"
+fi
 
 # --- V13 exit-code decision (all-ignored shape): every surviving positive pathspec was dropped
 # as gitignored, AND no OTHER drop reason contributed, AND filtered_pathspecs carries no positive
