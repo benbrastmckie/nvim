@@ -224,28 +224,29 @@ fix it in this phase and note the excursion rather than deferring it.
 
 ---
 
-### Phase 2: State the branch rule at the point of use in `rules/git-workflow.md` [NOT STARTED]
+### Phase 2: State the branch rule at the point of use in `rules/git-workflow.md` [COMPLETED]
 
 **Goal**: `rules/git-workflow.md` states, in its own short-rule-plus-pointer idiom, which branch a
 commit lands on and that no script creates or switches branches during dispatch work.
 
 **Tasks**:
-- [ ] Re-read the Branch Strategy section as rewritten in Phase 1, so the rule file and the
-      narrative state the same contract rather than two paraphrases of it.
-- [ ] Add a short new section (placed beside `## Commit Timing` / `## Commit Message Format`,
+- [x] Re-read the Branch Strategy section as rewritten in Phase 1, so the rule file and the
+      narrative state the same contract rather than two paraphrases of it. *(completed)*
+- [x] Add a short new section (placed beside `## Commit Timing` / `## Commit Message Format`,
       matching this file's existing convention of a two-or-three-sentence rule plus a pointer):
       a commit lands on the primary tree's already-checked-out branch, which is the declared
       `integration_branch` where one is declared and is verified at admission; no script creates
       or switches a branch during dispatch work, the single exception being `git-snapshot.sh`'s
-      `--branch` recovery path.
-- [ ] State the refusal in one clause, so a reader knows what stops them: an orchestration started
+      `--branch` recovery path. *(completed: new "## Branch" section added between "## Commit
+      Scope" and "## Git Safety")*
+- [x] State the refusal in one clause, so a reader knows what stops them: an orchestration started
       off the declared integration branch, or with a dirty state territory, is refused at
       admission before any dispatch is composed — and that both refusals arm only where
-      `integration_branch` is declared.
-- [ ] Point at `context/standards/git-workflow-narrative.md`'s Branch Strategy section for the
+      `integration_branch` is declared. *(completed)*
+- [x] Point at `context/standards/git-workflow-narrative.md`'s Branch Strategy section for the
       full detail and at `context/standards/repo-level-declarations.md` for the declaration
-      schema; do not duplicate the narrative's length here.
-- [ ] Confirm no task-number reference and no record-versioning phrasing entered the file.
+      schema; do not duplicate the narrative's length here. *(completed)*
+- [x] Confirm no task-number reference and no record-versioning phrasing entered the file. *(completed: one pre-existing task-ref-ok-marked illustrative example, unrelated)*
 
 **Timing**: 0.5 hours
 

@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "State the branch rule at the point of use in rules/git-workflow.md",
+  "started_at": "2026-11-23T17:35:00Z",
+  "last_updated": "2026-11-23T17:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read rewritten Branch Strategy section", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add short new Branch section", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 3, "description": "State the refusal in one clause", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 4, "description": "Point at narrative and declarations schema", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 5, "description": "Confirm no task-ref / record-versioning language", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
