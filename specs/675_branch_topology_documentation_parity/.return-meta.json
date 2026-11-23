@@ -25,14 +25,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/675_branch_topology_documentation_parity/summaries/01_branch-topology-doc-parity-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["gate-20", "eager-context-budget", "orchestrator-context-budget.json", "baseline-move", "deploy-headless"]
+      "suggested_keywords": [
+        "gate-20",
+        "eager-context-budget",
+        "orchestrator-context-budget.json",
+        "baseline-move",
+        "deploy-headless"
+      ]
     },
     {
       "content": "A path dropped by git-commit-phase.sh's Phase-Commit Containment Self-Check (outside the task's declared file_scope) cannot be landed by simply retrying git-commit-scoped.sh directly: that script carries its own independent, still-unwidened file_scope Containment guard (Site 3) and will drop the same path again. The path must first be unioned into specs/state.json's file_scope -- via 'bash .claude/scripts/state-write.sh' with a jq filter appending to the task's .file_scope array (since update-task-status.sh's --file-scope-add flag is gated to operation=postflight, unavailable mid-implementation) -- before the git-commit-scoped.sh follow-up commit will succeed.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/675_branch_topology_documentation_parity/summaries/01_branch-topology-doc-parity-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["git-commit-phase.sh", "git-commit-scoped.sh", "file_scope", "containment-self-check", "state-write.sh"]
+      "suggested_keywords": [
+        "git-commit-phase.sh",
+        "git-commit-scoped.sh",
+        "file_scope",
+        "containment-self-check",
+        "state-write.sh"
+      ]
     }
   ],
   "sapience_notes": [
@@ -76,11 +88,17 @@
     "session_id": "sess_1795451386_ec8465",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/context/config/orchestrator-context-budget.json"
-  ]
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

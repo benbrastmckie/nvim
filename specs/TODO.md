@@ -369,6 +369,7 @@ Q4. How does the validator treat a historical mention (M4) without either rewrit
 - **Dependencies**: Task 673
 - **Research**: [675_branch_topology_documentation_parity/reports/01_branch-topology-doc-parity.md]
 - **Plan**: [675_branch_topology_documentation_parity/plans/01_branch-topology-doc-parity.md]
+- **Summary**: [675_branch_topology_documentation_parity/summaries/01_branch-topology-doc-parity-summary.md]
 
 **Description**: Rewrite the branch-strategy documentation to state the implemented integration-branch contract
 
