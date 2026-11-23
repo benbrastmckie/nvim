@@ -449,7 +449,7 @@ by side in the cycle postflight.
 
 ---
 
-### Phase 6: Unwire the milestone landing and re-point the review handoff [IN PROGRESS]
+### Phase 6: Unwire the milestone landing and re-point the review handoff [COMPLETED]
 
 **Goal**: Postflight no longer calls `milestone-ref-land.sh`; the gate from Phase 5 is the
 pre-completion landing check. `milestone-review-handoff.sh` reads the integration branch and
@@ -459,29 +459,29 @@ the landing proofs.
 - [x] Confirm Phase 5's gate is committed and its suite green before removing anything. *(completed)*
 - [x] In `orchestrate-cycle-postflight.sh`, remove the two `milestone-ref-land.sh` calls and
       their comment block, and rename the refusal variable and the verdict key per D9 at every
-      site. State the current mechanism in the replacing comment; no history narration. *(completed)*
+      site. State the current mechanism in the replacing comment; no history narration. *(completed)* *(deviation: altered — the variable was renamed in Phase 3; this phase renamed the verdict key and removed the milestone calls)*
 - [x] Update the postflight suite's milestone groups to the renamed key and to the gate. *(completed)*
-- [ ] Rewrite `milestone-review-handoff.sh` steps 3 to 6: no milestone-ref existence or
+- [x] Rewrite `milestone-review-handoff.sh` steps 3 to 6: no milestone-ref existence or
       commit-count check; per done task, list the completion subject, the attributed commit
       count and the end commit from the task's landing proof, falling back to V2 attribution
       with the mandatory `created` bound for a task with no proof; flag a task whose proof has
       a non-empty `shared_paths`; set `review.ref` to the resolved integration branch (D6, never
       a literal); print the `/please` push request for that branch, then `/merge`. It still
-      never pushes and never creates a request. Its call site and arguments are unchanged.
-- [ ] Rewrite `test-milestone-review-handoff.sh` for the new range, including a no-proof task
+      never pushes and never creates a request. Its call site and arguments are unchanged. *(completed)*
+- [x] Rewrite `test-milestone-review-handoff.sh` for the new range, including a no-proof task
       and a `shared_paths` task, and keep its assertion that the script names no push or forge
-      command.
-- [ ] Revise the header of `milestone-ref-land.sh` per D8 and update
-      `test-milestone-ref-land.sh` only where it asserts header text.
-- [ ] Update `context/patterns/ref-plumbing-landing.md`: the idiom stays documented; the
+      command. *(completed)*
+- [x] Revise the header of `milestone-ref-land.sh` per D8 and update
+      `test-milestone-ref-land.sh` only where it asserts header text. *(completed)*
+- [x] Update `context/patterns/ref-plumbing-landing.md`: the idiom stays documented; the
       statement that it lands a task's work at completion is replaced by the current mechanism,
       pointing at `task-landing-verify.sh` and at the ruling record's review-submission
-      interface for where the idiom is used.
-- [ ] Run the doc lint and the task-reference lint. If either flags
+      interface for where the idiom is used. *(completed)*
+- [x] Run the doc lint and the task-reference lint. If either flags
       `context/standards/git-workflow-narrative.md` or `context/contracts/conclusion-stage.md`
       because of this phase's edits, make the smallest edit that clears the finding, add the
       path to this phase's `Files to modify` block, and record it as a deviation with a note
-      for 675. Otherwise leave both files untouched.
+      for 675. Otherwise leave both files untouched. *(completed)*
 
 **Timing**: 2 hours
 

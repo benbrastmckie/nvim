@@ -4834,6 +4834,8 @@ EOF
 EOF
 }
 
+# task-ref-ok:begin category 6-adjacent: the "920"/"921"/"922" fixture numbers in the asserted
+# diagnostic lines below are synthetic fixture data, not real task references.
 common_test_info "Landing (A): a landing refusal (the batch record names an integration branch HEAD is not on) refuses the completion write and leaves the task at its in-flight status -- proves ordering: the gate runs before the write"
 
 setup_sandbox
@@ -4941,6 +4943,8 @@ if git -C "$WORKDIR" for-each-ref "refs/heads/milestone/" | grep -q .; then
 else
   common_test_pass "landing (C): no refs/heads/milestone/* ref was created"
 fi
+
+# task-ref-ok:end
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Leftover work is committed ahead of the completion status write

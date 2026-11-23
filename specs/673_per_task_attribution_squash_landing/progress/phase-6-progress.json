@@ -2,7 +2,7 @@
   "phase": 6,
   "phase_name": "Unwire the milestone landing and re-point the review handoff",
   "started_at": "2026-11-23T12:36:54Z",
-  "last_updated": "2026-11-23T12:36:54Z",
+  "last_updated": "2026-11-23T12:47:53Z",
   "objectives": [
     {
       "id": 1,
@@ -16,18 +16,34 @@
     {
       "id": 2,
       "description": "Rewrite milestone-review-handoff.sh steps 3 to 6 and its suite",
-      "status": "in_progress",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/milestone-review-handoff.sh",
+        "agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh"
+      ]
     },
     {
       "id": 3,
       "description": "milestone-ref-land.sh header; ref-plumbing-landing.md; lints",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/milestone-ref-land.sh",
+        "agent-system/extensions/core/context/patterns/ref-plumbing-landing.md",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+      ]
     }
   ],
-  "current_objective": 2,
+  "current_objective": null,
   "approaches_tried": [],
-  "deviations": [],
-  "handoff_count": 0
+  "deviations": [
+    {
+      "task_id": "6.2",
+      "description": "Rename the refusal variable and the verdict key per D9 at every site",
+      "type": "altered",
+      "reason": "The variable was already renamed in Phase 3; this phase renamed the verdict key milestone_landing to landing and removed the leftover_commit_refusal helper variable with the milestone calls.",
+      "annotation": "*(deviation: altered — the variable was renamed in Phase 3; this phase renamed the verdict key and removed the milestone calls)*"
+    }
+  ],
+  "handoff_count": 0,
+  "verification": "grep -c milestone-ref-land.sh in the cycle postflight prints 0, with test-postflight-landing-gate.sh green in the same run. Source-store run-all over the 21 suites referencing the cycle postflight, the review handoff, the milestone landing script or the plumbing document, plus the two landing suites: 21 passed, 0 failed. test-milestone-review-handoff.sh 18/18, test-milestone-ref-land.sh 13/13 (no header assertion needed editing), test-orchestrate-cycle-postflight.sh 375/375. Deployed check-task-references.sh: PASS, 0 occurrences (3 fixture-number hits found and wrapped in a task-ref-ok block). check-record-versioning.sh timed out at 150s; the pattern library run directly over this task 15 files reports 0 blocking and 0 advisory hits on them from rv_grep_blocking / rv_grep_advisory. git-workflow-narrative.md and conclusion-stage.md untouched; no lint flagged them. grep for push/forge commands in milestone-review-handoff.sh matches the header prohibition line only."
 }

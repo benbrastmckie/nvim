@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
-# milestone-ref-land.sh - Ref-plumbing landing: appends one squash commit per completed task onto
-# its milestone's review ref, without ever touching the working tree, the index, or HEAD.
+# milestone-ref-land.sh - Ref-plumbing snapshot utility: appends one commit carrying HEAD's tree
+# onto a milestone's ref, without ever touching the working tree, the index, or HEAD.
+#
+# STANDING: no lifecycle script calls this script, and it is not a landing mechanism. A task's
+# work lands on the integration branch as its phase commits are made, and that landing is
+# verified by scripts/task-landing-verify.sh at the completion status write (see
+# context/patterns/ref-plumbing-landing.md's "The Landing Mechanism" section). This script stays
+# as the worked implementation of the plumbing idiom that document describes, run by hand when a
+# snapshot ref of the current tree is wanted. The ref it writes is a parallel history: merging
+# it back adds commits and no content.
 #
 # WHY REF PLUMBING, NOT checkout OR git merge --squash
 # ------------------------------------------------------
@@ -39,10 +47,9 @@
 #
 # --verify mode: asserts TREE EQUALITY -- the milestone ref exists and
 # `git rev-parse <ref>^{tree}` equals `git rev-parse HEAD^{tree}`. Exits 0 if it holds (or the
-# task has no milestone -- nothing to verify), exits 1 otherwise. This is the check
-# orchestrate-cycle-postflight.sh runs immediately before writing a task's completion status,
-# closing the non-landing-under-"completed" defect
-# worktree-isolation-removal-reaffirmation.md records.
+# task has no milestone -- nothing to verify), exits 1 otherwise. It answers whether the ref
+# carries the current tree, and says nothing about whether a task's work is on the integration
+# branch; that question is task-landing-verify.sh's.
 #
 # Why tree equality and not ancestry: a landed commit is parented on the milestone ref's own
 # chain, not on the work branch, so the work branch's HEAD is an ancestor of the ref only for
