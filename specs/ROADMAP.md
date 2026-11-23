@@ -6,7 +6,7 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 1/21 | none |
+| [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 3/21 | none |
 | [M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse](#milestone-m3) | planned | 0/8 | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
 | [M1: Current work](#milestone-m1) | active | 15/106 | none |
@@ -18,19 +18,13 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Close everything standing in front of the batch-worktree landing work: measure the harness against an external worktree, settle which paths a commit drops and from which root, and land the phase-commit boundary detector whose expected ref the two-root contract makes per tree.
 
-- **Progress**: planned -- 1/6 batches, 1/21 tasks done -- Not the landing work itself -- only the measurement and the commit-layer and detector fixes it waits on.
+- **Progress**: planned -- 2/6 batches, 3/21 tasks done -- Not the landing work itself -- only the measurement and the commit-layer and detector fixes it waits on.
 - **Review**: none
 - **Gate**: The four harness behaviours are measured and recorded, or R2's worktree siting is amended by what they show; the containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and integration-branch admission and the two-root tasks have no open dependency left.
 
 **Batch 1** (done) -- Measure the harness against an external worktree before any of the topology is built
 
-**Batch 2** -- Make a phase commit own the surfaces it stales, so the isolation declaration has a schema row
-
-```
-/orchestrate 455, 517
-517 blocked:455     Require a phase commit to regenerate and stage the derived surfaces it stales
-455 ready           Pre-flag the predictable first-run module-invariant failures that wiring a ne...
-```
+**Batch 2** (done) -- Make a phase commit own the surfaces it stales, so the isolation declaration has a schema row
 
 **Batch 3** -- Settle which paths a phase commit may drop, and how one drop event is recorded
 
@@ -87,7 +81,7 @@ Make a batch's work land as reviewable git history: run each batch in its own wo
 
 ```
 /orchestrate 669, 671 --hard
-669 blocked:517,541 Add integration-branch admission, the isolation declaration, and idempotent b...
+669 blocked:541     Add integration-branch admission, the isolation declaration, and idempotent b...
 671 blocked:669     Make the write-time and git-guard hooks two-root aware
 ```
 
@@ -112,7 +106,7 @@ Make a batch's work land as reviewable git history: run each batch in its own wo
 
 ```
 /orchestrate 655
-655 blocked:513,517,553  Declare generated paths so they collapse in review   <- its three prereqs now sit in M4's declaration, chain and detector batches; scope is now the declaration only
+655 blocked:513,553 Declare generated paths so they collapse in review   <- its three prereqs now sit in M4's declaration, chain and detector batches; scope is now the declaration only
 ```
 
 <a id="milestone-m2"></a>
@@ -270,7 +264,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 
 ```
 /orchestrate 502, 457
-457 blocked:455     Repo-specific content has leaked into the shared agent-system source store
+457 ready           Repo-specific content has leaked into the shared agent-system source store
 502 ready           Require research reports to enumerate generated doc-sync surfaces
 ```
 
