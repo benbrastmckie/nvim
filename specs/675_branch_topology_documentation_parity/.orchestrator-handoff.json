@@ -1,18 +1,23 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 675,
-  "phase": "plan",
-  "session_id": "sess_1795451386_ec8465_675",
-  "dispatch_seq": 20,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1795451386_ec8465",
+  "dispatch_seq": 21,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a four-phase implementation plan for the branch-topology documentation-parity task. Phase 1 rewrites git-workflow-narrative.md's Branch Strategy section to the implemented integration-branch contract; Phase 2 adds the missing point-of-use branch rule to rules/git-workflow.md; Phase 3 acts on the sweep by fixing conclusion-stage.md and shared-worktree-discipline.md; Phase 4 re-verifies parity against the live scripts, confirms the two already-current pages, regenerates line counts and redeploys. Plan-time re-verification against the live scripts and .claude-extensions.json confirmed every research premise, including that ref-plumbing-landing.md and repo-level-declarations.md are already current and need no rewrite.",
+  "summary": "Rewrote git-workflow-narrative.md's Branch Strategy section, added rules/git-workflow.md's point-of-use branch rule, and corrected conclusion-stage.md and shared-worktree-discipline.md to state the implemented isolation-off integration-branch contract. Confirmed ref-plumbing-landing.md, repo-level-declarations.md, and git-staging-scope.md's negative finding against the live scripts rather than editing them. Closed a Gate 20 eager-context-budget overage caused by the new branch rule (compaction plus a reviewed, dated baseline move in orchestrator-context-budget.json) and redeployed clean (41 checks, 0 failures).",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/675_branch_topology_documentation_parity/summaries/01_branch-topology-doc-parity-summary.md",
+      "summary": "Full account of what was rewritten, confirmed, and swept, plus the Gate 20 baseline-move deviation."
+    },
+    {
       "type": "plan",
       "path": "specs/675_branch_topology_documentation_parity/plans/01_branch-topology-doc-parity.md",
-      "summary": "Four-phase plan: narrative rewrite, point-of-use branch rule, sweep fixes, parity verification plus redeploy."
+      "summary": "Four-phase plan, all phases COMPLETED."
     }
   ]
 }
