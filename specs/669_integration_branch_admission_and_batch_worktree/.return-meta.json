@@ -1,25 +1,12 @@
 {
-  "status": "planned",
-  "started_at": "2026-11-23T09:37:37Z",
-  "completed_at": "2026-11-23T09:52:00Z",
-  "summary": "Four-phase plan: schema rows and runtime-file registration, an admission library with its own suite, wiring into orchestrate-cycle-plan.sh through the generic stop object, then redeploy and close. Verified against isolation off only; no edit to the two byte-ceiling files.",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/669_integration_branch_admission_and_batch_worktree/plans/01_integration-branch-admission.md",
-      "summary": "Four-phase plan for integration-branch admission, the worktree_isolation declaration and the per-invocation batch record, verified with isolation off."
-    }
-  ],
-  "next_steps": "Run /orchestrate 669 to execute the plan",
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 3,
+  "started_at": "2026-11-23T10:05:00Z",
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1795425897_6a25f2_669",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 6.5,
-    "dependency_waves": [[1], [2], [3], [4]]
-  },
-  "dispatch_seq": 2
+    "session_id": "sess_1795425897_6a25f2",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

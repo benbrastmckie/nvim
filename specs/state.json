@@ -2306,12 +2306,12 @@
     {
       "project_number": 669,
       "project_name": "integration_branch_admission_and_batch_worktree",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Add integration-branch admission and the isolation declaration",
       "topic": "orchestrator",
       "created": "2026-11-20T20:19:06Z",
-      "last_updated": "2026-11-23T09:44:02Z",
+      "last_updated": "2026-11-23T09:44:57Z",
       "session_id": "sess_1795425897_6a25f2",
       "dependencies": [
         517,

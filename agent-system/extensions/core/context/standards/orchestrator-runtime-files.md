@@ -44,6 +44,7 @@ Every runtime file falls into exactly one of two classes:
 | `specs/.orchestration/` (directory) | `skill-orchestrate`/`orchestrate-cycle-plan.sh`/`orchestrate-cycle-postflight.sh` (`mkdir -p` on first write of either singleton above or its `.return-meta-multi-{session_id}.json` sibling) | Both singletons' own writers/readers | Never explicitly removed as a directory; emptied indirectly as its contents are reaped | **Ephemeral** (directory class, like `.lock/` — added as the 19th `runtime-file-patterns.sh` class member specifically so the directory itself is never reported as untracked in `git status`) |
 | `specs/.orchestration/queue/{orchestration_id}.json` | `task-lock.sh queue-register`/`queue-heartbeat` (see `context/patterns/task-lock.md`'s Orchestration-Queue CLI section) | `task-lock.sh queue-list`/`queue-check` (the latter's in-process admission query against `commands/orchestrate.md`'s pre-dispatch gate) | Disposed by `queue-finish`/`queue-reap` **by archival into the sibling row below, never by deletion** — the live file is removed only after its archive counterpart is confirmed written | **Ephemeral**. Already covered by the pre-existing `**/.orchestration/` directory-class pattern in `scripts/lib/runtime-file-patterns.sh` (no new pattern member needed); `scripts/reap-session-runtime-files.sh`'s candidate globs are all literal, non-recursive filenames directly under `specs/.orchestration/` or `specs/`, so its sweep cannot reach this subdirectory at all — re-verified mechanically, not assumed, when this row was added. |
 | `specs/.orchestration/archive/{orchestration_id}.json` | `task-lock.sh queue-finish`/`queue-reap`, moving (never copying) the record out of the sibling row above | `task-lock.sh queue-list --archived` | Never — a durable per-orchestration record, by design (D4 in `context/patterns/task-lock.md`'s Orchestration-Queue CLI section); no retention policy exists yet | **Durable provenance, but untracked** — a THIRD disposition for this one row: unlike every other **Durable provenance** row in this table, it is deliberately gitignored (covered by the same pre-existing `**/.orchestration/` directory-class pattern), since committing one JSON file per finished orchestration would add per-invocation commit noise and cross-session merge conflicts for history no consumer reads yet. |
+| `specs/.orchestration/batch/{session_id}.json` | Orchestration admission in `scripts/orchestrate-cycle-plan.sh`, through `scripts/lib/batch-admission-lib.sh`, exactly once per invocation: on the first admitted cycle, when no record exists for the session. Never written per dispatch or per task, never under `--dry-run`, never on a refusal, and never when the project root is not a `git` work tree. The landing mechanism later appends to its `landing_proofs` array | Admission itself on every later cycle (the record's existence is the first-cycle marker that disarms the dirty-tree test); the landing and cleanup mechanisms | Never — a durable per-invocation record. Out of `scripts/reap-session-runtime-files.sh`'s reach, whose candidate globs are literal filenames directly under `specs/.orchestration/` or `specs/` and so cannot match inside a subdirectory | **Durable provenance, but untracked** — the same third disposition as the queue archive row above, covered by the same `**/.orchestration/` directory-class pattern (no new pattern member). See "The batch record" below for its fields. |
 | `specs/.events.lock` | `scripts/events-append.sh` (`flock` guard around the append-only event store) | Itself, for the duration of a single append | Released by `flock` at the end of the append | **Ephemeral** |
 | `specs/.freshness-warn-streak.json` | `scripts/check-deploy-freshness.sh` (consecutive-ignore escalation counter — see `context/patterns/regeneration-is-manual-only.md`'s "Detecting When You're Stale" Tier 1 section) | Same script, on its next invocation | Reset (file deleted) the moment a run fires no WARN (fresh or cannot-verify, collapsed identically); incremented on every WARN-firing run, capped at 999 | **Ephemeral** — a freshness-check runtime file rather than an orchestrator one; listed here because this file is the repo's single runtime-file policy home |
 | `.continuation-loop-guard` / `.continuation-loop-guard.tmp` | `orchestrator-postflight.sh` for `implement` operations (its own internal continuation-retry counter, distinct from the orchestrator loop guard above; previously owned inline by the now-deleted base lifecycle implement skill) | Same resume branch | Removed at postflight (`orchestrator-postflight.sh` Stage 10 for `implement`) | **Ephemeral** |
@@ -151,6 +152,42 @@ does not fit the ephemeral rationale, and it is not a per-dispatch audit trail e
 not durable provenance — same "preserve the evidence, do not gitignore it" class as the
 stray-handoff/stale-guard trio above. It is deliberately left out of both classes and out of the
 lib's 18-member enumeration.
+
+### The batch record
+
+`specs/.orchestration/batch/{session_id}.json` is the per-invocation record orchestration
+admission writes under the primary tree's state directory. Its path is resolved only through
+`runtime_batch_record_path` in `scripts/lib/runtime-file-patterns.sh`; the `batch/` directory is
+created on demand by the writer, and the file is written tmp-file-then-rename.
+
+| Field | Type | Content |
+|-------|------|---------|
+| `schema` | integer | `1` |
+| `session_id` | string | the invocation's session identity |
+| `orchestration_id` | string or null | the orchestration-queue identity, when the caller holds one |
+| `task_numbers` | array of integers | the invocation's member tasks, so a resumed batch (which carries a new session identity) can find an earlier record by membership |
+| `admitted_at` | string | ISO-8601 UTC time of admission |
+| `integration_branch` | string | the declared `integration_branch`, or the checked-out branch when undeclared |
+| `integration_branch_declared` | boolean | whether the name above came from the declaration |
+| `integration_tip_at_cut` | string or null | the 40-hex commit the integration branch pointed at on admission; null on an unborn branch |
+| `worktree_isolation` | string | the isolation mode admitted under (`off`) |
+| `landing_proofs` | array | created empty; append-only, one element per landed task |
+
+`landing_proofs` is written only by the landing mechanism, under the existing
+`specs/.commit-lock/` mutex, and only by appending; its element shape belongs to that mechanism.
+Admission creates the array and never appends to it.
+
+The batch-branch name and the absolute worktree path are not fields of this record. They belong
+to the isolation-on path, built by `batch_worktree_creation_when_isolation_on`, and arrive as
+one `isolation` object beside the fields above. That is an additive field write: no existing
+field is renamed, moved or retyped, and every reader of the fields above is unaffected by the
+object's presence or absence.
+
+One record exists per invocation by construction, since the record's own existence is what
+admission tests before writing. It composes with the task lock, the session registry, the
+orchestration queue and the `MAX_TASKS` ceiling by touching none of them: it is a separate file
+in its own subdirectory, written before any lock is acquired, and it carries batch membership
+without gating it.
 
 ### The bare-vs-suffixed `.return-meta.json` distinction
 

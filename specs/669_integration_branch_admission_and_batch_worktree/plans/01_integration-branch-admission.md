@@ -1,7 +1,7 @@
 # Implementation Plan: Task #669
 
 - **Task**: 669 - Add integration-branch admission and the isolation declaration
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: 517, 541, 667, 668 (all completed)
 - **Research Inputs**: specs/669_integration_branch_admission_and_batch_worktree/reports/01_integration-branch-admission.md
@@ -160,32 +160,32 @@ All paths below are source-store paths. Before the Phase 4 redeploy, run every s
 from `agent-system/extensions/core/scripts/`, never from the deployed `.claude/scripts/` copy,
 which does not yet contain this task's edits.
 
-### Phase 1: Schema rows and runtime-file registration [NOT STARTED]
+### Phase 1: Schema rows and runtime-file registration [COMPLETED]
 
 **Goal**: The two standards documents state the declarations, the state territory, which values
 are live, and the batch record's place and disposition.
 
 **Tasks**:
-- [ ] Check `git diff HEAD -- agent-system/extensions/core/index-entries.json`. If a hunk not
+- [x] Check `git diff HEAD -- agent-system/extensions/core/index-entries.json`. If a hunk not
       belonging to this task is present, leave it in place and record one `issue-record.sh` row
-      naming it (see Risks).
-- [ ] In `context/standards/repo-level-declarations.md`, add a section "The `integration_branch`
+      naming it (see Risks). *(completed)*
+- [x] In `context/standards/repo-level-declarations.md`, add a section "The `integration_branch`
       Declaration": top-level string key, shape as fixed by ruling R4 of the decision record
       `branch-topology-and-landing-strategy.md`; live. State that declaring it is what arms
       admission; that undeclared, empty or non-string yields one named advisory and no refusal;
       the two refusals and their stop reasons; that only tracked changes are tested; and the
       exact state-territory set (`specs/`, `.claude-extensions.json`, `.memory/`) with one
       sentence on why a blanket clean-tree test is refused. Include the fail-open table in the
-      document's existing form.
-- [ ] Add a section "The `worktree_isolation` Declaration": top-level string key; values `off`
+      document's existing form. *(completed)*
+- [x] Add a section "The `worktree_isolation` Declaration": top-level string key; values `off`
       (live) and `batch` (declared, not implemented); undeclared means `off`. State that `batch`
       and any unrecognised value are refused at admission with reason `isolation_unimplemented`,
       name the implementing work by its slug `batch_worktree_creation_when_isolation_on`, and
       cite the document's `closing_gate` exception by section name as the precedent for a loud
-      refusal in an otherwise fail-open document.
-- [ ] Extend the Overview's enumeration of schemas and the See Also list to cover both keys and
-      the new library `scripts/lib/batch-admission-lib.sh`.
-- [ ] In `context/standards/orchestrator-runtime-files.md`, add a Class Table row for
+      refusal in an otherwise fail-open document. *(completed)*
+- [x] Extend the Overview's enumeration of schemas and the See Also list to cover both keys and
+      the new library `scripts/lib/batch-admission-lib.sh`. *(completed)*
+- [x] In `context/standards/orchestrator-runtime-files.md`, add a Class Table row for
       `specs/.orchestration/batch/{session_id}.json`: writer (admission in
       `orchestrate-cycle-plan.sh` via the library, once per invocation), readers, cleanup
       (never; out of the session reaper's reach because its globs match literal filenames
@@ -193,11 +193,11 @@ are live, and the batch record's place and disposition.
       alongside the queue archive row. State the field list, that `landing_proofs` is an
       append-only array written under the existing `specs/.commit-lock` mutex by the landing
       mechanism, and that batch-branch name and absolute worktree path are added later as a
-      single `isolation` object, an additive field write that reshapes nothing.
-- [ ] Update the two documents' `line_count` values in `index-entries.json` with a targeted
-      in-place edit of those two integers to match `wc -l` (no whole-file `jq` rewrite).
-- [ ] Write no task number and no record-versioning phrasing into either document; name the
-      held work by slug only, and state the current design only.
+      single `isolation` object, an additive field write that reshapes nothing. *(completed)*
+- [x] Update the two documents' `line_count` values in `index-entries.json` with a targeted
+      in-place edit of those two integers to match `wc -l` (no whole-file `jq` rewrite). *(completed)*
+- [x] Write no task number and no record-versioning phrasing into either document; name the
+      held work by slug only, and state the current design only. *(completed)*
 
 **Timing**: 1.5 hours
 

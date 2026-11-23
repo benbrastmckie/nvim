@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Schema rows and runtime-file registration",
+  "started_at": "2026-11-23T10:05:00Z",
+  "last_updated": "2026-11-23T09:56:12Z",
+  "objectives": [
+    {"id": 1, "description": "Check index-entries.json for a foreign hunk", "status": "done", "files_touched": [], "note": "No foreign hunk: the sibling line_count change was committed (5308526e7) before this phase began."},
+    {"id": 2, "description": "integration_branch and worktree_isolation sections, Overview and See Also", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/repo-level-declarations.md"]},
+    {"id": 3, "description": "Batch record Class Table row and field description", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]},
+    {"id": 4, "description": "line_count for both documents", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [],
+  "verification_notes": "verify-touched.sh over the three explicit paths: rc 0, 98 passed, 11 suites selected, 1 owed path discharged by the free fallback set. verify-deploy.sh --skip-slow --only-gate 3,4 --skip-unchanged: rc 0. check-task-references.sh: 0. check-record-versioning.sh scoped to each document: 0 BLOCKING (advisories all on lines this phase did not write).",
+  "handoff_count": 0
+}

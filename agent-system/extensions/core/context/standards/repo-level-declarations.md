@@ -8,9 +8,13 @@ generically, documents its survival guarantee, and records the declaration schem
 system currently reads from it: `derived_artifact_probes`, the repo-declared, build-free
 derived-artifact staleness probe (see `scripts/lib/derived-artifact-probe-lib.sh` for the reader
 and the two call sites that consume it); `coupled_generated_surfaces`, the repo-declared,
-advisory plan-authoring completeness check described below; and `verification_scope`, the
+advisory plan-authoring completeness check described below; `verification_scope`, the
 repo-declared touched-path-verification topology (tree roots, project-owned suite roots, and a
-declarable resolver backend) described below.
+declarable resolver backend) described below; `integration_branch`, the name of the branch the
+repository treats as its long-lived integration branch, whose declaration arms the
+orchestration admission gate; and `worktree_isolation`, the per-repository isolation mode that
+same gate reads. The last two are read by `scripts/lib/batch-admission-lib.sh` and described in
+their own sections below.
 
 ## Why `.claude-extensions.json` Survives a Hand-Authored Sibling Key
 
@@ -228,6 +232,100 @@ actually needed it, rather than leaving the reservation's own eventual resolutio
   document's existing `project_gates`/`closing_gate` bullet in the Entry Schema above before
   adding a second, competing declaration surface.
 
+## The `integration_branch` Declaration
+
+```json
+{
+  "integration_branch": "<branch name>"
+}
+```
+
+A top-level string key naming the branch this repository treats as its long-lived integration
+branch. The key name and shape are fixed by ruling R4 of the decision record
+`branch-topology-and-landing-strategy.md`. **Live**: it is read at orchestration admission by
+`scripts/lib/batch-admission-lib.sh`, called from `scripts/orchestrate-cycle-plan.sh` before any
+dispatch is composed and before any mutation.
+
+**Declaring the key is what arms admission.** With a non-empty string declared, an
+`/orchestrate` invocation is refused through the cycle plan's `stop` object in two cases:
+
+| Stop reason | Refused when | Tested |
+|-------------|--------------|--------|
+| `off_integration_branch` | the primary working tree's checked-out branch (`git symbolic-ref -q --short HEAD`) is not the declared branch, or `HEAD` is detached | every cycle |
+| `dirty_primary_tree` | a tracked path outside the state territory differs from `HEAD` | the first cycle of an invocation only |
+
+The dirty test runs once per invocation because, from the second cycle on, the invocation's own
+dispatches legitimately leave uncommitted work in the tree. "First cycle" means no batch record
+exists yet for the session (see `context/standards/orchestrator-runtime-files.md`'s Class Table
+row for `specs/.orchestration/batch/{session_id}.json`). The refusal message lists every
+offending path.
+
+**Only tracked changes are tested.** The dirty test is `git diff --name-only HEAD` with the
+state territory excluded by pathspec: modified, deleted, renamed and staged-new tracked paths
+count; an untracked file never refuses an invocation.
+
+**State territory** is exactly this repository-root-relative set, fixed in
+`batch-admission-lib.sh` and pinned against this document by that library's suite:
+
+- `specs/` (the whole directory)
+- `.claude-extensions.json`
+- `.memory/` (the whole directory)
+
+A blanket clean-tree test is refused as a design: these three locations are dirtied by ordinary
+operation (task state, deploy state and memory-retrieval counters change with no task editing
+them), so a repository that tracks them would have every invocation refused.
+
+**Fail-open-on-absence guarantee** (same shape as the schemas above):
+
+| Condition | Result |
+|-----------|--------|
+| No `.claude-extensions.json` file | undeclared: one advisory, no refusal |
+| `jq` unavailable | same as above |
+| Key absent | same as above |
+| Key present, empty string or not a string | same as above |
+| Project root is not a `git` work tree | the branch test, the dirty test and the batch-record write are all skipped silently |
+
+Undeclared, admission prints one named advisory on standard error, on the first cycle only,
+naming the key, this declarations file and the checked-out branch it falls back to. Neither
+refusal is armed, and the checked-out branch is recorded in the batch record with
+`integration_branch_declared: false`.
+
+## The `worktree_isolation` Declaration
+
+```json
+{
+  "worktree_isolation": "off"
+}
+```
+
+A top-level string key, beside `integration_branch`, declaring the repository's isolation mode.
+Undeclared means `off`.
+
+| Value | Status | Meaning |
+|-------|--------|---------|
+| `off` (or undeclared) | **Live** | Every dispatch runs in the primary working tree; no worktree and no batch branch exist. |
+| `batch` | **Declared, not implemented** | One worktree and one batch branch per orchestration invocation. No machinery builds either; the implementing work is `batch_worktree_creation_when_isolation_on`. |
+
+**`batch` is refused at admission, loudly.** A repository declaring `worktree_isolation: batch`
+has every `/orchestrate` invocation stopped with reason `isolation_unimplemented`, the message
+naming the declared value and `batch_worktree_creation_when_isolation_on`. Any other
+unrecognised value, and any non-string value, is refused with the same reason and a message
+naming the bad value. The check needs no `git` and runs every cycle, ahead of the branch test.
+
+This is a deliberate exception to this document's fail-open posture, on the same ground as the
+declared-but-unusable `closing_gate` exception recorded under "Decisions Settled" above: a
+repository that asks for a mode must never get silence and off-mode behaviour in its place.
+Absence stays fail-open; only a declared value the system cannot honour refuses.
+
+| Condition | Result |
+|-----------|--------|
+| No `.claude-extensions.json` file | `off` |
+| `jq` unavailable | `off` |
+| Key absent | `off` |
+| Key present, `"off"` | `off` |
+| Key present, `"batch"` | refused, `isolation_unimplemented` |
+| Key present, any other value or type | refused, `isolation_unimplemented` |
+
 ## Fail-Open-on-Absence Guarantee
 
 A repo that declares nothing — no `derived_artifact_probes` key at all, this repo included — is
@@ -306,6 +404,11 @@ general advisory-to-blocking migration.
 - `scripts/lib/verification-scope-lib.sh` — the reader for `verification_scope`, consumed by
   `scripts/verify-touched.sh`, `scripts/lib/suite-resolver-lib.sh`, `scripts/validate-artifact.sh`,
   and `scripts/report-suite-coverage.sh`.
+- `scripts/lib/batch-admission-lib.sh` — the reader for `integration_branch` and
+  `worktree_isolation`, the admission predicate, and the batch-record writer, called from
+  `scripts/orchestrate-cycle-plan.sh`.
+- `context/standards/orchestrator-runtime-files.md`'s Class Table — the batch record admission
+  writes at `specs/.orchestration/batch/{session_id}.json`.
 - `scripts/validate-artifact.sh` — the sole current reader of `coupled_generated_surfaces`, and
   the enforcing consumer `context/formats/plan-format.md`'s "Coupled-generated-surface
   declaration obligation" cross-references.
