@@ -13,8 +13,8 @@ next_project_number: 690
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,671,674,679,680,684,685,686,687,689 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,671,674,679,680,684,686,687,689 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,685 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,687 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,571,596,642,688 | 501,518,595,641 | core-agent-system, orchestrator, agent-system |
@@ -94,7 +94,7 @@ next_project_number: 690
 ### File Scope Lifecycle
 
 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
-687 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+687 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
@@ -111,7 +111,6 @@ next_project_number: 690
 666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
 671 [HOLD] — Make the write-time and git-guard hooks two-root aware
 674 [HOLD] — Build batch worktree cleanup, retention on partial batches,...
-685 [IMPLEMENTING] — Cut review branches and submit a stack of PRs from landed...
 686 [HOLD] — Create the per-batch worktree and batch branch when isolation...
 689 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
@@ -120,6 +119,7 @@ next_project_number: 690
   └─ 655 [NOT STARTED] — Declare generated paths so they collapse in review
   └─ 670 [HOLD] — Build the two-root contract in the dispatch composer and the...
     └─ 672 [HOLD] — Classify every remaining project-root consumer as code-root,...
+685 [IMPLEMENTING] — Cut review branches and submit a stack of PRs from landed...
 688 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Agent System
@@ -230,10 +230,11 @@ CITATIONS -- issue-log entries this record is built from:
 ---
 
 ### 687. Whole tree sentinel self collision
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
+- **Research**: [687_whole_tree_sentinel_self_collision/reports/01_sentinel-self-collision-fix.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -291,7 +292,7 @@ VERIFICATION CRITERIA THIS TASK OWNS:
 - **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 673
+- **Dependencies**: Task 673, Task 687
 - **Research**: [685_stack_pr_submission_from_integration_branch/reports/01_stack-pr-submission.md]
 - **Plan**: [685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md]
 - **Handoff**: [685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md]

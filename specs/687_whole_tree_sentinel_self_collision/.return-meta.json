@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795463295_b6ad0f_687",
+  "dispatch_seq": 25,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/687_whole_tree_sentinel_self_collision/reports/01_sentinel-self-collision-fix.md",
+      "summary": "Root-causes the whole-tree sentinel self-collision to scopes_overlap_first()'s exact-match clause in scripts/lib/file-scope-overlap.sh, confirms a single library fix reaches both orchestrate-batch-admit.sh and lint-roadmap-batch-proposals.sh, identifies orchestrate-cycle-plan.sh's whole_tree_claim case arm as the actual width-1-serialization mechanism, and enumerates the fixture (test-orchestrate-batch-admit.sh's WHOLE-TREE-CODISPATCH) and doc updates (file-footprint-overlap.md, batch-orchestration-guardrails.md, batch-admit-schema.md) this deliberate design reversal requires."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core, orchestrate-batch-admit.sh's defer_reason values only actually block dispatch if orchestrate-cycle-plan.sh's per-reason case arm (around line 2034) has no --allow-X bypass. A reason string claiming 'ORDERING CONSTRAINT, not an exclusion' in the admit script's own output is not itself evidence the cycle-plan consumer treats it that way -- check the case arm's bypass logic independently before trusting the reason prose.",
+      "category": "PATTERN",
+      "source_artifact": "specs/687_whole_tree_sentinel_self_collision/reports/01_sentinel-self-collision-fix.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrate-batch-admit", "orchestrate-cycle-plan", "defer_reason", "file_scope", "dispatch-serialization"]
+    },
+    {
+      "content": "scripts/lib/file-scope-overlap.sh is the single source of truth for the file_scope Overlap predicate (scopes_overlap_first), spliced via $FILE_SCOPE_OVERLAP_JQ_DEFS into any consumer's own jq -n program. A fix to the predicate's match clause reaches every splicing consumer (confirmed: orchestrate-batch-admit.sh and lint/lint-roadmap-batch-proposals.sh) with zero parallel edit -- always check this file first before assuming a file-scope-comparison bug needs fixing in each consumer separately.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/687_whole_tree_sentinel_self_collision/reports/01_sentinel-self-collision-fix.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["file-scope-overlap", "shared-comparator", "jq-splice", "single-source-of-truth"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 687 to create implementation plan"
+}
