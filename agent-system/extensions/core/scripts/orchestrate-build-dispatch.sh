@@ -928,7 +928,7 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   echo "\`kind: win\` entries are recorded on equal footing with \`kind: issue\` — positive signal"
   echo "(something that worked well, saved time) has a home here too. A recording failure must"
   echo "never fail this dispatch. This log is CAPTURE ONLY: nothing here is surfaced mid-run or"
-  echo "acted on. For the full field schema, the severity scale, and the 17-class seed enum, see"
+  echo "acted on. For the full field schema, the severity scale, and the 18-class seed enum, see"
   echo "\`context/formats/issue-log.md\`."
   echo ""
   if [ -n "$territory" ]; then

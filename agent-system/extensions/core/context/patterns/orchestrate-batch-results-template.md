@@ -288,7 +288,7 @@ awaiting the batched, dedup-aware consumer, `/distill --meta`.
 citations now durable in `specs/events.jsonl` (`event_type: "conclusion_proposal_recorded"`),
 awaiting the batched, dedup-aware consumer, `/distill --meta`.
 
-**Unknown-class tally**: {unknown_classes_table} — one row per `class` outside the 17-class seed
+**Unknown-class tally**: {unknown_classes_table} — one row per `class` outside the 18-class seed
 enum, with its cross-task count.
 
 **Implicit-open count**: {implicit_open_count} — candidates above that reached classification

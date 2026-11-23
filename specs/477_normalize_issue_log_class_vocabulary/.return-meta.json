@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/477_normalize_issue_log_class_vocabulary/plans/01_class-vocabulary-normalization.md",
-      "summary": "6-phase, 7-hour plan: promote `scope excursion` into the seed enum and reconcile the count across 10 files, add grouping-time case/separator folding plus an empty alias table to the aggregator's jq pipeline, reject repeated `--tasks` with the flag audit recorded, give `class` a shape convention and append-time warnings, add 10 regression cases, then redeploy and re-verify against the deployed copies."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795400947_bb64cf_477",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7,
-    "dependency_waves": 5
+    "session_id": "sess_1795400947_bb64cf",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "Core's shell regression suites resolve their subject script deploy-tree-first, so a source-store edit under agent-system/extensions/core/ is INVISIBLE to them until a redeploy -- a suite run before the deploy is a vacuous pass on the stale deployed copy. lib/common.sh's common_test_resolve_subject honors a CORE_TEST_SUBJECT_MODE=source-store environment override for exactly that case (it overrides only the deploy-tree-first PREFERENCE, never a hard `deployed`/`source-store` caller), and the suites copy the resolved script into a scratch .claude/scripts/ tree so deploy-root-guard.sh still passes. Verified live: test-orchestrate-conclusion-aggregate.sh runs 15/15 green against the source store with no deploy. Planning consequence: source-store script edits do NOT need a deploy per phase to be verifiable -- export the override in each pre-deploy phase and re-run the suites once in default mode after the final deploy, which is also what distinguishes a real green from the vacuous one.",
-      "category": "PATTERN",
-      "source_artifact": "specs/477_normalize_issue_log_class_vocabulary/plans/01_class-vocabulary-normalization.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["CORE_TEST_SUBJECT_MODE", "source-store", "deploy-tree-first", "vacuous pass", "common_test_resolve_subject", "verification tier"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 477 to execute the plan",
-  "dispatch_seq": 4
+  "dispatch_seq": 6
 }

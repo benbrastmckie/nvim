@@ -13,7 +13,7 @@
 #   orchestrate-conclusion-aggregate.sh --aggregate --session SID --tasks "N N N"
 #       Reads every listed task's specs/{NNN}_{SLUG}/issues.jsonl (when present), groups
 #       open/worked_around entries by class across tasks into proposals, separates kind:"win"
-#       entries, tallies classes outside the 17-class seed enum, and lists touched tasks with
+#       entries, tallies classes outside the 18-class seed enum, and lists touched tasks with
 #       no contribution. A null or omitted `resolution` on a non-win entry is read identically to
 #       `"open"`, so it enters classification rather than being silently dropped; the output's
 #       `implicit_open_count` field reports how many candidates arrived that way, informational
@@ -182,7 +182,7 @@ if [ "$MODE" = "aggregate" ]; then
     exit 1
   fi
 
-  # Seed enum (17 classes; context/formats/issue-log.md is authoritative -- kept in sync by hand,
+  # Seed enum (18 classes; context/formats/issue-log.md is authoritative -- kept in sync by hand,
   # same convention as issue-record.sh's own comment-only copy).
   SEED_CLASSES_JSON='[
     "design-record defect or ambiguity",
@@ -201,7 +201,8 @@ if [ "$MODE" = "aggregate" ]; then
     "stale workaround",
     "cost-forced exclusion or substituted verification",
     "infrastructure/transport unavailable",
-    "knowledge-capture gap"
+    "knowledge-capture gap",
+    "scope excursion"
   ]'
 
   entries_tmp="$(mktemp)"

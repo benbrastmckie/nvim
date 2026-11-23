@@ -120,7 +120,7 @@ entry (or more, if a task logged the class more than once).
 `issue-record.sh`'s `class` field is deliberately open, not a closed enum (see
 `context/formats/issue-log.md`'s "Extensibility Rule"). This stage is the consumer that discharges
 the obligation that document already records: it tallies, across every touched task, every entry
-whose `class` falls outside the 17-class seed enum in `context/formats/issue-log.md`, and reports
+whose `class` falls outside the 18-class seed enum in `context/formats/issue-log.md`, and reports
 the tally (class name and per-class count) alongside the three channels. A class that recurs often
 enough across invocations is a candidate for promotion into that document's seed list in a future
 revision — that promotion is a documentation change there, never an enforcement change in the

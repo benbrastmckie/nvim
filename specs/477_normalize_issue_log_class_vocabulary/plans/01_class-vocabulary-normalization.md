@@ -1,7 +1,7 @@
 # Implementation Plan: Task #477
 
 - **Task**: 477 - Normalize issue-log class vocabulary; reject the conclusion aggregator's malformed `--tasks` call shape
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/477_normalize_issue_log_class_vocabulary/reports/01_issue_log_class_vocabulary.md
@@ -227,39 +227,39 @@ vacuous pass on a stale copy and must not be read as evidence.**
 
 ---
 
-### Phase 1: Promote `scope excursion` and reconcile the seed-enum count [NOT STARTED]
+### Phase 1: Promote `scope excursion` and reconcile the seed-enum count [COMPLETED]
 
 **Goal**: `scope excursion` becomes the 18th seed class, and every file in the source store that
 states the enum's size agrees.
 
 **Tasks**:
 
-- [ ] Re-run `grep -rn "17-class\|17 classes\|17 class" agent-system/extensions/core/` and record
-      the baseline occurrence set before editing.
-- [ ] `context/formats/issue-log.md`: add the 18th gloss-table row for `scope excursion` —
+- [x] Re-run `grep -rn "17-class\|17 classes\|17 class" agent-system/extensions/core/` and record
+      the baseline occurrence set before editing. *(completed)*
+- [x] `context/formats/issue-log.md`: add the 18th gloss-table row for `scope excursion` —
       "A touched file or action fell outside the task's declared `file_scope`; written mechanically
       by the scoped-commit tooling (`git-commit-phase.sh`, `git-commit-scoped.sh`) when a file is
       dropped from a commit pathspec for this reason, and by an agent recording the same thing by
       hand." State the canonical spelling explicitly in the surrounding prose: lowercase, a single
-      space, no hyphen and no underscore.
-- [ ] `context/formats/issue-log.md`: update the section heading, the derivation paragraph beneath
+      space, no hyphen and no underscore. *(completed)*
+- [x] `context/formats/issue-log.md`: update the section heading, the derivation paragraph beneath
       it, the `class` row of the Entry Field Table, the Extensibility Rule's "17 seed classes", and
       the Unknown-Class Tally's "17-class seed list". Extend the derivation paragraph in its
       existing register (a present-tense statement of where the class comes from, not a narration
-      of this document's own drafts).
-- [ ] `scripts/issue-record.sh`: add the entry to the `ISSUE_SEED_CLASSES` array and to the
-      comment-only copy above it; update the header reference and the stderr warning text.
-- [ ] `scripts/orchestrate-conclusion-aggregate.sh`: add the entry to `SEED_CLASSES_JSON`; update
-      the header reference and the comment above the literal.
-- [ ] `scripts/orchestrate-build-dispatch.sh`: update the injected dispatch-file text.
-- [ ] `scripts/tests/test-orchestrate-build-dispatch.sh`: update the assertion *message* text (the
-      assertion itself tests for an unrelated string and does not change).
-- [ ] `context/contracts/conclusion-stage.md`, `context/contracts/phase-closure.md`,
+      of this document's own drafts). *(completed)*
+- [x] `scripts/issue-record.sh`: add the entry to the `ISSUE_SEED_CLASSES` array and to the
+      comment-only copy above it; update the header reference and the stderr warning text. *(completed)*
+- [x] `scripts/orchestrate-conclusion-aggregate.sh`: add the entry to `SEED_CLASSES_JSON`; update
+      the header reference and the comment above the literal. *(completed)*
+- [x] `scripts/orchestrate-build-dispatch.sh`: update the injected dispatch-file text. *(completed)*
+- [x] `scripts/tests/test-orchestrate-build-dispatch.sh`: update the assertion *message* text (the
+      assertion itself tests for an unrelated string and does not change). *(completed)*
+- [x] `context/contracts/conclusion-stage.md`, `context/contracts/phase-closure.md`,
       `context/standards/error-recovery-strategies.md`,
-      `context/patterns/orchestrate-batch-results-template.md`: update each restatement.
-- [ ] `index-entries.json`: update the `context/formats/issue-log.md` entry's summary string.
-- [ ] Confirm no file landing under `agent-system/**` gained a task-number reference or any
-      record-versioning language.
+      `context/patterns/orchestrate-batch-results-template.md`: update each restatement. *(completed)*
+- [x] `index-entries.json`: update the `context/formats/issue-log.md` entry's summary string. *(completed)*
+- [x] Confirm no file landing under `agent-system/**` gained a task-number reference or any
+      record-versioning language. *(completed)*
 
 **Timing**: 1 hour
 
