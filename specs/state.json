@@ -20369,9 +20369,9 @@
           "summary": "Seven-phase plan for review-stack preparation, restack, handoff and /merge stack mode."
         },
         {
-          "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
+          "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
           "type": "handoff",
-          "summary": "Phase 1 completion state, key decisions, and the Phase 2 starting point."
+          "summary": "Phase 2 completion state, key decisions (selection gather-vs-validate split, the 5 Phase-1 assertions repointed to show, the untested --order chain simplification, the untested pull-in refusal branch), and the Phase 3 starting point."
         }
       ],
       "next_artifact_number": 2

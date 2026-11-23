@@ -211,7 +211,7 @@ VERIFICATION CRITERIA THIS TASK OWNS:
 - **Dependencies**: Task 673
 - **Research**: [685_stack_pr_submission_from_integration_branch/reports/01_stack-pr-submission.md]
 - **Plan**: [685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md]
-- **Handoff**: [685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md]
+- **Handoff**: [685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md]
 
 **Description**: Cut review branches and submit a stack of PRs from landed integration-branch work
 

@@ -1,22 +1,22 @@
 {
   "status": "partial",
-  "dispatch_seq": 22,
+  "dispatch_seq": 24,
   "partial_progress": {
-    "stage": "phase_1_of_7_complete",
-    "details": "Phase 1 (review-base declaration, resolution and refusals) is [COMPLETED] and committed with full scoped verification. Phases 2-7 (unit selection/ordering, the cut/manifest, restack, handoff integration, /merge stack mode, redeploy + second-repository demonstration) remain -- each is substantial git-plumbing and test-fixture work the plan itself estimates at roughly 9 of its 10.5 hours. Closing here depth-first after one fully-verified phase rather than rushing the remaining six in the same dispatch.",
-    "handoff_path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
-    "phases_completed": 1,
+    "stage": "phase_2_of_7_complete",
+    "details": "Phase 2 (unit selection and stack ordering) is [COMPLETED] and committed with full scoped verification, on top of the already-completed Phase 1. Phases 3-7 (the cut/manifest ref-writing, restack, handoff integration, /merge stack mode, redeploy + second-repository demonstration) remain -- each is substantial git-plumbing and test-fixture work. Closing here depth-first after one fully-verified phase rather than rushing the remaining five in the same dispatch.",
+    "handoff_path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
+    "phases_completed": 2,
     "phases_total": 7
   },
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
-      "summary": "Phase 1 completion state, key decisions (exit-inside-subshell bug and fix, upstream-remote resolution avoiding the literal word, manual deploy-copy for live testing), and the Phase 2 starting point."
+      "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
+      "summary": "Phase 2 completion state, key decisions (selection gather-vs-validate split, the 5 Phase-1 assertions repointed to show, the untested --order chain simplification, the untested pull-in refusal branch), and the Phase 3 starting point."
     }
   ],
   "completion_data": {
-    "completion_summary": "Implemented and fully verified Phase 1 of 7: review-stack-prepare.sh now resolves the integration branch, review base (PD1, 5 refusals), remote, and platform (PD9, 3 refusals) for its four subcommands, backed by a 19-case fixture suite, repo-level-declarations.md documentation, and manifest/suite-classification registration. Committed cleanly; phases 2-7 remain for a follow-up dispatch."
+    "completion_summary": "Implemented and fully verified Phase 2 of 7: review-stack-prepare.sh's cut now selects tasks (--milestone/--batch/--tasks), attributes each to a landing proof or a fallback commit-subject convention, merges shared_paths/--merge pairs into units, pulls in an unmerged path-overlapping earlier task, groups units into components over dependency edges and path overlap, orders each component topologically with an ancestry tie-break and a contradiction refusal, and assigns each unit a branch and a base -- printing the result, writing nothing. Suite grew from 19 to 28 cases, all passing; committed cleanly. Phases 3-7 remain for a follow-up dispatch."
   },
   "modified_files": [
     "agent-system/extensions/core/scripts/review-stack-prepare.sh",
@@ -27,60 +27,67 @@
   ],
   "memory_candidates": [
     {
-      "content": "In bash, a resolver function that must be able to refuse via `exit N` should never be called inside `$(...)` command substitution: `exit` inside a command-substitution subshell only terminates that subshell, so the refusal's exit code never reaches the calling script's own exit status (it silently continues with exit 0). Fix: have the resolver set a global variable and call it as a plain statement, never captured via `$(...)`.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["bash", "command-substitution", "subshell", "exit-code", "refusal-pattern"]
+      "content": "When a plan phase adds a new mandatory input (e.g. a required selection flag) to a subcommand whose earlier resolution stages an existing test suite already exercises with that input absent, split the new requirement into a non-refusing 'gather' step (runs early, so later resolvers that want the new input's value can use it when present) and a separate 'validate' step (refuses on absence, called only from the new feature's own body, after the pre-existing resolvers run). This keeps every pre-existing success/refusal assertion reachable unchanged instead of needing to retrofit a selection onto fixtures that were never about selection.",
+      "category": "PATTERN",
+      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["cli-design", "backward-compatibility", "refusal-ordering", "test-suite-stability", "bash"]
     },
     {
-      "content": "To resolve a git branch's configured remote without ever typing the literal word 'upstream' (useful when a static-assertion suite forbids hardcoded remote/branch-name literals including that word), use `git config --get branch.<name>.remote` instead of `<branch>@{upstream}` ref syntax -- same information, no literal keyword in the source.",
+      "content": "A simple bash union-find for grouping a small set of string/number keys (e.g. task numbers merging into review units): two associative-array functions, uf_find (recursive, path-compressing, lazily initializing UF_PARENT[x]=x on first touch) and uf_union (union the two roots), called as plain statements since bash functions return values via stdout capture, which this pattern avoids on the hot path by using a parent-pointer array instead.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
+      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["bash", "union-find", "associative-array", "grouping", "disjoint-set"]
+    },
+    {
+      "content": "To generate genuine 'observed failing before passing' evidence for a verification criterion after a feature was authored in one complete draft (rather than incrementally red-green), temporarily neutralize the specific guard function with a one-line sed substitution (e.g. replacing a call with ':' plus a comment), re-run the suite to confirm the targeted case fails for the expected reason, then restore the backup and re-run to confirm it passes again. Cheap, and keeps the verification claim honest rather than asserting a TDD sequence that did not actually happen.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
       "confidence": 0.75,
-      "suggested_keywords": ["git", "remote-resolution", "upstream", "static-assertion", "hardcoded-name"]
+      "suggested_keywords": ["tdd-evidence", "verification", "shell-testing", "regression-check"]
     }
   ],
   "sapience_notes": [
     {
-      "subject": "Claude Code harness Bash tool auto-backgrounding threshold",
-      "value": "A foreground Bash tool call that produces no stdout/stderr for roughly 180 seconds gets auto-converted to a backgrounded task by the harness, regardless of the `timeout` parameter's value (observed at timeout=290000ms and again at timeout=540000ms, both converted at ~180s). Raising the `timeout` parameter alone does not prevent this; the trigger is output silence, not elapsed time against the timeout ceiling.",
+      "subject": "cut subcommand selection resolution ordering for the stack-PR-submission task",
+      "value": "review-stack-prepare.sh's cut subcommand gathers its selection (--milestone/--batch/--tasks) before resolving the integration branch, review base, remote and platform, but only VALIDATES that selection (refusing when absent or empty) after those four resolvers run and inside cut's own body. The first draft validated immediately on gathering and broke every one of the prior phase's success/refusal assertions that call cut with no selection at all to exercise those shared resolvers.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh, rsp_gather_selection/rsp_validate_selection"
+    },
+    {
+      "subject": "git merge-base --is-ancestor as the landing-order comparator",
+      "value": "Two commits' chronological landing order on a linear branch is correctly compared with `git merge-base --is-ancestor A B` (true iff A happened before B on that branch), independent of commit timestamps; a test fixture that wants to control 'landing order' must control which stack_commit call runs first, not timestamp fields, since both commits can be made within the same second.",
       "predicate": "measured fact is",
       "ko_type": "finding",
       "confidence": 0.85,
-      "source_loc": "specs/685_stack_pr_submission_from_integration_branch dispatch 22 transcript"
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh, rsp_check_order_contradictions and rsp_topo_sort_component"
     },
     {
-      "subject": "verify-touched.sh scoped check duration under a busy multi-task session",
-      "value": "A Batch Gate Deferral scoped verify-touched.sh invocation (no arguments) for a registration-surface-touching phase (manifest.json, suite-classification.data) selected 139+98=237 suites across two internal run-all.sh invocations and took roughly 15 minutes wall-clock in a session with ~20 concurrent sibling dispatches, dominated by a handful of load-sensitive serialized suites (test-state-write-concurrency.sh, test-state-write-regen-timing.sh, test-four-tier-conflict.sh, test-run-all-parallel.sh, test-gate-lock.sh) that it explicitly runs outside the parallel pool.",
+      "subject": "verify-touched.sh OWED-NOT-PAID fallback recurring across two phases of the same task",
+      "value": "review-stack-prepare.sh and its suite remain unmapped by suite_selection_select even after a second phase of edits (0 suites selected, 2 owed, across 2 touched paths); the OWED-NOT-PAID fallback battery (98 suites) ran instead of a targeted set, and passed cleanly, matching the same shape the prior phase of this same task observed with a different fallback battery size (237 suites, when manifest.json/suite-classification.data were also touched).",
       "predicate": "measured fact is",
       "ko_type": "finding",
-      "confidence": 0.8,
-      "source_loc": "specs/685_stack_pr_submission_from_integration_branch dispatch 22 transcript"
+      "confidence": 0.75,
+      "source_loc": "specs/685_stack_pr_submission_from_integration_branch dispatch 24 transcript"
     },
     {
-      "subject": "review_base declaration decision for the stack-PR-submission task",
-      "value": "The bottom PR of a review-branch stack merges into a declared review_base distinct from the integration branch (a new top-level .claude-extensions.json key, beside integration_branch), per a relayed user answer in cycle 9. A repository whose integration branch would also be its review base gets a refusal and no PRs prepared, rather than silently substituting the integration branch.",
+      "subject": "branch slug for a merged review unit",
+      "value": "When two or more tasks merge into one review unit (via shared_paths or --merge), the unit's branch slug is taken from the lowest-numbered member task only, not a concatenation of every member's slug. Chosen to keep branch names bounded in length and because the plan's own wording names a single 'task slug', not a joined one.",
       "predicate": "decision is",
       "ko_type": "decision",
-      "confidence": 0.9,
-      "source_loc": "specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md, decision PD1"
-    },
-    {
-      "subject": "run-all.sh output buffering under a detached background invocation",
-      "value": "run-all.sh's own stdout appears to buffer heavily when invoked via nohup with stdout/stderr redirected to a file: a log file can sit static for 10+ minutes mid-run with no new [RUN]/[PASS] lines even though many suites are completing internally, then emit a large burst of buffered lines once the whole invocation finishes. Liveness must be checked via the process's own PID (kill -0), never inferred from log-file growth.",
-      "predicate": "measured fact is",
-      "ko_type": "finding",
       "confidence": 0.7,
-      "source_loc": "specs/685_stack_pr_submission_from_integration_branch dispatch 22 transcript"
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh, rsp_build_units"
     },
     {
-      "subject": "cslib /pr command's portability for the stack-PR-submission task",
-      "value": "The cslib extension's /pr command (the only existing PR-stacking machinery in this repository) was ruled not portable to core: it is prose run by a model, creates branches by checkout (forbidden by the ref-plumbing-landing concurrency-safety property in a shared working tree), and resolves bases via a forge read rather than a local manifest. core's review-stack-prepare.sh is therefore its own small implementation (decision PD2), reusing only two ideas from /pr: a chained base as the stacking primitive, and a 'Relationship to other PRs' body section.",
-      "predicate": "decision is",
-      "ko_type": "decision",
-      "confidence": 0.85,
-      "source_loc": "specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md, decision PD2"
+      "subject": "untested paths in the stack-PR-submission task's unit-selection phase",
+      "value": "Two code paths in review-stack-prepare.sh's cut selection/ordering body have no suite case yet: the --order flag's single-chain override across multiple components, and the earlier-unmerged-task pull-in's refusal branch for an unselectable match (every landing-proof entry the scan finds is, by construction, resolvable, so only the pull-in path -- not the refusal path -- is currently reachable). Both are candidates for a case before a later phase relies on them.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.75,
+      "source_loc": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md"
     }
   ]
 }
