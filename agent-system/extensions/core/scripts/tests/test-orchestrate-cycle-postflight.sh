@@ -5118,20 +5118,32 @@ fi
 common_test_info "Case 997: the completion commit's body carries the landing proof's phase list and commit list"
 setup_sandbox
 write_leftover_fixture 997 implemented
-mkdir -p "$WORKDIR/specs/.orchestration/batch"
-cat > "$WORKDIR/specs/.orchestration/batch/sess_997.json" <<'RECEOF'
-{"schema": 1, "session_id": "sess_997", "task_numbers": [997], "admitted_at": "2026-01-01T00:00:00Z",
- "integration_branch": "trunk",
- "landing_proofs": [{"task_number": 997, "session_id": "sess_997", "integration_branch": "trunk",
-   "commits": ["1111111111111111111111111111111111111111", "2222222222222222222222222222222222222222"],
-   "end_commit": "2222222222222222222222222222222222222222",
-   "tip_at_verification": "3333333333333333333333333333333333333333",
-   "paths": ["src/work.sh"], "shared_paths": [],
-   "phases": [{"phase": "1", "name": "Build the thing"}, {"phase": "2", "name": "Polish the thing"}],
-   "source_store_commits": [{"repository": "second-repo", "commit": "abc123"}]}]}
-RECEOF
+mkdir -p "$WORKDIR/specs/997_candidate/plans" "$WORKDIR/specs/.orchestration/batch"
+cat > "$WORKDIR/specs/997_candidate/plans/01_x.md" <<'PLANEOF'
+# Implementation Plan: candidate
+
+- **Status**: [IMPLEMENTING]
+
+### Phase 1: Build the thing [COMPLETED]
+
+### Phase 2: Polish the thing [COMPLETED]
+PLANEOF
+jq '. + {source_store_commits: [{repository: "second-repo", commit: "abc123"}]}' \
+  "$WORKDIR/specs/997_candidate/.return-meta.json" > "$WORKDIR/specs/997_candidate/.return-meta.json.new" \
+  && mv "$WORKDIR/specs/997_candidate/.return-meta.json.new" "$WORKDIR/specs/997_candidate/.return-meta.json"
+jq -n --arg b "$(git -C "$WORKDIR" symbolic-ref --short HEAD)" \
+  '{schema: 1, session_id: "sess_997", task_numbers: [997], admitted_at: "2026-01-01T00:00:00Z",
+    integration_branch: $b, integration_branch_declared: false, landing_proofs: []}' \
+  > "$WORKDIR/specs/.orchestration/batch/sess_997.json"
 run_leftover_sut 997
+leftover_997=$(git -C "$WORKDIR" log -1 --format=%H --grep="$LEFTOVER_SUBJECT")
 body_997=$(git -C "$WORKDIR" log -1 --format=%B --grep='complete implementation')
+if [ "$(jq -r '.landing_proofs | length' "$WORKDIR/specs/.orchestration/batch/sess_997.json")" = "1" ] \
+   && [ "$(jq -r '.landing_proofs[0].end_commit' "$WORKDIR/specs/.orchestration/batch/sess_997.json")" = "$leftover_997" ]; then
+  common_test_pass "case 997: the status write recorded one landing proof whose end commit is the leftover-work commit"
+else
+  common_test_fail "case 997: expected one landing proof ending at the leftover-work commit, got: $(cat "$WORKDIR/specs/.orchestration/batch/sess_997.json") ($LAST_STDERR)"
+fi
 if [ "$(git -C "$WORKDIR" log -1 --format=%s)" = "task 997: complete implementation" ] \
    && grep -q -- "- Phase 1: Build the thing" <<< "$body_997" \
    && grep -q -- "- Phase 2: Polish the thing" <<< "$body_997"; then
@@ -5139,8 +5151,8 @@ if [ "$(git -C "$WORKDIR" log -1 --format=%s)" = "task 997: complete implementat
 else
   common_test_fail "case 997: expected the phase list in the completion commit body, got: $body_997 ($LAST_STDERR)"
 fi
-if grep -q -- "- 1111111111111111111111111111111111111111" <<< "$body_997" \
-   && grep -q "End commit: 2222222222222222222222222222222222222222" <<< "$body_997" \
+if [ -n "$leftover_997" ] && grep -q -- "- ${leftover_997}" <<< "$body_997" \
+   && grep -q "End commit: ${leftover_997}" <<< "$body_997" \
    && grep -q -- "- second-repo abc123" <<< "$body_997"; then
   common_test_pass "case 997: the body lists the attributed commits, the end commit and the second-repository commit"
 else

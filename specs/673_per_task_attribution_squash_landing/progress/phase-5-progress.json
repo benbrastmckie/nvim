@@ -1,0 +1,69 @@
+{
+  "phase": 5,
+  "phase_name": "The gate at the completion choke point",
+  "started_at": "2026-11-23T12:33:49Z",
+  "last_updated": "2026-11-23T12:33:49Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Measure the suites that drive an implement postflight and run them green before the gate",
+      "status": "done",
+      "files_touched": [],
+      "note": "32 suites match the five-name pattern; 10 build a git fixture. Baseline source-store run before the gate: 31 passed, 0 failed, 1 skipped (test-orchestrate-close-status-bind.sh lacks its exec bit; predates this dispatch)."
+    },
+    {
+      "id": 2,
+      "description": "Gate block (PHASE 0.6) after the completion-deploy gate, exit 7, header exit-code entry",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-task-status.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "test-postflight-landing-gate.sh with the observed-failing negative fixture",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-postflight-landing-gate.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Repair fixtures the gate refuses; re-run the measured list",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+      ],
+      "note": "One fixture needed repair: case 997 of the cycle-postflight suite (written in Phase 4 with a pre-seeded fake proof and a branch name the sandbox does not use). It is now an end-to-end case: leftover commit, gate, recorded proof, commit body. No pre-existing fixture was refused: none of their task entries carries a created timestamp and none is listed in a batch record, so the predicate reports them inconclusive and passes through. test-update-task-status.sh needed no edit."
+    },
+    {
+      "id": 5,
+      "description": "Lock-order check",
+      "status": "done",
+      "files_touched": [],
+      "note": "The predicate takes and releases specs/.commit-lock inside PHASE 0.6, before update_state_json reaches state-write.sh; the commit mutex is never held across the state mutex in this script. The only non-test exporter of SCOPE_MUTEX_HELD around an update-task-status.sh call is orchestrator-postflight.sh, which calls it for research and plan only (the gate is not reached) and has no live caller. git-commit-scoped.sh exports COMMIT_MUTEX_HELD only around its own body and does not call the status script."
+    },
+    {
+      "id": 6,
+      "description": "Register the suite in manifest.json and suite-classification.data",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.5",
+      "description": "Repair every existing fixture the gate now refuses by giving it the commits a real task would have",
+      "type": "altered",
+      "reason": "No pre-existing fixture is refused, because the predicate passes a task with neither a created timestamp nor a batch record through as inconclusive (the Phase 2 bound decision). Only this task own case 997 was repaired. test-update-task-status.sh, listed in the phase file list, was not edited.",
+      "annotation": "*(deviation: altered — no pre-existing fixture is refused (their tasks have no created timestamp and no batch record, so the predicate is inconclusive); only case 997 was repaired; test-update-task-status.sh not edited)*"
+    }
+  ],
+  "verification": "SCOPED DISCHARGE of a full-tier phase under the Batch Gate Deferral: the complete gate set is deferred to the batch-level stage and was not run here. verify-touched.sh cannot discharge it before the redeploy (the deployed runner rejects the two undeployed suites by name and would test deployed copies that lack the gate), so the scoped tier was the source-store run-all.sh over the measured 32-suite list plus test-postflight-landing-gate.sh, test-task-landing-verify.sh, test-lint-unit-integration-boundary.sh and test-manifest-scripts-sync.sh: 33 passed, 1 skipped, 2 failed. Failure 1, test-orchestrate-cycle-postflight.sh case 997, was repaired and the suite re-run 374/374. Failure 2, test-lint-unit-integration-boundary.sh live-corpus case, reads the deployed tree and names 5 unclassified suites that predate this dispatch. test-postflight-landing-gate.sh 34/34 with both negative observations recorded; sync-manifest-scripts --check passed.",
+  "handoff_count": 0
+}

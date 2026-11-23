@@ -387,37 +387,37 @@ so this phase changes no live behaviour except the body.
 
 ---
 
-### Phase 5: The gate at the completion choke point [NOT STARTED]
+### Phase 5: The gate at the completion choke point [COMPLETED]
 
 **Goal**: `update-task-status.sh postflight <N> implement` refuses with exit 7, writing nothing,
 whenever the predicate refuses. From this phase on, two pre-completion landing checks run side
 by side in the cycle postflight.
 
 **Tasks**:
-- [ ] Before editing, measure the blast radius: list the suites that drive an implement
+- [x] Before editing, measure the blast radius: list the suites that drive an implement
       postflight (`grep -lE` for `update-task-status.sh`, `skill_postflight_update`,
       `reconcile-task-status.sh`, `command-gate-out.sh` and `orchestrate-cycle-postflight.sh`
-      over `scripts/tests/`), run them green, and note which build a `git` fixture.
-- [ ] Add a block after the completion-deploy gate, under the same guard
+      over `scripts/tests/`), run them green, and note which build a `git` fixture. *(completed)*
+- [x] Add a block after the completion-deploy gate, under the same guard
       (`postflight`, `implement`, not a state no-op, not `--dry-run` for the recording half):
       invoke the sibling `task-landing-verify.sh` in verify-and-record mode with the task's
       `.return-meta.json` as the modified-files source. Exit 10 to 13 from it: print the
       refusal, state that no `state.json` write and no plan-file stamp occurred, and `exit 7`.
       Exit 0: proceed. Exit 2 or a missing sibling script: one named inconclusive line, proceed
-      (D5). Under `--dry-run` call `--check` and report what would happen.
-- [ ] Add exit 7 to the script's header exit-code table, in the same style as exit 6.
-- [ ] Write `scripts/tests/test-postflight-landing-gate.sh`: a completion with landed work
+      (D5). Under `--dry-run` call `--check` and report what would happen. *(completed)*
+- [x] Add exit 7 to the script's header exit-code table, in the same style as exit 6. *(completed)*
+- [x] Write `scripts/tests/test-postflight-landing-gate.sh`: a completion with landed work
       writes `completed` and one proof; work left uncommitted refuses with exit 7 and leaves
       `state.json` and the plan file byte-identical (the negative fixture for the owned
       criterion: observe it writing `completed` with the gate block absent, record that
       observation as a `win` entry, then observe exit 7 with it present); the reconcile
       promotion path (`reconcile-task-status.sh`) is refused the same way; a second call after
-      completion is a no-op; a non-`git` root passes through; `--dry-run` writes nothing.
-- [ ] Repair every existing fixture the gate now refuses by giving it the commits a real task
-      would have, never by weakening the gate. Re-run the measured suite list.
-- [ ] Check lock order: no path holds `specs/.commit-lock` while waiting for the status
-      script's own lock, and the reverse nesting occurs at one site only.
-- [ ] Register the new suite in `manifest.json` and `suite-classification.data`.
+      completion is a no-op; a non-`git` root passes through; `--dry-run` writes nothing. *(completed)*
+- [x] Repair every existing fixture the gate now refuses by giving it the commits a real task
+      would have, never by weakening the gate. Re-run the measured suite list. *(deviation: altered — no pre-existing fixture is refused (their tasks have no created timestamp and no batch record, so the predicate is inconclusive); only case 997 was repaired; test-update-task-status.sh not edited)*
+- [x] Check lock order: no path holds `specs/.commit-lock` while waiting for the status
+      script's own lock, and the reverse nesting occurs at one site only. *(completed)*
+- [x] Register the new suite in `manifest.json` and `suite-classification.data`. *(completed)*
 
 **Timing**: 2 hours
 

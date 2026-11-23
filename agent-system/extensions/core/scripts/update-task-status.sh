@@ -46,6 +46,14 @@
 #       the deploy/regeneration script or the deploy-verification script itself. See
 #       context/patterns/batch-orchestration-guardrails.md's
 #       "### The Postflight Completion-Deploy Gate" subsection for the full contract.
+#   7 - Postflight landing gate refused the transition: scripts/task-landing-verify.sh found
+#       that the task's work is not verifiably on the integration branch, or that work remains
+#       in the working tree that no commit carries (see the "PHASE 0.6" block below, and that
+#       script's own header for the predicate). No state.json write and no plan-file status
+#       stamp occurred. Like exit 6 this gate is UNCONDITIONAL on postflight/implement; unlike
+#       exit 6 it is not an ordering constraint that a later deploy clears -- the predicate's
+#       own refusal line names the path or commit and the remedy, and the retry converges once
+#       that is fixed.
 #
 # Optional flag: --phase-check=warn|refuse
 #   Absent by default. When absent, this script behaves exactly as it did before the flag
@@ -1029,6 +1037,58 @@ if [[ "$operation" == "postflight" && "$target_status" == "implement" \
         fi
       fi
     fi
+  fi
+fi
+
+# ============================================================
+# PHASE 0.6: Postflight landing gate (unconditional, exit 7)
+# ============================================================
+# Refuses the postflight/implement transition when scripts/task-landing-verify.sh refuses: HEAD
+# is not on the integration branch, no commit there is attributable to the task, a path of the
+# task changed after the task's end commit, or work sits in the working tree that no commit
+# carries. That script's header states the predicate; this block only wires it ahead of the
+# state write. It sits here, and not at any one caller, because this script is the one site
+# every completion path reaches -- the cycle postflight, the reconcile promotion, the single-task
+# gate-out and the post-deploy checkpoint all end in this call.
+#
+# On a pass the predicate appends the task's landing proof to the batch record that lists the
+# task, under the specs/.commit-lock mutex, which it takes and releases itself before this
+# script reaches its own state write below: the commit mutex is never held across the state
+# mutex here. Under --dry-run the predicate runs read-only (--check): no proof, no mutex.
+#
+# Conclusiveness convention, the same as PHASE 0.5's: only the predicate's own refusal codes
+# (10 to 13) are conclusive. A predicate script absent beside this one, its usage or environment
+# error, and every case it reports as inconclusive itself (not a git work tree, a missing tool,
+# a task it cannot bound) pass through with one named line. `state_is_noop == true` is excluded
+# as above: a task already at its target status has nothing left to gate.
+if [[ "$operation" == "postflight" && "$target_status" == "implement" \
+      && "$state_is_noop" != "true" ]]; then
+  LANDING_VERIFY_SCRIPT="$SCRIPT_DIR/task-landing-verify.sh"
+  if [[ ! -f "$LANDING_VERIFY_SCRIPT" ]]; then
+    echo "[landing-check] Task $task_number: task-landing-verify.sh is not present beside this script -- inconclusive, passing through." >&2
+  else
+    LANDING_VERIFY_ARGS=("$task_number" --session "$session_id")
+    if [[ -n "${DEPLOY_CHECK_META_FILE:-}" && -f "${DEPLOY_CHECK_META_FILE:-}" ]]; then
+      LANDING_VERIFY_ARGS+=(--modified-files-from "$DEPLOY_CHECK_META_FILE")
+    fi
+    [[ "$DRY_RUN" == "true" ]] && LANDING_VERIFY_ARGS+=(--check)
+    LANDING_VERIFY_RC=0
+    bash "$LANDING_VERIFY_SCRIPT" "${LANDING_VERIFY_ARGS[@]}" || LANDING_VERIFY_RC=$?
+    case "$LANDING_VERIFY_RC" in
+      0) : ;;
+      10|11|12|13)
+        if [[ "$DRY_RUN" == "true" ]]; then
+          echo "[dry-run] Landing-check would block this transition: task-landing-verify.sh refused task $task_number (exit ${LANDING_VERIFY_RC}; see its LANDING-REFUSED line above)."
+        else
+          echo "Error: [landing-check] refusing postflight implement for task $task_number: the landing verification refused (task-landing-verify.sh exit ${LANDING_VERIFY_RC}; see its LANDING-REFUSED line above for the check, the path or commit, and the remedy)." >&2
+          echo "       No state.json write and no plan-file status stamp occurred." >&2
+          exit 7
+        fi
+        ;;
+      *)
+        echo "[landing-check] Task $task_number: task-landing-verify.sh exited ${LANDING_VERIFY_RC} -- inconclusive, passing through." >&2
+        ;;
+    esac
   fi
 fi
 

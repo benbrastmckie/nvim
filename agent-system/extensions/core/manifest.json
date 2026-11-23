@@ -466,6 +466,7 @@
       "tests/test-plan-file-scope-harvest.sh",
       "tests/test-please-grant.sh",
       "tests/test-postflight-deploy-gate.sh",
+      "tests/test-postflight-landing-gate.sh",
       "tests/test-postflight-marker-schema.sh",
       "tests/test-reconcile-demote-stranded.sh",
       "tests/test-reconcile-handoff-status.sh",
