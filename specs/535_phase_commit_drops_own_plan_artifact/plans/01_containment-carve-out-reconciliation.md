@@ -233,39 +233,40 @@ standing as the hypothesis they were.
 
 ---
 
-### Phase 2: Correct the containment filter's stated mechanism [NOT STARTED]
+### Phase 2: Correct the containment filter's stated mechanism [COMPLETED]
 
 **Goal**: Replace the false "structurally outside its reach" mechanism claim in
 `context/standards/git-staging-scope.md` with an accurate account of how the carve-out is
 achieved, reconciled with the correct sentence immediately preceding it.
 
 **Tasks**:
-- [ ] Re-read the "Staging-Layer Containment Filter (a Refinement of the Fail-Safe Direction
+- [x] Re-read the "Staging-Layer Containment Filter (a Refinement of the Fail-Safe Direction
       Above)" subsection in full, including the "The dispatching task's own resolved task
       directory is always an implicit, unconditional in-scope member" sentence that immediately
       precedes the false one, and the "Three Containment sites, not one" paragraph further down
-      that the correction must stay consistent with.
-- [ ] Replace the mechanism clause so it states what actually happens: the task's own resolved
+      that the correction must stay consistent with. *(completed)*
+- [x] Replace the mechanism clause so it states what actually happens: the task's own resolved
       task directory, `specs/TODO.md` and `specs/state.json` are explicit members of the array
       `is_contained()` iterates and ARE tested by it like any other entry — they pass because they
       are admitted, not because they are skipped. Make plain that admission into that array IS the
       mechanism by which they are "implicit, unconditional in-scope members", so the two adjacent
-      sentences read as one claim rather than two coexisting ones.
-- [ ] Distinguish the fourth path honestly: the plan path supplied via `--plan-path` is appended to
+      sentences read as one claim rather than two coexisting ones. *(completed)*
+- [x] Distinguish the fourth path honestly: the plan path supplied via `--plan-path` is appended to
       `stage_paths` on a separate code path and genuinely is never tested by the predicate — and
       that is harmless, because it is always a sub-path of the admitted task directory. State this
       once; it is the only one of the four for which the original "outside its reach" framing was
-      ever true.
-- [ ] Do not restate the policy conclusion — it is already correct in this subsection and
+      ever true. *(completed)*
+- [x] Do not restate the policy conclusion — it is already correct in this subsection and
       elsewhere in the document, and a second differently-worded convention is explicitly
-      unwanted.
-- [ ] Optionally (advisory, from the research report's Context Extension recommendation) note in
+      unwanted. *(completed: policy conclusion left untouched)*
+- [x] Optionally (advisory, from the research report's Context Extension recommendation) note in
       one sentence that the containment test is plain bash case-pattern matching rather than
       filesystem glob expansion, which is why a dotfile at any depth under an admitted directory
-      needs no separate carve-out. Keep it to one sentence or omit it.
-- [ ] Confirm the edited prose carries no task-number references and no record-versioning language
+      needs no separate carve-out. Keep it to one sentence or omit it. *(completed: one sentence
+      added)*
+- [x] Confirm the edited prose carries no task-number references and no record-versioning language
       (no "previously", "no longer", "formerly", "used to"): state the current mechanism directly,
-      with no reference to what the sentence used to say.
+      with no reference to what the sentence used to say. *(completed: confirmed by read-through)*
 
 **Timing**: 0.5 hours
 

@@ -359,10 +359,18 @@ the whole commit). An absent or empty declared `file_scope` fails OPEN: the comp
 runs, and nothing is dropped — a task with no declared `file_scope` commits exactly as it did
 before this filter existed. The dispatching task's own resolved task directory is always an
 implicit, unconditional in-scope member for this comparison (see
-`orchestrate-cycle-postflight.sh`'s item (h) header note for the whole-directory ruling). The
-four `specs/` carve-out paths (`TASK_DIR/`, `TODO.md`, `state.json`, and the plan path for
-`implement`) are never tested against this filter at all — they are appended to the staged set
-before the filtered loop runs, structurally outside its reach.
+`orchestrate-cycle-postflight.sh`'s item (h) header note for the whole-directory ruling). That
+membership is achieved by admission, not by exemption: the task's own resolved task directory,
+`specs/TODO.md`, and `specs/state.json` are explicit entries in the scope array each site's own
+containment predicate tests every candidate path against — `is_contained()`'s `file_scope_arr` at
+Site 2, the `effective_file_scope_json` comparison at Site 1, the equivalent array at Site 3 — and
+they pass because they are admitted into that array, not because the predicate skips over them.
+The one genuine exception among the four carve-out paths is the plan path supplied via
+`--plan-path`: inside `git-commit-phase.sh` that path is appended to `stage_paths` on a separate
+code path and is never tested by the predicate at all — harmless, because it is always a sub-path
+of the task directory the predicate already admits. The containment test itself is plain bash
+case-pattern matching against literal path strings, not filesystem glob expansion, so a dotfile
+at any depth under an admitted directory needs no separate carve-out of its own.
 
 **Empirical basis, and precisely what it does and does not show.** A dated observation
 (2026-10-04, in the Verification repository, `~/Projects/Logos/Verification`): a commit carried
