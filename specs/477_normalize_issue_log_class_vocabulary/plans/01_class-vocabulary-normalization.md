@@ -512,25 +512,25 @@ fails if its behavior regresses.
 
 ---
 
-### Phase 6: Redeploy and close [NOT STARTED]
+### Phase 6: Redeploy and close [COMPLETED]
 
 **Goal**: The deployed `.claude/` tree carries every change, the suites prove it against the
 deployed copy rather than the source store, and the full gate obligation is discharged.
 
 **Tasks**:
 
-- [ ] Run `timeout 540 bash agent-system/extensions/core/scripts/deploy-headless.sh` with the Bash
-      tool timeout raised to 600000, and confirm `RESULT=landed_verify_clean`.
-- [ ] Re-run both regression suites **with no `CORE_TEST_SUBJECT_MODE` set**, so they resolve the
+- [x] Run `timeout 540 bash agent-system/extensions/core/scripts/deploy-headless.sh` with the Bash
+      tool timeout raised to 600000, and confirm `RESULT=landed_verify_clean`. *(completed)*
+- [x] Re-run both regression suites **with no `CORE_TEST_SUBJECT_MODE` set**, so they resolve the
       deployed copies. This is the check that distinguishes every earlier phase's green from a
-      vacuous pass on a stale deploy.
-- [ ] Confirm `grep -rn "17-class\|17 classes\|17 class"` returns nothing under either
-      `agent-system/**` or `.claude/**`.
-- [ ] Confirm `.claude/context/index.json` carries the regenerated `issue-log.md` summary.
-- [ ] Run the scoped touched-path check over this task's own paths:
-      `bash .claude/scripts/verify-touched.sh <every path in this plan>`.
-- [ ] Defer the complete gate set to the orchestration close (Move 4) rather than invoking the full
-      battery independently here.
+      vacuous pass on a stale deploy. *(completed)*
+- [x] Confirm `grep -rn "17-class\|17 classes\|17 class"` returns nothing under either
+      `agent-system/**` or `.claude/**`. *(completed)*
+- [x] Confirm `.claude/context/index.json` carries the regenerated `issue-log.md` summary. *(completed)*
+- [x] Run the scoped touched-path check over this task's own paths:
+      `bash .claude/scripts/verify-touched.sh <every path in this plan>`. *(completed)*
+- [x] Defer the complete gate set to the orchestration close (Move 4) rather than invoking the full
+      battery independently here. *(completed)*
 
 **Timing**: 1 hour
 
@@ -558,20 +558,25 @@ containment check against this task's `file_scope`.
 
 ## Testing & Validation
 
-- [ ] (a) `COVERAGE_GAP` in one task's log and `coverage-gap` in another's group into ONE proposal.
-- [ ] (b) A repeated-`--tasks` call exits non-zero with a usage error and never a silent empty
-      result.
-- [ ] (c) The canonical `scope excursion` spelling validates against the seed enum.
-- [ ] (d) Stored `class` values in fixture `issues.jsonl` files are byte-identical before and after
-      an aggregate run.
-- [ ] (e) An unrecognized class still appears in the output rather than being dropped, and folding
-      equivalents of it do not double-count.
-- [ ] All three of the dispatch's free-text `class` examples produce an append-time warning naming
-      the class-shape convention, and all three are still appended.
-- [ ] `scope excursion` and `scope omission` remain separate proposals — the normalizer does not
-      over-merge.
-- [ ] No `17-class` restatement survives anywhere in either tree.
-- [ ] Both suites are green against the **deployed** copies after the redeploy.
+- [x] (a) `COVERAGE_GAP` in one task's log and `coverage-gap` in another's group into ONE proposal.
+      *(completed: test-orchestrate-conclusion-aggregate.sh case (o))*
+- [x] (b) A repeated-`--tasks` call exits non-zero with a usage error and never a silent empty
+      result. *(completed: case (p))*
+- [x] (c) The canonical `scope excursion` spelling validates against the seed enum.
+      *(completed: case (q))*
+- [x] (d) Stored `class` values in fixture `issues.jsonl` files are byte-identical before and after
+      an aggregate run. *(completed: case (r), the HARD CONSTRAINT)*
+- [x] (e) An unrecognized class still appears in the output rather than being dropped, and folding
+      equivalents of it do not double-count. *(completed: case (s))*
+- [x] All three of the dispatch's free-text `class` examples produce an append-time warning naming
+      the class-shape convention, and all three are still appended. *(completed:
+      test-issue-record.sh case (s))*
+- [x] `scope excursion` and `scope omission` remain separate proposals — the normalizer does not
+      over-merge. *(completed: test-orchestrate-conclusion-aggregate.sh case (t))*
+- [x] No `17-class` restatement survives anywhere in either tree. *(completed: Phase 6 grep,
+      verified empty across both agent-system/** and .claude/**)*
+- [x] Both suites are green against the **deployed** copies after the redeploy. *(completed:
+      21/21 and 27/27, no CORE_TEST_SUBJECT_MODE set)*
 
 ## Artifacts & Outputs
 
