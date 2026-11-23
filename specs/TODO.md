@@ -1,5 +1,5 @@
 ---
-next_project_number: 690
+next_project_number: 691
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 690
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,671,674,679,680,684,686,687,689 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,671,674,679,680,684,686,687,689,690 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,685 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,687 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -63,6 +63,7 @@ next_project_number: 690
 664 [NOT STARTED] — Add a /tmp sweep pass to /refresh for dead scratchpad...
 680 [NOT STARTED] — Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged...
 684 [NOT STARTED] — Sweep and fix stale command and sub-mode references across...
+690 [NOT STARTED] — milestone-ref-land.sh re-creates a deliberately retired...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
@@ -94,7 +95,7 @@ next_project_number: 690
 ### File Scope Lifecycle
 
 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
-687 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
+687 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
@@ -178,6 +179,26 @@ next_project_number: 690
 
 ## Tasks
 
+### 690. milestone-ref-land.sh re-creates a deliberately retired milestone ref
+- **Status**: [NOT STARTED]
+- **Task Type**: general
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in this repository, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
+
+THE DEFECT. milestone-ref-land.sh treats a MISSING refs/heads/milestone/<id> as a first landing: it asserts non-existence with an empty-oldvalue three-argument update-ref and creates the ref. So a milestone ref that was deliberately retired -- deleted after its content was superseded by stacked parts, with the pre-delete tip preserved under refs/backup/ -- comes back the next time ANY member task of that milestone completes, rebuilt commit by commit on top of the release-line base.
+
+MEASURED, in the consumer repository where it happened: a milestone ref was retired to a refs/backup/ ref, and three subsequent member-task landings re-created the branch with one commit each. The re-created branch is NOT an ancestor of either stacked part, so it has diverged from what the pull-request queue actually sends, and nothing may be pushed from it. Retiring it again only defers the problem: the next member landing re-creates it.
+
+OBJECTIVE: make a retirement durable. The landing script must distinguish '\''this milestone has never landed'\'' from '\''this milestone'\''s ref was deliberately retired'\'', and refuse to re-create in the second case rather than silently rebuilding a divergent branch. Decide and record the retirement marker'\''s representation (a refs/backup/ ref'\''s existence is one candidate; an explicit retired-state field in the milestone'\''s own entry is another) -- the choice is part of the work, not given here.
+
+REQUIRED NEGATIVE CONTROL: a test proving that a member task completing AFTER a retirement does not re-create the ref, alongside the existing first-landing case still creating it. Preserve the compare-and-swap discipline throughout: the script'\''s own header forbids any forced or non-compare-and-swap update-ref form, and that constraint is not relaxed by this fix.
+
+Keep the fix inside the landing path. A caller that deletes a ref is not the defect; re-creating one that was deliberately removed is.
+
+---
+
 ### 689. Oversized plan phase count advisory
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -230,7 +251,7 @@ CITATIONS -- issue-log entries this record is built from:
 ---
 
 ### 687. Whole tree sentinel self collision
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
