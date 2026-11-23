@@ -1,0 +1,39 @@
+{
+  "phase": 4,
+  "phase_name": "Register the backup class and reconcile its coupled surfaces",
+  "started_at": "2026-11-23T05:10:00Z",
+  "last_updated": "2026-11-23T05:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add untracked-backup as 28th ephemeral class member across all parallel arrays, generalize runtime_file_dir_basename_for_hit() for a glob-style basename, update header count/rationale, update orchestrator-runtime-files.md (Class Table row + regenerated fenced block) and checkpoint-before-overflow.md, regenerate specs/.gitignore and index-entries.json line counts, run runtime-file-tracking suite/lint, record postflight-sibling follow-up",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+        "agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md",
+        "agent-system/extensions/core/index-entries.json",
+        "specs/.gitignore"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "Regenerate this repository's specs/.gitignore managed block from the library via bash .claude/scripts/init-specs.sh",
+      "type": "altered",
+      "reason": "Ran the source-store copy (agent-system/extensions/core/scripts/init-specs.sh) directly instead of the deployed path literally named in the plan, since the deployed lib is still stale (pre-Phase-5-deploy) and init-specs.sh has no deploy-root-guard -- it resolves its own lib and specs/.gitignore target relative to cwd/SCRIPT_DIR, so the source-store invocation correctly picked up the freshly-edited 28-member lib.",
+      "annotation": "*(completed: ran the source-store copy of init-specs.sh directly...)*"
+    },
+    {
+      "task_id": "4.7",
+      "description": "Run the runtime-file-tracking suite and the runtime-file-tracking lint, confirming the doc-sync pin holds and the new member's probe path is genuinely ignored",
+      "type": "altered",
+      "reason": "test-runtime-file-tracking.sh deliberately prefers the deployed tree when all three of (check script, lib, standards doc) are present there together, by its own documented design -- so running it pre-deploy validates the still-internally-consistent STALE tree, not my edits. Supplemented with direct verification against the source-store copies: byte-identity of the regenerated fenced block via the same awk extraction Case 3 uses, the 28-member lockstep array check, the glob-basename resolution in runtime_file_dir_basename_for_hit(), check-runtime-file-tracking.sh run directly (source-store copy, no deploy-root-guard) against this live repo with Check A/B/C all passing including the new probe path, and both deploy-harness fixtures (test-deploy-orphans.sh, test-deploy-propagation.sh) run directly against the source-store lib with no regression.",
+      "annotation": "*(completed: the deploy-tree-preferring test-runtime-file-tracking.sh and check-runtime-file-tracking.sh ran clean against the still-stale deployed tree by design...)*"
+    }
+  ],
+  "handoff_count": 0
+}

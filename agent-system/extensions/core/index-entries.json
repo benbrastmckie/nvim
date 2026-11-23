@@ -2960,7 +2960,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Git checkpoint procedure to run before context-window overflow during implementation",
-      "line_count": 177,
+      "line_count": 190,
       "keywords": [
         "checkpoint",
         "context-exhaustion",
@@ -3248,7 +3248,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 655,
+      "line_count": 666,
       "keywords": [
         "runtime-files",
         "cleanup",

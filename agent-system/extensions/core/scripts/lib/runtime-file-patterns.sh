@@ -8,7 +8,7 @@
 # exclusion list: it is a deliberately-tracked directory, never gitignored, and is NOT emitted
 # by runtime_specs_ignore_block() below -- no pattern in that function's output matches it today.
 #
-# Exports one canonical record per class member (25 total) consumed by BOTH mechanical
+# Exports one canonical record per class member (28 total) consumed by BOTH mechanical
 # consumers: the repo-wide lint (scripts/check-runtime-file-tracking.sh, Checks A and B) and the
 # two deploy-harness test fixtures that seed a scratch repo's .gitignore
 # (scripts/tests/test-deploy-orphans.sh, scripts/tests/test-deploy-propagation.sh). Neither
@@ -28,7 +28,7 @@
 # RUNTIME_FILE_IDS -- index i's id, pattern, probe, regex, and dir flag/basename all describe the
 # SAME class member) or call the three accessor functions below.
 
-# ─── Canonical class membership (25 members) ───────────────────────────────────────────────────
+# ─── Canonical class membership (28 members) ───────────────────────────────────────────────────
 # One entry per array, per member, in the exact order the "Consumer Repo Setup" gitignore block
 # emits them: the 11 members already covered before this lib existed, then `.dispatch/` (already
 # gitignored and already probed by the pre-existing Check A, but missing from the pre-existing
@@ -123,6 +123,23 @@
 # cache is content-key-gated on read, so a git-restored copy is exactly the stale-state hazard
 # this ephemeral class exists to prevent. A repository that had already hand-authored these two
 # patterns into its own root `.gitignore` is unaffected: the managed block is additive.
+#
+# `untracked-backup` (28th member) is `git-snapshot.sh`'s own `--no-revert`-mode recovery
+# artifact: `specs/{NNN}_{slug}/untracked-backup-{ts}/`, a per-invocation-timestamped directory
+# holding copies of whatever untracked files were present at snapshot time. UNLIKE every other
+# member above, its directory NAME itself varies per invocation (the `{ts}` suffix), not just
+# its contents -- so its gitignore pattern and its `RUNTIME_FILE_B_REGEX` entry both use a glob/
+# regex wildcard for that suffix rather than a fixed literal, and its `RUNTIME_FILE_DIR_BASENAME`
+# entry is itself a glob (`untracked-backup-*`), which `runtime_file_dir_basename_for_hit()`
+# below resolves against a real path segment at lookup time rather than treating as a literal
+# name. It is ephemeral by construction for a narrower reason than most members here: it is a
+# literal DUPLICATE of content that is ITSELF untracked, and its originals are never deleted by
+# the `--no-revert` mode that writes it (that mode mutates nothing in the working tree) -- so
+# making the copy ephemeral costs no real data. This class is deliberately NOT dot-prefixed,
+# unlike most members above, matching `git-snapshot.sh`'s own on-disk naming. Its sibling
+# artifact, `working-progress-{ts}.patch`, is deliberately NOT a member of this class: unlike the
+# untracked-backup copy, the patch is the only record of a `--no-revert` snapshot's tracked-
+# change diff, so it stays durable and tracked-eligible by that script's own documented design.
 
 declare -a RUNTIME_FILE_IDS=(
   "lock"
@@ -152,6 +169,7 @@ declare -a RUNTIME_FILE_IDS=(
   "observations-lock"
   "gate-cache"
   "gate-lock"
+  "untracked-backup"
 )
 
 # Exact gitignore pattern line for each member, as emitted by runtime_ignore_block().
@@ -183,6 +201,7 @@ declare -a RUNTIME_FILE_PATTERNS=(
   "**/.observations.lock"
   "**/.gate-cache/"
   "**/.gate-lock/"
+  "**/untracked-backup-*/"
 )
 
 # Check A representative probe path: a concrete file this pattern must `git check-ignore -q`.
@@ -218,6 +237,7 @@ declare -a RUNTIME_FILE_PROBES=(
   "specs/books-evidence/.observations.lock"
   "specs/.gate-cache/gate4.json"
   "specs/.gate-lock/owner"
+  "specs/000_probe/untracked-backup-0/marker.txt"
 )
 
 # Check B tracked-file regex: `grep -E` pattern matched against `git ls-files` output. Any hit
@@ -251,16 +271,22 @@ declare -a RUNTIME_FILE_B_REGEX=(
   '\.observations\.lock$'
   '/\\.gate-cache/'
   '/\\.gate-lock/'
+  '/untracked-backup-[^/]+/'
 )
 
 # Directory-class flag ("1" or "0"): governs which `git rm` remediation form Check B prints for
-# a hit at this index. A "1" member's bare directory basename is given in
-# RUNTIME_FILE_DIR_BASENAME at the same index (empty string for "0" members, where it is unused).
+# a hit at this index. A "1" member's directory basename is given in RUNTIME_FILE_DIR_BASENAME
+# at the same index (empty string for "0" members, where it is unused). That basename is
+# normally a fixed literal, matched and returned verbatim by runtime_file_dir_basename_for_hit()
+# below; the `untracked-backup` member (28th) is the one exception -- its basename is itself a
+# glob (`untracked-backup-*`), since the real directory name carries a per-invocation timestamp
+# suffix that cannot be a fixed literal -- see that function's own header for how it resolves a
+# glob-style basename against the hit's actual path segments.
 declare -a RUNTIME_FILE_IS_DIR=(
-  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "0" "0" "0" "1" "0" "1" "0" "0" "1" "1"
+  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "0" "0" "0" "1" "0" "1" "0" "0" "1" "1" "1"
 )
 declare -a RUNTIME_FILE_DIR_BASENAME=(
-  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "" "" "" "tmp" "" ".orchestration" "" "" ".gate-cache" ".gate-lock"
+  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "" "" "" "tmp" "" ".orchestration" "" "" ".gate-cache" ".gate-lock" "untracked-backup-*"
 )
 
 # ─── Accessors ──────────────────────────────────────────────────────────────────────────────────
@@ -372,19 +398,40 @@ HEADER_EOF
 # file-class member (or no member at all). Used by check-runtime-file-tracking.sh's Check B to
 # print the correct `git rm -r --cached <dir>` remediation for ANY directory-class member, not
 # just `.lock/` (the pre-existing, narrower hardcoded form this generalizes).
+#
+# Two basename shapes: a FIXED literal (e.g. ".lock", ".dispatch") is matched and returned
+# verbatim, exactly as before. A GLOB-style basename (e.g. "untracked-backup-*", whose
+# per-invocation timestamp suffix cannot be a fixed literal) is matched against each of the
+# hit's own path segments in turn, and the function returns the REAL matched segment (e.g.
+# "untracked-backup-1700000000"), never the glob pattern itself -- the caller builds a `git rm
+# -r --cached <dir>` path from this return value, which needs an actual directory name, not the
+# pattern that matched it.
 runtime_file_dir_basename_for_hit() {
   local hit="$1"
-  local i basename
+  local i basename segment
   for i in "${!RUNTIME_FILE_IDS[@]}"; do
-    if [ "${RUNTIME_FILE_IS_DIR[$i]}" = "1" ]; then
-      basename="${RUNTIME_FILE_DIR_BASENAME[$i]}"
-      case "$hit" in
-        */"$basename"/*)
-          echo "$basename"
-          return 0
-          ;;
-      esac
-    fi
+    [ "${RUNTIME_FILE_IS_DIR[$i]}" = "1" ] || continue
+    basename="${RUNTIME_FILE_DIR_BASENAME[$i]}"
+    case "$basename" in
+      *[\*\?\[]*)
+        while IFS= read -r segment; do
+          [ -z "$segment" ] && continue
+          # shellcheck disable=SC2053  # $basename IS the glob pattern here, deliberately unquoted
+          if [[ "$segment" == $basename ]]; then
+            echo "$segment"
+            return 0
+          fi
+        done <<< "${hit//\//$'\n'}"
+        ;;
+      *)
+        case "$hit" in
+          */"$basename"/*)
+            echo "$basename"
+            return 0
+            ;;
+        esac
+        ;;
+    esac
   done
   return 1
 }

@@ -92,6 +92,19 @@ git status --porcelain
   State. On a clean tree the script itself is a no-op; this branch only runs it when the tree
   is dirty and RED, so that no-op case does not apply here.
 
+  **The two artifacts have different dispositions, both already handled for you by this
+  script and the phase-commit wrapper — nothing extra for this pattern's own caller to do.**
+  `untracked-backup-{ts}/` is a member of the canonical ephemeral runtime-file class
+  (`scripts/lib/runtime-file-patterns.sh`): gitignored, and reaped on the ordinary ephemeral
+  schedule. `working-progress-{ts}.patch` is deliberately NOT a member of that class — it is
+  the durable record of this checkpoint's tracked-change diff, stays tracked-eligible, and
+  remains under the task directory for manual recovery. Both are additionally, independently
+  excluded from any single phase commit's own fixed `stage_paths` seed
+  (`scripts/git-commit-phase.sh`) whenever either happens to still be sitting in the task
+  directory at that commit's own time — belt-and-suspenders for the patch (its only defense,
+  since it is not gitignored) and a redundant-by-design second line of defense for the backup
+  directory (whose primary defense is the gitignore coverage above).
+
   **`--no-revert` is required at this call site.** The script's default mode runs
   `git stash push -u`, which leaves the working tree clean at HEAD — the RED work this step
   exists to protect would disappear from the working directory, and the successor picking up

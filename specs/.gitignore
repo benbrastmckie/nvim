@@ -35,4 +35,5 @@
 **/.observations.lock
 **/.gate-cache/
 **/.gate-lock/
+**/untracked-backup-*/
 # END managed block: runtime-file-patterns.sh

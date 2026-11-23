@@ -324,40 +324,40 @@ no function signature and no caller contract, and is covered by
 
 ---
 
-### Phase 4: Register the backup class and reconcile its coupled surfaces [NOT STARTED]
+### Phase 4: Register the backup class and reconcile its coupled surfaces [COMPLETED]
 
 **Goal**: Make `untracked-backup-*/` a first-class ephemeral runtime-file member so every
 consumer repository inherits the ignore pattern from the library, and bring every surface that
 derives from that library back into sync in this same phase.
 
 **Tasks**:
-- [ ] Add the new member to every parallel array in
+- [x] Add the new member to every parallel array in
       `scripts/lib/runtime-file-patterns.sh` -- id, gitignore pattern, representative probe path,
       tracked-file regex, directory-class flag, and directory basename -- keeping all arrays in
       lockstep index order and appending at the end so no existing index shifts. The member is
-      directory-class and is deliberately not dot-prefixed, unlike most existing members.
-- [ ] Reconcile the library header's membership count with the actual array length, and add the
+      directory-class and is deliberately not dot-prefixed, unlike most existing members. *(completed)*
+- [x] Reconcile the library header's membership count with the actual array length, and add the
       per-member rationale note in the same style the existing members use: this class is a
       duplicate of content that is itself untracked, so it is ephemeral by construction, and its
-      originals are never deleted by the mode that writes it.
-- [ ] Update `context/standards/orchestrator-runtime-files.md`: add the Class Table row, and
+      originals are never deleted by the mode that writes it. *(completed)*
+- [x] Update `context/standards/orchestrator-runtime-files.md`: add the Class Table row, and
       regenerate its Consumer Repo Setup fenced block so it stays byte-identical to the library's
       emitted block. That block is machine-pinned to the library; a hand edit that drifts from it
-      fails the pin.
-- [ ] Update `context/patterns/checkpoint-before-overflow.md` so the checkpoint procedure states
+      fails the pin. *(completed)*
+- [x] Update `context/patterns/checkpoint-before-overflow.md` so the checkpoint procedure states
       the two artifacts' dispositions: the backup directory is ephemeral class and reaped on the
       ordinary schedule, the patch is durable and stays under the task directory. Keep the
-      existing handoff-line shape intact.
-- [ ] Regenerate this repository's `specs/.gitignore` managed block from the library via
+      existing handoff-line shape intact. *(completed)*
+- [x] Regenerate this repository's `specs/.gitignore` managed block from the library via
       `bash .claude/scripts/init-specs.sh`, so the ignore-coverage check and the library agree
-      here as well as in a fresh consumer repository.
-- [ ] Re-sync `index-entries.json`'s `line_count` for both edited markdown files via
+      here as well as in a fresh consumer repository. *(completed: ran the source-store copy of init-specs.sh directly -- it resolves its own lib and specs/.gitignore target relative to cwd/SCRIPT_DIR with no deploy-root-guard, so it read the freshly-edited lib rather than the stale deployed copy)*
+- [x] Re-sync `index-entries.json`'s `line_count` for both edited markdown files via
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`, and
-      stage the regenerated file with this phase's own commit.
-- [ ] Run the runtime-file-tracking suite and the runtime-file-tracking lint, confirming the
-      doc-sync pin holds and the new member's probe path is genuinely ignored.
-- [ ] Record the postflight-sibling follow-up in the issue log so the structurally identical seed
-      in the whole-task completion commit is not forgotten.
+      stage the regenerated file with this phase's own commit. *(completed)*
+- [x] Run the runtime-file-tracking suite and the runtime-file-tracking lint, confirming the
+      doc-sync pin holds and the new member's probe path is genuinely ignored. *(completed: the deploy-tree-preferring test-runtime-file-tracking.sh and check-runtime-file-tracking.sh ran clean against the still-stale deployed tree by design; the doc-sync byte-identity and the new member's ignore coverage were additionally confirmed directly against the source-store lib/doc/suite copies, and will be re-confirmed by the deploy-preferring suite itself once Phase 5 redeploys)*
+- [x] Record the postflight-sibling follow-up in the issue log so the structurally identical seed
+      in the whole-task completion commit is not forgotten. *(completed)*
 
 **Timing**: 1.5 hours
 

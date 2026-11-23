@@ -64,6 +64,16 @@ Every runtime file falls into exactly one of two classes:
 | `specs/.orchestrator-deploy-ledger.json` | `scripts/orchestrate-cycle-plan.sh`'s Inter-Cycle Redeploy Checkpoint, via `scripts/lib/deploy-ledger-lib.sh`'s `deploy_ledger_write` (one of the checkpoint's five outcome branches: `clean`, `pre_existing`, `filtered`, `deploy_failed`, `blocking`) | The same checkpoint, on every LATER `/orchestrate` invocation (`deploy_ledger_read` + `deploy_ledger_decide`, consulted before the checkpoint's first expensive call) | Never — a single rolling record, overwritten in place (atomic tmp+`mv`) on every write; no cleanup site removes it | **Durable, machine-local (gitignored), hash-gated on read** — see the note immediately below; this is a THIRD disposition, distinct from both Ephemeral and (tracked) Durable provenance above |
 | `specs/.contention-manifest/{session_id}.json` | `scripts/orchestrate-cycle-plan.sh`'s `build_contended_manifest` (the cheap Option 3(ii) precondition of the working-tree/build isolation posture decision record — computed once per cycle over the full dispatched-task set, reusing `build_sibling_territory`'s own per-task `file_scope` + granularity classification) — `{session_id, cycle, generated_at, contended: [{path, tasks:[...], granularity}]}`; a path appearing in 2+ dispatched tasks' declared `file_scope` this cycle | `scripts/git-commit-scoped.sh`'s contended-path refusal check, per positive pathspec entry, at commit time | Overwritten in place every multi-task cycle (static per-session filename, never accumulates across cycles); actively removed (not merely left unwritten) when a cycle drops to a single dispatched task or fewer, so a stale multi-task manifest never outlives the concurrency that produced it | **Ephemeral** — no freshness gate; a git-restored or stale copy would name tasks no longer in flight, exactly the ephemeral-class hazard this table's Overview section describes. Never git-tracked (see `.gitignore`) |
 | `specs/.contention-claims/<sanitized-path>/` (directory, `holder.json` + `acquire_named_mutex`'s own `claimed_at`/`stale_sec` files) | `scripts/task-lock.sh`'s `claim-acquire` (called from `scripts/git-commit-scoped.sh`'s `--task`-gated V5 contended-path refusal check) — ONE mutex directory per declared manifest path this cycle claims, reusing `acquire_named_mutex`'s exact mkdir/staleness pattern (a distinct directory name per path, not a distinct mutex family) with a zero wait budget, so an already-held claim is refused to the caller immediately rather than waited out | `git-commit-scoped.sh`'s own re-entrancy check (is the existing holder this same task?) and `task-lock.sh`'s `claim-release` | `claim-release`, called from `git-commit-scoped.sh`'s EXIT trap after a fresh claim's own commit (success or failure), or by a later claimant's stale-timeout reclaim (`CONTENTION_CLAIM_STALE_SEC`, default 1800s) — a claim this SAME invocation found already self-held (re-entrant) is deliberately never auto-released, mirroring `COMMIT_MUTEX_HELD`'s guest-caller contract | **Ephemeral** — no freshness gate; a git-restored or stale copy would misrepresent a claim no longer live, exactly the ephemeral-class hazard this table's Overview section describes. Never git-tracked (see `.gitignore`) |
+| `specs/{NNN}_{slug}/untracked-backup-{ts}/` | `scripts/git-snapshot.sh`'s `--no-revert` mode (`UNTRACKED_BACKUP`): a per-invocation-timestamped copy of whatever untracked files were present at snapshot time, written because a `git diff`-based patch cannot represent untracked content | The agent or human recovering a `--no-revert` snapshot's untracked-file content, per the marker contract in that script's own header | Never explicitly cleaned up by `git-snapshot.sh` itself (the mode that writes it mutates nothing else in the working tree either); reaped on the ordinary ephemeral-class schedule once gitignored | **Ephemeral** — unlike every other member in this table, the directory NAME itself carries a per-invocation `{ts}` suffix, so its gitignore pattern (`**/untracked-backup-*/`) and tracked-file regex both use a wildcard for that suffix rather than a fixed literal. It is a literal duplicate of content that is ITSELF untracked and never deleted by the mode that writes it, so making the copy ephemeral costs no real data. Its sibling `working-progress-{ts}.patch` (`PATCH_PATH`) is deliberately **not** a member of this class — see the note immediately below. |
+
+**`specs/{NNN}_{slug}/working-progress-{ts}.patch` is durable, not ephemeral.** Unlike its
+sibling `untracked-backup-{ts}/` directory above, `git-snapshot.sh`'s own header documents this
+`git diff HEAD`-produced patch file as the script's primary durable record, deliberately NOT
+gitignored: it is the only record of a `--no-revert` snapshot's tracked-change diff, so it stays
+tracked-eligible under the task directory for manual recovery. `scripts/git-commit-phase.sh`'s
+own fixed `stage_paths` seed separately, conditionally excludes it from any single phase commit
+it happens to be sitting in at commit time (see that script's own header) — a different
+mechanism from gitignore coverage, since this file is deliberately not gitignored at all.
 
 **`specs/{NNN}_{slug}/issues.jsonl` is durable, not ephemeral.** Unlike its own lock file above,
 the per-task issue-capture log itself is tracked and deliberately **excluded** from this
@@ -438,6 +448,7 @@ repo's **own root** `/.gitignore` **by hand**:
 **/.observations.lock
 **/.gate-cache/
 **/.gate-lock/
+**/untracked-backup-*/
 ```
 
 Run `check-runtime-file-tracking.sh` afterward to confirm coverage (see "Verification" below).
@@ -519,7 +530,7 @@ never a hand-written second list, so there is nothing for it to drift against.
 tree gitignored on its first `init-specs.sh` run, via a managed, sentinel-delimited block written
 to the consumer's own **repo-root** `.gitignore`. This is a second, separate managed block from
 the one "Consumer Repo Setup" describes above — that one lives in `specs/.gitignore` and covers
-only the 27-member ephemeral class; this one lives at the repo root and ignores `specs/` in its
+only the 28-member ephemeral class; this one lives at the repo root and ignores `specs/` in its
 entirety, so task state stays local to the working copy, is shared by every branch checked out in
 it, and never appears in a pull request.
 
@@ -569,7 +580,7 @@ functionally inert while the root-level `/specs/` line stands, because the whole
 ignored and nothing reaches the more specific, narrower rule underneath it. It regains effect the
 moment a consumer removes the root-level line to track `specs/` again (see the opt-in runbook
 immediately below) — at that point the fresh posture's whole-tree rule no longer applies, and the
-inner block's 27-member ephemeral coverage is exactly what keeps per-dispatch scratch state out of
+inner block's 28-member ephemeral coverage is exactly what keeps per-dispatch scratch state out of
 the newly-tracked tree.
 
 **Manual opt-in runbook — switching an already-tracked consumer to the fresh posture**: there is
