@@ -435,9 +435,12 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 672 HOLD            Classify every remaining project-root consumer as code-root, state-root or both
 674 HOLD            Build batch worktree cleanup, retention on partial batches, and orphan report...
 686 HOLD            Create the per-batch worktree and batch branch when isolation is declared on
+688 blocked:501     dispatch_redeploy_clears_staleness_verdict
 664 ready           Add a /tmp sweep pass to /refresh for dead scratchpad sessions and agent-test...
 665 ready           Record the last dispatching orchestration batch in a displaced Previous work ...
 666 ready           re_site_branch_aware_batch_after_prerequisites
 680 ready           gate_cache_key_in_deployed_repos
 684 ready           Sweep and fix stale command and sub-mode references across the source store
+689 ready           oversized_plan_phase_count_advisory
+690 ready           milestone-ref-land.sh re-creates a deliberately retired milestone ref
 ```
