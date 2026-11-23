@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Bottom-up detection and the full disposition plan",
+  "started_at": "2026-11-23T23:10:00Z",
+  "last_updated": "2026-11-23T23:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Bottom-up merge detection per D1 (ancestry + squash test), iterated for consecutive merges", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 2, "description": "--merged NN override per D3, refusing 52 when NN names no manifest entry", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 3, "description": "Compute disposition: merged state, promoted bottom base, propagate changed upward through each chain", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 4, "description": "Off-tree descendant recompute per D4 (rsp_restack_recompute), refusing 48 on first conflict before any ref is touched", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 5, "description": "Nothing-merged no-op report", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 6, "description": "Stale-stack report (base moved, no entry merged)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 7, "description": "rsp_restack_print: per-branch /please push --force-with-lease, one /merge --stack --retarget, git remote set-head when HEAD absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 8, "description": "Suite cases: squash-merge detection, ancestry detection, conflicting descendant refuses 48, no-op, stale stack, --merged invalid ordinal refuses 52, printed push/merge lines, set-head present/absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"]},
+    {"id": 9, "description": "Fix latent $(...) subshell-exit bug in rsp_move_commit_onto_new_parent (shared by cut and restack) discovered while implementing objective 4", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "squash test via a separate quiet (non-refusing) merge-tree probe", "result": "superseded", "reason": "plan's own D1 prose and PD6 call for reusing the SAME refusing rsp_move_commit_onto_new_parent at the detection site, not a second quiet variant; adopted that instead"}
+  ],
+  "handoff_count": 0
+}

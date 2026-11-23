@@ -889,14 +889,20 @@ rsp_overlay_tree() {
   printf '%s' "$tree"
 }
 
-# rsp_move_commit_onto_new_parent <old_parent> <new_parent> <commit> -- stdout: the sha of the
-# tree <commit> would have if its base were moved from <old_parent> to <new_parent>, via the
-# three-way `git merge-tree --write-tree --merge-base=<old_parent> <new_parent> <commit>`. The
-# one primitive PD6 names for both the first cut (moving the bottom unit's overlay onto the
-# review base's actual tip) and every later restack. A conflict refuses (48) and names the
-# path(s); never falls back to a forced write.
+# rsp_move_commit_onto_new_parent <old_parent> <new_parent> <commit> -- sets
+# RSP_MOVE_RESULT_TREE to the sha of the tree <commit> would have if its base were moved from
+# <old_parent> to <new_parent>, via the three-way
+# `git merge-tree --write-tree --merge-base=<old_parent> <new_parent> <commit>`. The one
+# primitive PD6 names for both the first cut (moving the bottom unit's overlay onto the review
+# base's actual tip) and every later restack (both the squash-merge detection test and the real
+# descendant recompute). A conflict refuses (48) and names the path(s); never falls back to a
+# forced write. Called as a plain statement, never wrapped in "$(...)": like the early
+# resolvers above, a refusal's `exit` inside a command-substitution subshell would only
+# terminate that subshell, silently losing the refusal's exit code.
+RSP_MOVE_RESULT_TREE=""
 rsp_move_commit_onto_new_parent() {
   local old_parent="$1" new_parent="$2" commit="$3" out rc names
+  RSP_MOVE_RESULT_TREE=""
   out="$(git merge-tree --write-tree --merge-base="$old_parent" "$new_parent" "$commit" 2>/dev/null)"
   rc=$?
   if [ "$rc" -ne 0 ]; then
@@ -904,7 +910,7 @@ rsp_move_commit_onto_new_parent() {
       | awk 'NR==1{next} /^$/{exit} {print}' | tr '\n' ',' | sed 's/,$//')"
     rsp_refuse 48 ref_conflict "moving a unit's commit from parent ${old_parent:0:12} onto ${new_parent:0:12} conflicted on path(s): ${names:-<unknown>}"
   fi
-  printf '%s\n' "$out" | head -n 1
+  RSP_MOVE_RESULT_TREE="$(printf '%s\n' "$out" | head -n 1)"
 }
 
 # rsp_unit_title <unit_root> <integration_branch> -- stdout: the subject of the lowest member
@@ -1010,7 +1016,8 @@ rsp_cut_execute() {
       final_tree="$overlay_tree"
     else
       pre_move_commit="$(git commit-tree "$overlay_tree" -p "$anchor_commit" <<< "review-stack-prepare.sh: overlay before move")"
-      final_tree="$(rsp_move_commit_onto_new_parent "$anchor_commit" "$parent_commit" "$pre_move_commit")"
+      rsp_move_commit_onto_new_parent "$anchor_commit" "$parent_commit" "$pre_move_commit"
+      final_tree="$RSP_MOVE_RESULT_TREE"
     fi
 
     title="$(rsp_unit_title "$u" "$branch")"
@@ -1174,13 +1181,122 @@ rsp_restack_load_manifest() {
   done < <(jq -r '.entries[] | [.ordinal, (.tasks|tostring), .branch, .base, .commit, .parent_commit, .title, .body_path, .state, .request] | @tsv' "$manifest_path")
 }
 
-# rsp_restack_plan <stack_id> -- resolves every input restack needs and refuses by name on
+# rsp_restack_detect_merged <commit> <parent_commit> <remote_sha> -- exit 0 iff <commit> (whose
+# current parent is <parent_commit>) is already reflected in <remote_sha>: the ancestry test
+# (D1, fast-forward/rebase-and-merge/merge-commit) or the squash test (D1), via the SAME
+# refusing `rsp_move_commit_onto_new_parent` the real off-tree recompute below uses (PD6: one
+# primitive serves both call sites) -- a genuine conflict here refuses (48) immediately, since
+# it means this entry cannot be reconciled with the remote tip whether or not it turns out to be
+# squash-merged.
+rsp_restack_detect_merged() {
+  local commit="$1" parent_commit="$2" remote_sha="$3" new_tree remote_tree
+  git merge-base --is-ancestor "$commit" "$remote_sha" 2>/dev/null && return 0
+  rsp_move_commit_onto_new_parent "$parent_commit" "$remote_sha" "$commit"
+  new_tree="$RSP_MOVE_RESULT_TREE"
+  remote_tree="$(git rev-parse "${remote_sha}^{tree}" 2>/dev/null || true)"
+  [ "$new_tree" = "$remote_tree" ]
+}
+
+# rsp_restack_compute_disposition <remote_sha> -- bottom-up detection (D1), iterated so a run of
+# consecutive merges is all found in one pass: for each chain's current bottom entry (RST_BASE
+# or, once promoted, RST_NEW_BASE == review_base), detection or --merged NN (D3) marks it
+# RST_NEW_STATE=merged and promotes the next entry in its chain (found by the original RST_BASE
+# link, never the possibly-already-rewritten RST_NEW_BASE) to RST_NEW_BASE=review_base,
+# RST_CHANGED=true. Refuses (52) when --merged names no entry in the manifest. Then propagates
+# RST_CHANGED upward through each chain in manifest order (parents always precede children --
+# rsp_cut_plan always flattens a component into one linear chain, confirmed against the live
+# file). Finally flags RST_STALE for an original bottom entry whose remote-tracking ref has
+# moved past its recorded parent_commit without ever being detected merged.
+rsp_restack_compute_disposition() {
+  local remote_sha="$1" merged_ordinal="${RSP_MERGED_FLAG:-}" i j k changed any_ordinal_match="false"
+  if [ -n "$merged_ordinal" ]; then
+    for ((i = 0; i < RST_N; i++)); do
+      [ "${RST_ORD[$i]}" = "$merged_ordinal" ] && any_ordinal_match="true"
+    done
+    [ "$any_ordinal_match" = "true" ] \
+      || rsp_refuse 52 record_request_entry_not_found "stack '${stack_id}' has no entry ${merged_ordinal} to treat as merged via --merged"
+  fi
+
+  changed="true"
+  while [ "$changed" = "true" ]; do
+    changed="false"
+    for ((i = 0; i < RST_N; i++)); do
+      [ "${RST_NEW_BASE[$i]}" = "$review_base" ] || continue
+      [ "${RST_NEW_STATE[$i]}" = "merged" ] && continue
+      if rsp_restack_detect_merged "${RST_COMMIT[$i]}" "${RST_PARENT[$i]}" "$remote_sha" \
+         || [ "${RST_ORD[$i]}" = "$merged_ordinal" ]; then
+        RST_NEW_STATE[$i]="merged"
+        RST_ANY_MERGED="true"
+        for ((j = 0; j < RST_N; j++)); do
+          [ "$j" -eq "$i" ] && continue
+          [ "${RST_BASE[$j]}" = "${RST_BRANCH[$i]}" ] || continue
+          RST_NEW_BASE[$j]="$review_base"
+          RST_CHANGED[$j]="true"
+        done
+        changed="true"
+      fi
+    done
+  done
+
+  for ((i = 0; i < RST_N; i++)); do
+    [ "${RST_NEW_STATE[$i]}" = "merged" ] && continue
+    [ "${RST_CHANGED[$i]}" = "true" ] && continue
+    for ((k = 0; k < RST_N; k++)); do
+      [ "${RST_BRANCH[$k]}" = "${RST_BASE[$i]}" ] || continue
+      if [ "${RST_CHANGED[$k]}" = "true" ] && [ "${RST_NEW_STATE[$k]}" != "merged" ]; then
+        RST_CHANGED[$i]="true"
+      fi
+      break
+    done
+  done
+
+  for ((i = 0; i < RST_N; i++)); do
+    [ "${RST_BASE[$i]}" = "$review_base" ] || continue
+    [ "${RST_NEW_STATE[$i]}" = "merged" ] && continue
+    if [ "${RST_PARENT[$i]}" != "$remote_sha" ] \
+       && git merge-base --is-ancestor "${RST_PARENT[$i]}" "$remote_sha" 2>/dev/null; then
+      RST_STALE[$i]="true"
+    fi
+  done
+}
+
+# rsp_restack_recompute <remote_sha> -- for every RST_CHANGED, non-merged entry (manifest order,
+# so a chain's parent is always processed before its children), computes its new tree via the
+# three-way merge (D1/D4's one primitive) and its new commit via `git commit-tree`, writing no
+# ref. A conflict refuses (48) naming the path; nothing is moved and nothing written, since this
+# pass runs entirely before rsp_restack_execute (D4's two-pass ordering).
+rsp_restack_recompute() {
+  local remote_sha="$1" i k old_parent new_parent new_tree
+  for ((i = 0; i < RST_N; i++)); do
+    [ "${RST_CHANGED[$i]}" = "true" ] || continue
+    [ "${RST_NEW_STATE[$i]}" = "merged" ] && continue
+    old_parent="${RST_PARENT[$i]}"
+    if [ "${RST_NEW_BASE[$i]}" = "$review_base" ]; then
+      new_parent="$remote_sha"
+    else
+      new_parent=""
+      for ((k = 0; k < RST_N; k++)); do
+        [ "${RST_BRANCH[$k]}" = "${RST_BASE[$i]}" ] || continue
+        new_parent="${RST_NEW_COMMIT[$k]}"
+        break
+      done
+    fi
+    rsp_move_commit_onto_new_parent "$old_parent" "$new_parent" "${RST_COMMIT[$i]}"
+    new_tree="$RSP_MOVE_RESULT_TREE"
+    RST_NEW_COMMIT[$i]="$(git commit-tree "$new_tree" -p "$new_parent" <<< "${RST_TITLE[$i]}")"
+  done
+}
+
+# rsp_restack_plan -- resolves every input restack needs (reading the global stack_id/review_base/
+# remote, the same convention rsp_show_stack already uses) and refuses by name on
 # anything unresolvable, writing no ref, no manifest and no file: loads the manifest (50);
 # resolves the review base's remote-tracking ref without fetching, refusing (53) unconditionally
 # -- including when --merged NN is given (D3) -- when it is absent and printing the fetch the
 # operator runs; checks the review base's local ref against that remote-tracking ref, refusing
 # (54) when they disagree in a way that is not simply the remote having moved ahead (D2); probes
-# refs/remotes/<remote>/HEAD for Phase 2's printed output. Sets RSP_RESTACK_REMOTE_SHA.
+# refs/remotes/<remote>/HEAD for the printed output; computes the full disposition (D1/D3) and
+# recomputes every changed entry's new commit off-tree (D4), still writing no ref. Sets
+# RSP_RESTACK_REMOTE_SHA.
 RSP_RESTACK_REMOTE_SHA=""
 rsp_restack_plan() {
   local manifest_path local_sha remote_ref remote_sha head_ref
@@ -1202,19 +1318,52 @@ rsp_restack_plan() {
 
   head_ref="$(git symbolic-ref --short "refs/remotes/${remote}/HEAD" 2>/dev/null || true)"
   [ -n "$head_ref" ] || RST_REMOTE_HEAD_ABSENT="true"
+
+  rsp_restack_compute_disposition "$remote_sha"
+  rsp_restack_recompute "$remote_sha"
 }
 
-# rsp_restack_print -- prints, per manifest entry, its ordinal/branch/state/base. Detection
-# (rsp_restack_compute_disposition) is filled in by a later plan phase; this phase resolves
-# every input and prints the as-recorded disposition skeleton, writing nothing.
+# rsp_restack_print -- prints, per manifest entry, its ordinal/branch/state/base and, once
+# detection has run, its disposition (new_base/new_state); then either the nothing-merged
+# no-op note, the stale-stack note (naming the restack a future merge would perform), or, per
+# restacked branch, `/please push <remote> <branch> --force-with-lease` plus one closing
+# `/merge --stack <stack id> --retarget` (preceded by `git remote set-head <remote> -a` when
+# refs/remotes/<remote>/HEAD was found absent). Identical whether or not this invocation goes on
+# to execute (rsp_restack_execute) -- the one print surface both --dry-run and a real restack
+# share, matching rsp_cut_print's convention.
 rsp_restack_print() {
-  local i tasks_csv
+  local i tasks_csv note any_stale="false" printed_head_line="false"
   for ((i = 0; i < RST_N; i++)); do
     tasks_csv="$(printf '%s' "${RST_TASKS_JSON[$i]}" | tr -d '[]')"
-    printf 'ENTRY %s: tasks=%s branch=%s base=%s state=%s\n' \
-      "${RST_ORD[$i]}" "$tasks_csv" "${RST_BRANCH[$i]}" "${RST_BASE[$i]}" "${RST_STATE[$i]}"
+    note=""
+    [ "${RST_STALE[$i]}" = "true" ] && note="${note} stale=true"
+    printf 'ENTRY %s: tasks=%s branch=%s base=%s new_base=%s state=%s new_state=%s%s\n' \
+      "${RST_ORD[$i]}" "$tasks_csv" "${RST_BRANCH[$i]}" "${RST_BASE[$i]}" "${RST_NEW_BASE[$i]}" \
+      "${RST_STATE[$i]}" "${RST_NEW_STATE[$i]}" "$note"
+    [ "${RST_STALE[$i]}" = "true" ] && any_stale="true"
   done
-  echo "NOTE: review-stack-prepare.sh: resolved ${RST_N} entrie(s) for stack '${stack_id}' (remote='${remote}' review_base='${review_base}'); restack's detection and ref-moving body is not yet implemented, nothing written." >&2
+
+  if [ "$RST_ANY_MERGED" != "true" ]; then
+    if [ "$any_stale" = "true" ]; then
+      echo "NOTE: review-stack-prepare.sh: stack '${stack_id}' is stale -- the review base's remote-tracking ref has moved past the manifest's recorded base, but no entry has merged; restack would restack onto the new tip once an entry actually lands (or pass --merged NN if one already has)." >&2
+    else
+      echo "NOTE: review-stack-prepare.sh: nothing merged for stack '${stack_id}'; no change." >&2
+    fi
+    return 0
+  fi
+
+  for ((i = 0; i < RST_N; i++)); do
+    [ "${RST_CHANGED[$i]}" = "true" ] || continue
+    [ "${RST_NEW_STATE[$i]}" = "merged" ] && continue
+    if [ "$printed_head_line" = "false" ] && [ "$RST_REMOTE_HEAD_ABSENT" = "true" ]; then
+      echo "NOTE: review-stack-prepare.sh: refs/remotes/${remote}/HEAD is absent; needed before /merge --retarget can resolve this stack's target branch." >&2
+      printf 'git remote set-head %s -a\n' "$remote"
+      printed_head_line="true"
+    fi
+    printf '/please push %s %s --force-with-lease\n' "$remote" "${RST_BRANCH[$i]}"
+  done
+  printf '/merge --stack %s --retarget\n' "$stack_id"
+  echo "NOTE: review-stack-prepare.sh: restacked stack '${stack_id}' onto review base '${review_base}'s current remote-tracking tip." >&2
 }
 
 [ "$#" -ge 1 ] || rsp_usage

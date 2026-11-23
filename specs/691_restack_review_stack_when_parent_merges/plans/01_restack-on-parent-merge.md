@@ -299,7 +299,7 @@ before allocating; run the suite before editing and record the pre-edit `Results
 
 ---
 
-### Phase 2: Bottom-up detection and the full disposition plan [NOT STARTED]
+### Phase 2: Bottom-up detection and the full disposition plan [COMPLETED]
 
 **Goal**: `restack` states a disposition for every entry — merged, restacked onto a new parent,
 or unchanged — computes every descendant's new commit off-tree, prints the operator's commands,
@@ -307,35 +307,38 @@ and still writes nothing. This is the complete `--dry-run` deliverable.
 
 **Tasks**:
 
-- [ ] Implement bottom-up merge detection per D1: for the current bottom entry, the ancestry test
+- [x] Implement bottom-up merge detection per D1: for the current bottom entry, the ancestry test
       (`git merge-base --is-ancestor <entry commit> <remote-tracking sha>`) or the squash test
       (`rsp_move_commit_onto_new_parent <entry parent_commit> <remote-tracking sha> <entry commit>`
       yielding a tree equal to the remote-tracking commit's tree). Iterate bottom-up so a run of
-      consecutively merged entries is all detected in one pass.
-- [ ] Apply `--merged NN` as an override per D3: the named ordinal is treated as merged even when
+      consecutively merged entries is all detected in one pass. *(completed:
+      `rsp_restack_detect_merged`)*
+- [x] Apply `--merged NN` as an override per D3: the named ordinal is treated as merged even when
       neither test fires, after the Phase 1 ref requirement has already been satisfied. Refuse
       when `NN` does not name an entry in this stack's manifest, reusing 52
-      (`record_request_entry_not_found`) rather than a new code.
-- [ ] Compute the disposition: each merged entry's state becomes `merged`; the next surviving
+      (`record_request_entry_not_found`) rather than a new code. *(completed)*
+- [x] Compute the disposition: each merged entry's state becomes `merged`; the next surviving
       entry's base becomes the review base; each remaining descendant's new parent is the entry
-      below it in the restacked order.
-- [ ] Per D4, compute every descendant's new tree with `rsp_move_commit_onto_new_parent` and its
+      below it in the restacked order. *(completed: `rsp_restack_compute_disposition`)*
+- [x] Per D4, compute every descendant's new tree with `rsp_move_commit_onto_new_parent` and its
       new commit with `git commit-tree` in this pass, before any ref is touched. The first
       conflict refuses 48 (`ref_conflict`) naming the path, with nothing moved and nothing
-      written.
-- [ ] Implement the nothing-merged report: when no entry is detected as merged and no `--merged`
-      override applies, say so and change nothing.
-- [ ] Implement the stale-stack report: a review base whose remote-tracking ref has moved past
+      written. *(completed: `rsp_restack_recompute`; this uncovered and fixed a latent
+      `$(...)`-subshell bug in `rsp_move_commit_onto_new_parent` shared with cut, logged in the
+      issue log)*
+- [x] Implement the nothing-merged report: when no entry is detected as merged and no `--merged`
+      override applies, say so and change nothing. *(completed)*
+- [x] Implement the stale-stack report: a review base whose remote-tracking ref has moved past
       the manifest's recorded base without any entry having merged is reported as a stale stack,
-      naming the restack it would perform.
-- [ ] Implement `rsp_restack_print`: per restacked branch,
+      naming the restack it would perform. *(completed)*
+- [x] Implement `rsp_restack_print`: per restacked branch,
       `/please push <remote> <branch> --force-with-lease` — the same two-token
       `push <remote> <branch>` form `show` already prints and `please-grant.sh` already parses,
       with the lease flag appended, not the alternate "push BRANCH to REMOTE" form. Once, after
       the per-branch lines, `/merge --stack <stack id> --retarget`. When
       `refs/remotes/<remote>/HEAD` was found absent in Phase 1, print
-      `git remote set-head <remote> -a` first with the reason it is needed.
-- [ ] Suite cases: a bottom entry squash-merged into the review base's remote-tracking ref is
+      `git remote set-head <remote> -a` first with the reason it is needed. *(completed)*
+- [x] Suite cases: a bottom entry squash-merged into the review base's remote-tracking ref is
       detected (fixture advances that ref via `git commit-tree` + `git update-ref` only, never a
       push, fetch, or `git merge`); a merge-commit parent is detected by ancestry (fixture builds
       a two-parent commit with `git commit-tree -p <old tip> -p <entry commit>`); a conflicting
@@ -345,7 +348,7 @@ and still writes nothing. This is the complete `--dry-run` deliverable.
       non-existent ordinal refuses 52; the printed output for a clean detection contains one
       `/please push ... --force-with-lease` per restacked branch and exactly one
       `/merge --stack ... --retarget`; the `git remote set-head` line appears when and only when
-      `refs/remotes/<remote>/HEAD` is absent.
+      `refs/remotes/<remote>/HEAD` is absent. *(completed: 9 new cases, suite now at 55)*
 
 **Timing**: 0.75 hours
 

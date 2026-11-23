@@ -776,6 +776,175 @@ rm -rf "$repo"
 # task-ref-ok:end
 
 # =====================================================================
+# Phase 4 (restack), continued: bottom-up detection (D1), the --merged override (D3), the
+# off-tree descendant recompute (D4), the nothing-merged/stale-stack reports, and the printed
+# operator commands.
+# =====================================================================
+
+# task-ref-ok:begin ad hoc fixture task numbers 994-996, same convention as 990 above
+# restack_build_chain <repo> <stack_id> <t1> <t2> <t3> -- a three-task dependency chain
+# (t1 <- t2 <- t3, disjoint paths), cut bottomed on review-main. Sets RB1/RB2/RB3 to the three
+# resulting branch names.
+restack_build_chain() {
+  local repo="$1" sid="$2" t1="$3" t2="$4" t3="$5"
+  stack_write_batch "$repo" "${t1},${t2},${t3}"
+  stack_add_task_entry "$repo" "$t1" "task-${t1}" "" "2020-01-01T00:00:00Z"
+  stack_commit "$repo" "$t1" "f${t1}.txt" "base work"
+  stack_add_proof "$repo" "$t1" "$LAST_SHA" "f${t1}.txt"
+  stack_add_task_entry "$repo" "$t2" "task-${t2}" "$t1" "2020-01-02T00:00:00Z"
+  stack_commit "$repo" "$t2" "f${t2}.txt" "mid work"
+  stack_add_proof "$repo" "$t2" "$LAST_SHA" "f${t2}.txt"
+  stack_add_task_entry "$repo" "$t3" "task-${t3}" "$t2" "2020-01-03T00:00:00Z"
+  stack_commit "$repo" "$t3" "f${t3}.txt" "top work"
+  stack_add_proof "$repo" "$t3" "$LAST_SHA" "f${t3}.txt"
+  run_rsp "$repo" cut --tasks "${t1},${t2},${t3}" --stack-id "$sid"
+  RB1="$(unit_field 01 branch)"
+  RB2="$(unit_field 02 branch)"
+  RB3="$(unit_field 03 branch)"
+}
+
+# --- a bottom entry squash-merged into the review base's remote-tracking tip is detected,
+#     promotes the next entry's base to the review base, and the printed output carries one
+#     /please push ... --force-with-lease per restacked branch plus exactly one
+#     /merge --stack ... --retarget (built entirely by commit-tree/update-ref -- no push, fetch,
+#     or git merge) --------------------------------------------------------------------------
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackRB1 994 995 996
+restack_set_remote_tracking "$repo"
+squashed_sha="$(git -C "$repo" commit-tree "$(git -C "$repo" rev-parse "${RB1}^{tree}")" -p "$(git -C "$repo" rev-parse review-main)" <<< "a squash-merged PR, built by plumbing only, never a push, fetch, or git merge")"
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/review-main" "$squashed_sha"
+before_refs="$(git -C "$repo" for-each-ref refs/heads | LC_ALL=C sort)"
+run_rsp "$repo" restack --stack-id stackRB1 --dry-run
+after_refs="$(git -C "$repo" for-each-ref refs/heads | LC_ALL=C sort)"
+if [ "$LAST_CODE" -eq 0 ] \
+   && [ "$(restack_entry_field 1 new_state)" = "merged" ] \
+   && [ "$(restack_entry_field 2 new_base)" = "review-main" ] \
+   && [ "$before_refs" = "$after_refs" ]; then
+  common_test_pass "restack: a squash-merged bottom entry is detected, promotes the next entry's base, and a dry-run writes no ref"
+else
+  common_test_fail "restack: squash-merge detection" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+push_count="$(printf '%s\n' "$LAST_OUT" | grep -cE '^/please push ')"
+merge_count="$(printf '%s\n' "$LAST_OUT" | grep -cE '^/merge --stack ')"
+if [ "$push_count" -eq 2 ] && [ "$merge_count" -eq 1 ] \
+   && printf '%s\n' "$LAST_OUT" | grep -qF "/please push ${REMOTE_NAME} ${RB2} --force-with-lease" \
+   && printf '%s\n' "$LAST_OUT" | grep -qF "/please push ${REMOTE_NAME} ${RB3} --force-with-lease" \
+   && ! printf '%s\n' "$LAST_OUT" | grep -qF "${RB1} --force-with-lease" \
+   && printf '%s\n' "$LAST_OUT" | grep -qF "/merge --stack stackRB1 --retarget"; then
+  common_test_pass "restack: printed output has one /please push ... --force-with-lease per restacked branch (never the merged one) and exactly one /merge --stack ... --retarget"
+else
+  common_test_fail "restack: printed push/merge lines" "push_count=${push_count} merge_count=${merge_count} out=${LAST_OUT}"
+fi
+if printf '%s' "$LAST_OUT" | grep -q "git remote set-head ${REMOTE_NAME} -a"; then
+  common_test_pass "restack: the git remote set-head line appears when refs/remotes/<remote>/HEAD is absent"
+else
+  common_test_fail "restack: missing set-head line" "out=${LAST_OUT}"
+fi
+git -C "$repo" symbolic-ref "refs/remotes/${REMOTE_NAME}/HEAD" "refs/remotes/${REMOTE_NAME}/review-main"
+run_rsp "$repo" restack --stack-id stackRB1 --dry-run
+if ! printf '%s' "$LAST_OUT" | grep -q "git remote set-head"; then
+  common_test_pass "restack: the git remote set-head line does not appear once refs/remotes/<remote>/HEAD is present"
+else
+  common_test_fail "restack: unexpected set-head line" "out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- a merge-commit parent whose history contains the bottom entry is detected by ancestry --
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackRB2 994 995 996
+restack_set_remote_tracking "$repo"
+old_tip="$(git -C "$repo" rev-parse review-main)"
+merge_commit="$(git -C "$repo" commit-tree "$(git -C "$repo" rev-parse "${old_tip}^{tree}")" -p "$old_tip" -p "$(git -C "$repo" rev-parse "$RB1")" <<< "a merge commit whose history contains the bottom entry, built by plumbing only")"
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/review-main" "$merge_commit"
+run_rsp "$repo" restack --stack-id stackRB2 --dry-run
+if [ "$LAST_CODE" -eq 0 ] && [ "$(restack_entry_field 1 new_state)" = "merged" ]; then
+  common_test_pass "restack: a merge-commit parent whose history contains the bottom entry is detected by ancestry"
+else
+  common_test_fail "restack: ancestry detection" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- a conflicting descendant refuses with ref_conflict, exit 48, names the path, and moves
+#     nothing (D4: the off-tree recompute pass runs, and refuses, before any ref is touched) --
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackRB3 994 995 996
+restack_set_remote_tracking "$repo"
+old_tip="$(git -C "$repo" rev-parse review-main)"
+bottom_tree="$(git -C "$repo" rev-parse "${RB1}^{tree}")"
+tmp_index="$(mktemp)"
+rm -f "$tmp_index"
+GIT_INDEX_FILE="$tmp_index" git -C "$repo" read-tree "$bottom_tree"
+conflict_blob="$(echo "a conflicting edit to the same path unit 2 touches" | git -C "$repo" hash-object -w --stdin)"
+GIT_INDEX_FILE="$tmp_index" git -C "$repo" update-index --add --cacheinfo "100644,${conflict_blob},f995.txt"
+conflict_tree="$(GIT_INDEX_FILE="$tmp_index" git -C "$repo" write-tree)"
+rm -f "$tmp_index"
+conflict_remote="$(git -C "$repo" commit-tree "$conflict_tree" -p "$old_tip" <<< "squash merge of unit 1 plus a conflicting edit to f995.txt, built by plumbing only")"
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/review-main" "$conflict_remote"
+before_refs="$(git -C "$repo" for-each-ref | LC_ALL=C sort)"
+before_manifest="$(cat "$repo/specs/.orchestration/reviews/stackRB3/manifest.json")"
+run_rsp "$repo" restack --stack-id stackRB3 --dry-run
+after_refs="$(git -C "$repo" for-each-ref | LC_ALL=C sort)"
+after_manifest="$(cat "$repo/specs/.orchestration/reviews/stackRB3/manifest.json")"
+if [ "$LAST_CODE" -eq 48 ] && printf '%s' "$LAST_OUT" | grep -q "REFUSED: review-stack-prepare.sh: ref_conflict:" \
+   && printf '%s' "$LAST_OUT" | grep -q "f995.txt" \
+   && [ "$before_refs" = "$after_refs" ] && [ "$before_manifest" = "$after_manifest" ]; then
+  common_test_pass "restack: a conflicting descendant refuses with ref_conflict, exit 48, names the path, and moves nothing"
+else
+  common_test_fail "restack: conflicting descendant" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- no merged parent is a no-op that reports as such and changes nothing, even for a real
+#     (non-dry-run) invocation ---------------------------------------------------------------
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackRB4 994 995 996
+restack_set_remote_tracking "$repo"
+before_refs="$(git -C "$repo" for-each-ref | LC_ALL=C sort)"
+before_manifest="$(cat "$repo/specs/.orchestration/reviews/stackRB4/manifest.json")"
+run_rsp "$repo" restack --stack-id stackRB4
+after_refs="$(git -C "$repo" for-each-ref | LC_ALL=C sort)"
+after_manifest="$(cat "$repo/specs/.orchestration/reviews/stackRB4/manifest.json")"
+if [ "$LAST_CODE" -eq 0 ] && printf '%s' "$LAST_OUT" | grep -qF "nothing merged for stack 'stackRB4'; no change." \
+   && [ "$before_refs" = "$after_refs" ] && [ "$before_manifest" = "$after_manifest" ]; then
+  common_test_pass "restack: no merged parent is a no-op that reports as such and changes nothing, even for a real (non-dry-run) invocation"
+else
+  common_test_fail "restack: no-op real run" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- a review base whose remote-tracking ref has moved past the manifest's recorded base,
+#     without any entry having merged, is reported as a stale stack ------------------------
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackRB5 994 995 996
+old_tip="$(git -C "$repo" rev-parse review-main)"
+tmp_index="$(mktemp)"
+rm -f "$tmp_index"
+GIT_INDEX_FILE="$tmp_index" git -C "$repo" read-tree "$old_tip"
+unrelated_blob="$(echo "an unrelated merge into the review base" | git -C "$repo" hash-object -w --stdin)"
+GIT_INDEX_FILE="$tmp_index" git -C "$repo" update-index --add --cacheinfo "100644,${unrelated_blob},unrelated.txt"
+advanced_tree="$(GIT_INDEX_FILE="$tmp_index" git -C "$repo" write-tree)"
+rm -f "$tmp_index"
+advanced_commit="$(git -C "$repo" commit-tree "$advanced_tree" -p "$old_tip" <<< "an unrelated merge into the review base, nothing to do with this stack")"
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/review-main" "$advanced_commit"
+run_rsp "$repo" restack --stack-id stackRB5 --dry-run
+if [ "$LAST_CODE" -eq 0 ] && printf '%s' "$LAST_OUT" | grep -q "is stale -- the review base's remote-tracking ref has moved past"; then
+  common_test_pass "restack: a moved base with no merged entry is reported as a stale stack"
+else
+  common_test_fail "restack: stale stack" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- --merged NN naming a non-existent ordinal refuses with record_request_entry_not_found,
+#     exit 52 ---------------------------------------------------------------------------------
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackRB6 994 995 996
+restack_set_remote_tracking "$repo"
+run_rsp "$repo" restack --stack-id stackRB6 --merged 99 --dry-run
+assert_refusal "restack: --merged NN naming a non-existent ordinal refuses with record_request_entry_not_found, exit 52" 52 record_request_entry_not_found
+rm -rf "$repo"
+# task-ref-ok:end
+
+# =====================================================================
 # Writes-nothing check: a refusing invocation leaves the fixture's git state byte-identical.
 # =====================================================================
 repo="$(make_fixture_repo)"
