@@ -95,7 +95,7 @@ next_project_number: 685
 
 ### File Scope Lifecycle
 
-484 [PLANNED] — Collapse per-path scope excursion issue rows into one record...
+484 [IMPLEMENTING] — Collapse per-path scope excursion issue rows into one record...
   └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
     └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
@@ -7605,7 +7605,7 @@ TERRITORY EDGES -- git-commit-phase.sh is SHARED FILE TERRITORY with three open 
 ---
 
 ### 484. Collapse per-path scope excursion issue rows into one record per drop event
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 430, Task 446, Task 469, Task 477, Task 541

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #484
 
 - **Task**: 484 - Collapse per-path scope-excursion issue rows into one record per drop event
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.75 hours
 - **Dependencies**: Serialize behind #430, #446, #469 (file_scope overlap on git-commit-phase.sh,
   git-commit-scoped.sh and their suites — see the dispatch's Serialization Note and Risks below)
@@ -145,49 +145,49 @@ so no roadmap consultation applies to this plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Shared batched-record library and its suite [NOT STARTED]
+### Phase 1: Shared batched-record library and its suite [COMPLETED]
 
 **Goal**: One library function that builds the collapsed `--tags-json` payload and fires a single
 non-fatal `issue-record.sh` call for a whole drop event, with direct unit coverage, registered in
 the extension manifest. No emitter is converted in this phase.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/scope-excursion-record-lib.sh`, following
+- [x] Create `agent-system/extensions/core/scripts/lib/scope-excursion-record-lib.sh`, following *(completed)*
       the sibling libraries' sourced-never-executed conventions: sets no shell options, never
       calls `exit`, always returns 0, internal names prefixed and unset before return, one public
       function as the contract.
-- [ ] Give the public function a signature carrying what the two call sites differ on and nothing
+- [x] Give the public function a signature carrying what the two call sites differ on and nothing *(completed)*
       else: the directory holding `issue-record.sh` (resolved by the caller from its own
       `SCRIPT_DIR`, as the sibling libraries' callers already do), the task number, the
       caller-built `what_happened` sentence, the first-drop and last-drop ISO 8601 UTC timestamps,
       any extra pass-through arguments (`--phase implement` at one site, none at the other), and
       the dropped-path array.
-- [ ] Hardcode `--kind issue --class "scope excursion" --severity minor` inside the function so
+- [x] Hardcode `--kind issue --class "scope excursion" --severity minor` inside the function so *(completed)*
       the class literal has exactly one non-test home in the scripts tree — this is what makes
       Phase 4's repo-wide guard a one-line assertion rather than a parser.
-- [ ] Build the tags payload with `jq` as
+- [x] Build the tags payload with `jq` as *(completed)*
       `{"dropped_paths": [<every path, in drop order>], "occurrence": {"count": N, "first_seen": ..., "last_seen": ...}}`,
       where `count` mirrors the array length, and pass it through the existing `--tags-json` flag.
-- [ ] Preserve both existing tolerances: return 0 immediately when `issue-record.sh` is absent
+- [x] Preserve both existing tolerances: return 0 immediately when `issue-record.sh` is absent *(completed)*
       (the scratch repos in both suites have no such script), and swallow a non-zero result so a
       recording failure can never fail a commit.
-- [ ] Implement the `jq`-absent fallback: fire the same single call without `--tags-json`, with
+- [x] Implement the `jq`-absent fallback: fire the same single call without `--tags-json`, with *(completed)*
       every dropped path listed inline in `what_happened`. Collapsing rows must never suppress
       paths.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-scope-excursion-record-lib.sh`
+- [x] Create `agent-system/extensions/core/scripts/tests/test-scope-excursion-record-lib.sh` *(completed)*
       following this directory's house convention (`common_test_pass`/`_fail`/`_info` from
       `lib/common.sh`, PASSED/FAILED counters, `mktemp -d` workdir with a `trap EXIT` cleanup,
       loud-skip discipline, verdict-line assertions) and `common_test_resolve_subject` for
       source-store/deployed subject resolution.
-- [ ] Cover in that suite: a 3-path call writes exactly one line; `tags.dropped_paths` holds all
+- [x] Cover in that suite: a 3-path call writes exactly one line; `tags.dropped_paths` holds all *(completed)*
       three in order; `tags.occurrence.count` equals 3; `class`/`severity`/`kind` are the expected
       literals; a 1-path call is well-formed too; an absent `issue-record.sh` is a silent no-op
       returning 0; the `jq`-absent fallback still names every path.
-- [ ] Register both new files by running
+- [x] Register both new files by running *(completed)*
       `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check`, then
       `--write`, and confirm the resulting `manifest.json` diff contains only the two new
       `provides.scripts` entries.
-- [ ] Keep every new file free of task-number references and of record-versioning language (both
+- [x] Keep every new file free of task-number references and of record-versioning language (both *(completed)*
       rules apply under `agent-system/**`); describe the library on its own merits, never relative
       to the per-path shape it replaces.
 
@@ -233,26 +233,26 @@ collapsed record after its loop, with the per-path `warn()` and
 `propose_file_scope_addition()` calls left exactly as they are.
 
 **Tasks**:
-- [ ] Re-derive the emission site before editing (`grep -n -- '--class "scope excursion"'`); the
+- [x] Re-derive the emission site before editing (`grep -n -- '--class "scope excursion"'`); the *(completed)*
       live site is inside the `else` branch of `for f in "${files_touched[@]}"`.
-- [ ] Source the new library beside the existing guarded `source … 2>/dev/null || true` lines this
+- [x] Source the new library beside the existing guarded `source … 2>/dev/null || true` lines this *(completed)*
       script already uses for its sibling libraries, with the same fail-soft posture.
-- [ ] Introduce a drop-only accumulator array (the script today keeps only `kept_files_touched`,
+- [x] Introduce a drop-only accumulator array (the script today keeps only `kept_files_touched`, *(completed)*
       the complement) and append each dropped path to it in the same `else` branch.
-- [ ] Capture the first-drop timestamp on the first append and the last-drop timestamp after the
+- [x] Capture the first-drop timestamp on the first append and the last-drop timestamp after the *(completed)*
       loop, so `tags.occurrence.first_seen`/`last_seen` are measured rather than invented.
-- [ ] Remove the in-loop `issue-record.sh` call and fire one library call after the loop, guarded
+- [x] Remove the in-loop `issue-record.sh` call and fire one library call after the loop, guarded *(completed)*
       on a non-empty accumulator, before `files_touched=("${kept_files_touched[@]}")` is consumed
       downstream.
-- [ ] Build the `what_happened` sentence to name the count and point at `tags.dropped_paths`
+- [x] Build the `what_happened` sentence to name the count and point at `tags.dropped_paths` *(completed)*
       rather than inlining every path, keeping the free-prose field readable at any N.
-- [ ] Leave `warn()` per-path (including its `already_proposed` annotation) and
+- [x] Leave `warn()` per-path (including its `already_proposed` annotation) and *(completed)*
       `propose_file_scope_addition()` per-path untouched — this phase changes recording only.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` unmodified
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` unmodified *(completed)*
       first and confirm the existing drop cases still pass, then add a new case: a single commit
       attempt dropping three uncontained paths asserts exactly one `scope excursion` line in
       `issues.jsonl` and that line names all three paths.
-- [ ] Add a second new case asserting the record is still written when the drop is followed by a
+- [x] Add a second new case asserting the record is still written when the drop is followed by a *(completed)*
       commit that itself fails, pinning the unchanged firing order.
 
 **Timing**: 1 hour

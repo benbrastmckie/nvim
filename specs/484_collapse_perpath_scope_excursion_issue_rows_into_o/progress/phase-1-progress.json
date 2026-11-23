@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Shared batched-record library and its suite",
+  "started_at": "2026-11-23T06:40:00Z",
+  "last_updated": "2026-11-23T06:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scope-excursion-record-lib.sh with the public batched-record function", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/scope-excursion-record-lib.sh"]},
+    {"id": 2, "description": "Create test-scope-excursion-record-lib.sh unit coverage", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-scope-excursion-record-lib.sh"]},
+    {"id": 3, "description": "Register both new files via sync-manifest-scripts.sh", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

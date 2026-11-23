@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/plans/01_collapse-scope-excursion-rows.md",
-      "summary": "Five-phase emitter-side collapse of per-path scope-excursion rows into one record per drop event via a new shared batched-record library, with multi-path regression coverage at both emitters, a repo-wide single-emitter guard, and a doc disposition for the three-site parity claim."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "validate-artifact.sh's Tier Justification measurement extracts EVERY test-*.sh token anywhere in a phase's justification block as a claimed suite name, and requires the claim to name the selector's entire output for that phase's harvested paths -- not a representative subset. Two consequences for plan authoring: (1) never write the covering check in fully-qualified form (verify-touched.sh followed by the phase's declared paths) when any declared path is a tests/test-*.sh file, because that path is parsed as a fabricated suite claim; name the command alone and enumerate the suite list separately. (2) A phase whose touched set includes a broad registry file (manifest.json, index-entries.json) maps to dozens of suites, making an enumerated list unwritable -- declare such a phase at the full tier with a cross-cutting-surface justification instead, which carries no suite tokens and is skipped by the measurement entirely.",
-      "category": "PATTERN",
-      "source_artifact": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/plans/01_collapse-scope-excursion-rows.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["validate-artifact.sh", "Tier Justification", "suite_selection_select", "plan-format", "verify-touched.sh"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795400947_bb64cf_484",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3.75,
-    "dependency_waves": 4
+    "session_id": "sess_1795400947_bb64cf",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 14,
-  "next_steps": "Run /orchestrate 484 to execute the plan"
+  "dispatch_seq": 15
 }
