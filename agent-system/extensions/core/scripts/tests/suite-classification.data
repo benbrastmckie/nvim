@@ -210,6 +210,7 @@ test-sapience-mcp-registration.sh	unit	-
 test-sapience-project-bind.sh	unit	-
 test-sapience-publish.sh	unit	-
 test-sapience-vault-read.sh	unit	-
+test-scope-excursion-record-lib.sh	unit	-
 test-script-inventory.sh	unit	-
 test-skill-base-lifecycle.sh	integration	invokes:deploy-headless.sh
 test-source-store-path-lib.sh	unit	-
