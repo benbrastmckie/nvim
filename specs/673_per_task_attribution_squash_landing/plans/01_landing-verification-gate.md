@@ -340,32 +340,32 @@ milestone calls stay where they are.
 
 ---
 
-### Phase 4: Teach the cycle postflight the refusal and the commit body [NOT STARTED]
+### Phase 4: Teach the cycle postflight the refusal and the commit body [COMPLETED]
 
 **Goal**: The cycle postflight treats exit 7 from the status write as a landing refusal and
 writes the landing proof's content into the completion commit's body. Nothing emits exit 7 yet,
 so this phase changes no live behaviour except the body.
 
 **Tasks**:
-- [ ] Where the script captures `postflight_rc` from `skill_postflight_update`, add an exit-7
+- [x] Where the script captures `postflight_rc` from `skill_postflight_update`, add an exit-7
       arm beside the exit-6 arm: set the landing refusal, print one `LANDING-REFUSED` line
       naming the task and pointing at the predicate's own line above, record one issue-log entry
       (class "landing verification", severity `costly`), and skip everything a completed task
       would get. The verdict and the commit subject must not claim completion; the conjunction
-      at the four gating sites already reads the refusal variable.
-- [ ] After a successful completion write, obtain the body block with
+      at the four gating sites already reads the refusal variable. *(completed)*
+- [x] After a successful completion write, obtain the body block with
       `task-landing-verify.sh <N> --session <SID> --print-body` and pass it in the completion
       commit's message after the subject: the phase list, the attributed commits oldest first,
       the end commit, and any second-repository commits as repository identifier plus commit.
-      When no proof exists (D7) the body carries the session line only, as today.
-- [ ] Extend the postflight suite: a stubbed status write returning 7 yields no completion
+      When no proof exists (D7) the body carries the session line only, as today. *(completed)*
+- [x] Extend the postflight suite: a stubbed status write returning 7 yields no completion
       subject, a `defer` verdict and the issue-log entry; a normal completion's commit body
-      carries the phase list and the commit list.
-- [ ] Confirm, by reading each, how the other callers treat a nonzero exit other than 6:
+      carries the phase list and the commit list. *(completed)*
+- [x] Confirm, by reading each, how the other callers treat a nonzero exit other than 6:
       `skill-base.sh` (returns it verbatim), `command-gate-out.sh` (generic warning, no
       completion), `reconcile-task-status.sh` (exits with it), `lib/redeploy-checkpoint-lib.sh`
       (keys on the "promoted" line), `orchestrate-stage5-postflight.sh` and
-      `orchestrator-postflight.sh`. Record the result per caller in the phase's notes.
+      `orchestrator-postflight.sh`. Record the result per caller in the phase's notes. *(completed)*
 
 **Timing**: 1.5 hours
 

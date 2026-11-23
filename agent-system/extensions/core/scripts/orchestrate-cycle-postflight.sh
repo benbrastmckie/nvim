@@ -1392,8 +1392,10 @@ inferred_phase=""
 #                                point and context/standards/postflight-tool-restrictions.md for
 #                                why this Bash invocation is a sanctioned exception.
 #   landing_refusal -- "did the task's work fail to land: the leftover-work commit ahead of the
-#                                completion write, or milestone-ref-land.sh's landing or its
-#                                --verify check, for this implement-phase dispatch". Set
+#                                completion write, milestone-ref-land.sh's landing or its
+#                                --verify check, or the landing verification refusing the
+#                                status write itself (update-task-status.sh's exit 7), for this
+#                                implement-phase dispatch". Set
 #                                only inside the `implemented)` case below (the one place a
 #                                completion status write is attempted); initialized false here so
 #                                every downstream read sees a bound value regardless of which
@@ -1626,7 +1628,23 @@ if [ "$have_outcome" = "true" ]; then
             bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
               >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
           fi
-          if [ "$skeleton_active" = "true" ]; then
+          # postflight_rc==7: the landing verification inside update-task-status.sh refused
+          # the completion write (scripts/task-landing-verify.sh printed its own LANDING-REFUSED
+          # line naming the check, the path or commit, and the remedy). No state was written and
+          # no plan file was stamped, so nothing a completed task gets happens below: no
+          # completion propagation, no sapience notes, and landing_refusal keeps the verdict and
+          # the commit subject from claiming completion.
+          if [ "$postflight_rc" -eq 7 ]; then
+            landing_refusal=true
+            echo "${notice_prefix} LANDING-REFUSED: task ${task_number}'s completion status write was refused by the landing verification (exit 7) — see the LANDING-REFUSED line from task-landing-verify.sh above for the check, the offending path or commit, and the remedy. No state was written; the task remains at its current in-flight status." >&2
+            issue_args=(--task-dir "$TASK_DIR" --kind issue --class "landing verification" \
+              --severity costly --phase implement \
+              --what-happened "Task ${task_number}'s completion status write was refused by the landing verification (update-task-status.sh exit 7) at implement postflight; no state was written and the task was left at its current in-flight status." \
+              --resolution open --suggested-channel fix_now --session "$session_id")
+            [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
+            bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
+              >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+          elif [ "$skeleton_active" = "true" ]; then
             # Resolve the completion JSON once and augment it with a "Skeleton follow-ups" block
             # before handing it to skill_orchestrate_propagate_completion, preserving that
             # helper's documented single-read property (it is passed as precomputed_json rather
@@ -2220,6 +2238,7 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
     echo "${notice_prefix} ${excursion_dropped_count} of ${modified_count} reported modified_files entries were dropped from this cycle's commit as file_scope excursions (see EXCURSION DROPPED lines above)." >&2
   fi
 
+  commit_body=""
   case "$dispatch_status" in
     researched) commit_message="task ${task_number}: complete research" ;;
     planned)    commit_message="task ${task_number}: create implementation plan" ;;
@@ -2229,6 +2248,13 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
       # still, in fact, implementing.
       if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ] && [ "$landing_refusal" != "true" ]; then
         commit_message="task ${task_number}: complete implementation"
+        # The completion commit's body states the task's reviewable unit from its landing proof:
+        # the phase list, the attributed commits oldest first, the end commit, and any
+        # second-repository commits. With no proof recorded the body is empty and the commit
+        # carries the session line alone.
+        if [ -f "${SCRIPT_DIR}/task-landing-verify.sh" ]; then
+          commit_body="$(bash "${SCRIPT_DIR}/task-landing-verify.sh" "$task_number" --session "$session_id" --print-body 2>/dev/null)" || commit_body=""
+        fi
       else
         commit_message="task ${task_number}: orchestration paused (cycle ${cycle_count})"
       fi
@@ -2257,9 +2283,11 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
   # which is the same "the task still reports success" shape this change exists to close for a
   # second route (the first being V9's own repository-containment fix inside the script itself).
   # `commit_rc` is captured explicitly so each code can be classified rather than swallowed.
+  commit_full_message="$commit_message"
+  [ -n "$commit_body" ] && commit_full_message+=$'\n\n'"$commit_body"
   commit_rc=0
   bash "${SCRIPT_DIR}/git-commit-scoped.sh" \
-    --message "$commit_message" \
+    --message "$commit_full_message" \
     --session "$session_id" \
     --honest-index-rows "$task_number" \
     --task "$task_number" \

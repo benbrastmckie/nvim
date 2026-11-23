@@ -45,7 +45,7 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
-         git-commit-scoped.sh issue-record.sh milestone-ref-land.sh \
+         git-commit-scoped.sh issue-record.sh milestone-ref-land.sh task-landing-verify.sh \
          events-append.sh validate-return-meta.sh run-task-observers.sh \
          validate-handoff.sh; do
   require_file "$CORE_DIR/$f"
@@ -76,7 +76,7 @@ setup_sandbox() {
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
-           git-commit-scoped.sh issue-record.sh milestone-ref-land.sh \
+           git-commit-scoped.sh issue-record.sh milestone-ref-land.sh task-landing-verify.sh \
            events-append.sh validate-return-meta.sh run-task-observers.sh \
            validate-handoff.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
@@ -5070,6 +5070,95 @@ if git -C "$WORKDIR" show --name-only --format= HEAD | grep -qx "src/work.sh"; t
   common_test_pass "case 995: the per-cycle commit still carries the reported source file"
 else
   common_test_fail "case 995: expected src/work.sh in the per-cycle commit, got: $(git -C "$WORKDIR" show --name-only --format= HEAD)"
+fi
+
+common_test_info "Case 996: a status write refused by the landing verification (exit 7) claims nothing"
+setup_sandbox
+write_leftover_fixture 996 implemented
+mv "$WORKDIR/.claude/scripts/update-task-status.sh" "$WORKDIR/.claude/scripts/update-task-status.real.sh"
+cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'STUBEOF'
+#!/usr/bin/env bash
+# Refuses an implement postflight the way the landing gate does (exit 7, no write); every other
+# call is real.
+if [ "${1:-}" = "postflight" ] && [ "${3:-}" = "implement" ]; then
+  echo "LANDING-REFUSED task ${2} [V5 nothing left behind]: stubbed refusal" >&2
+  exit 7
+fi
+exec bash "$(dirname "${BASH_SOURCE[0]}")/update-task-status.real.sh" "$@"
+STUBEOF
+chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
+run_leftover_sut 996
+if [ "$(jqf '.verdict')" = "defer" ] && [ "$(jqf '.persisted_status')" = "implementing" ] \
+   && [ "$(jqf '.milestone_landing')" = "true" ]; then
+  common_test_pass "case 996: verdict defer, persisted_status implementing, and the landing refusal is reported in the verdict"
+else
+  common_test_fail "case 996: expected verdict=defer/persisted_status=implementing/landing refusal true, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if git -C "$WORKDIR" log --format=%s | grep -q "complete implementation"; then
+  common_test_fail "case 996: a 'complete implementation' commit was made after an exit-7 refusal"
+else
+  common_test_pass "case 996: no commit subject claims completion"
+fi
+if grep -q "LANDING-REFUSED: task 996's completion status write was refused by the landing verification (exit 7)" <<< "$LAST_STDERR"; then
+  common_test_pass "case 996: one LANDING-REFUSED line names the task and points at the predicate's own line"
+else
+  common_test_fail "case 996: expected the LANDING-REFUSED line on stderr; got: $LAST_STDERR"
+fi
+if [ "$(jq -s '[.[] | select(.class == "landing verification" and .severity == "costly")] | length' "$WORKDIR/specs/996_candidate/issues.jsonl" 2>/dev/null)" = "1" ]; then
+  common_test_pass "case 996: exactly one costly 'landing verification' issue-log entry"
+else
+  common_test_fail "case 996: expected one costly 'landing verification' issue-log entry, got: $(cat "$WORKDIR/specs/996_candidate/issues.jsonl" 2>/dev/null)"
+fi
+if [ "$(jq -r '.active_projects[0].completion_summary // ""' "$STATE_FILE")" = "" ]; then
+  common_test_pass "case 996: no completion summary was propagated for the refused task"
+else
+  common_test_fail "case 996: a completion summary was propagated despite the refusal"
+fi
+
+common_test_info "Case 997: the completion commit's body carries the landing proof's phase list and commit list"
+setup_sandbox
+write_leftover_fixture 997 implemented
+mkdir -p "$WORKDIR/specs/.orchestration/batch"
+cat > "$WORKDIR/specs/.orchestration/batch/sess_997.json" <<'RECEOF'
+{"schema": 1, "session_id": "sess_997", "task_numbers": [997], "admitted_at": "2026-01-01T00:00:00Z",
+ "integration_branch": "trunk",
+ "landing_proofs": [{"task_number": 997, "session_id": "sess_997", "integration_branch": "trunk",
+   "commits": ["1111111111111111111111111111111111111111", "2222222222222222222222222222222222222222"],
+   "end_commit": "2222222222222222222222222222222222222222",
+   "tip_at_verification": "3333333333333333333333333333333333333333",
+   "paths": ["src/work.sh"], "shared_paths": [],
+   "phases": [{"phase": "1", "name": "Build the thing"}, {"phase": "2", "name": "Polish the thing"}],
+   "source_store_commits": [{"repository": "second-repo", "commit": "abc123"}]}]}
+RECEOF
+run_leftover_sut 997
+body_997=$(git -C "$WORKDIR" log -1 --format=%B --grep='complete implementation')
+if [ "$(git -C "$WORKDIR" log -1 --format=%s)" = "task 997: complete implementation" ] \
+   && grep -q -- "- Phase 1: Build the thing" <<< "$body_997" \
+   && grep -q -- "- Phase 2: Polish the thing" <<< "$body_997"; then
+  common_test_pass "case 997: the completion commit's body lists the phases"
+else
+  common_test_fail "case 997: expected the phase list in the completion commit body, got: $body_997 ($LAST_STDERR)"
+fi
+if grep -q -- "- 1111111111111111111111111111111111111111" <<< "$body_997" \
+   && grep -q "End commit: 2222222222222222222222222222222222222222" <<< "$body_997" \
+   && grep -q -- "- second-repo abc123" <<< "$body_997"; then
+  common_test_pass "case 997: the body lists the attributed commits, the end commit and the second-repository commit"
+else
+  common_test_fail "case 997: the body lacks the commit list, the end commit or the second-repository commit: $body_997"
+fi
+if grep -q "^Session: sess_997$" <<< "$body_997"; then
+  common_test_pass "case 997: the session line still closes the message"
+else
+  common_test_fail "case 997: the session line is missing from the completion commit: $body_997"
+fi
+setup_sandbox
+write_leftover_fixture 993 implemented
+run_leftover_sut 993
+body_993=$(git -C "$WORKDIR" log -1 --format=%b --grep='complete implementation')
+if ! grep -q "Phases:" <<< "$body_993" && grep -q "^Session: sess_993$" <<< "$body_993"; then
+  common_test_pass "case 997 (no proof): with no landing proof the body carries the session line only"
+else
+  common_test_fail "case 997 (no proof): unexpected completion commit body: $body_993"
 fi
 # task-ref-ok:end
 

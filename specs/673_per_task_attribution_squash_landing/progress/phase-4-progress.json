@@ -1,0 +1,44 @@
+{
+  "phase": 4,
+  "phase_name": "Teach the cycle postflight the refusal and the commit body",
+  "started_at": "2026-11-23T12:22:49Z",
+  "last_updated": "2026-11-23T12:22:49Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Exit-7 arm beside the exit-6 arm: LANDING-REFUSED line, issue-log entry, nothing a completed task gets",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Completion commit body from task-landing-verify.sh --print-body",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Suite: stubbed exit 7, and a completion body carrying phases and commits",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Per-caller reading of how a nonzero exit other than 6 is treated",
+      "status": "done",
+      "files_touched": [],
+      "note": "skill-base.sh skill_postflight_update: returns update-task-status.sh exit verbatim, annotates only exit 6. command-gate-out.sh: exit 4 and 6 have arms; any other nonzero prints a generic WARNING and claims nothing; its post-redeploy retry does the same. reconcile-task-status.sh: both implement call sites (lines 685 and 745) exit with the code, except exit 4. lib/redeploy-checkpoint-lib.sh: a nonzero reconcile exit is outcome refused; promotion is keyed on the promoted line. orchestrate-stage5-postflight.sh: discards the return code and still calls completion propagation (the same behaviour it has for exit 6); it writes no completed status itself and no script, skill or command calls it. orchestrator-postflight.sh: research and plan only, non-blocking WARNING, no live caller. No caller claims a completed status after exit 7; no edit made outside the two declared files."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "verification": "test-orchestrate-cycle-postflight.sh 373/373 (cases 996, 997 new). The 16 suites referencing the script, source-store run: 15 passed, 1 failed (test-handoff-dispatch-identity.sh, a one-second mtime race; passed twice in isolation and in the Phase 3 run of the same list).",
+  "handoff_count": 0
+}
