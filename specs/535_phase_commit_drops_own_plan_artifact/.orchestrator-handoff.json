@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "summary": "Created a 3-phase plan narrowing this record to its two genuinely-remaining items after re-verifying live that the code carve-out is already landed (file_scope_arr+=(\"${task_dir}/\") present; suite green at 98 passed / 0 failed across 39 cases). Phase 1 adds two regression cases to test-git-commit-phase.sh (dotfiles at the task-directory root, and a planted-pre-commit-hook fixture forcing exit 6 as the positive observable that the post-commit completeness check runs), with a fails-first demonstration against a scratch reverted copy. Phase 2 corrects the false \"structurally outside its reach\" mechanism sentence in git-staging-scope.md. Phase 3 deploys and verifies. The validator passes with 0 warnings.",
-  "phases_completed": 0,
+  "status": "implemented",
+  "summary": "All three plan phases completed. Phase 1 added Case 40 (dotfile-at-task-directory-root admission) and Case 41 (completeness-check-runs with a hooked exit-6 positive observable plus an unhooked clean sibling) to test-git-commit-phase.sh, growing it from 98 to 104 passing assertions, with a fails-first demonstration against a scratch-reverted copy of git-commit-phase.sh (git diff on the real script stayed empty throughout). Phase 2 corrected the false \"structurally outside its reach\" mechanism sentence in git-staging-scope.md with an accurate admission-based account. Phase 3 deployed via deploy-headless.sh (RESULT=landed_verify_clean) and confirmed both deployed mirrors byte-identical to the source store, the suite green against the deployed copy, and the scoped touched-path check green (5 suites, 5 passed).",
+  "phases_completed": 3,
   "phases_total": 3,
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/535_phase_commit_drops_own_plan_artifact/plans/01_containment-carve-out-reconciliation.md",
-      "summary": "3-phase plan: two new regression cases in test-git-commit-phase.sh, one mechanism-sentence correction in git-staging-scope.md, then deploy-and-verify."
+      "type": "summary",
+      "path": "specs/535_phase_commit_drops_own_plan_artifact/summaries/01_containment-carve-out-reconciliation-summary.md",
+      "summary": "Implementation summary for the mechanism-sentence correction and two new regression cases, with the fails-first demonstration record."
     }
   ],
-  "dispatch_seq": 8
+  "dispatch_seq": 9
 }

@@ -5607,6 +5607,7 @@ RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-lay
 - **Dependencies**: Task 567
 - **Research**: [535_phase_commit_drops_own_plan_artifact/reports/01_containment-filter-carve-out.md]
 - **Plan**: [535_phase_commit_drops_own_plan_artifact/plans/01_containment-carve-out-reconciliation.md]
+- **Summary**: [535_phase_commit_drops_own_plan_artifact/summaries/01_containment-carve-out-reconciliation-summary.md]
 
 **Description**: Carve a task's own specs/ artifacts out of git-commit-phase.sh's containment filter, so a task's own plan file is never dropped from its own phase commit.
 

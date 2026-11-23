@@ -12718,6 +12718,11 @@
           "path": "specs/535_phase_commit_drops_own_plan_artifact/plans/01_containment-carve-out-reconciliation.md",
           "type": "plan",
           "summary": "3-phase plan: two new regression cases in test-git-commit-phase.sh, one mechanism-sentence correction in git-staging-scope.md, then deploy-and-verify."
+        },
+        {
+          "path": "specs/535_phase_commit_drops_own_plan_artifact/summaries/01_containment-carve-out-reconciliation-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the mechanism-sentence correction and two new regression cases, with the fails-first demonstration record."
         }
       ],
       "created": "2026-10-12T16:27:31Z",
@@ -12736,7 +12741,8 @@
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
       "session_id": "sess_1795400947_bb64cf",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Corrected the false 'structurally outside its reach' mechanism sentence in git-staging-scope.md's Staging-Layer Containment Filter subsection, and added two regression cases (Case 40: dotfile-at-task-directory-root admission; Case 41: completeness-check-runs with a hooked exit-6 positive observable and an unhooked clean sibling) to test-git-commit-phase.sh, growing it from 98 to 104 passing assertions. Both new cases were demonstrated to fail against a scratch-reverted copy of git-commit-phase.sh before passing against the real, untouched script. Deployed via deploy-headless.sh with RESULT=landed_verify_clean."
     },
     {
       "project_name": "source_store_commit_and_registration_review",
