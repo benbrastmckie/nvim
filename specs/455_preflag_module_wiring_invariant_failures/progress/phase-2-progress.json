@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Record the Finding and the Ruling, and Pin the Wiring Shape",
+  "started_at": "2026-11-22T00:15:00Z",
+  "last_updated": "2026-11-22T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace the harvester header's overclaiming sentence with an accurate statement of reach", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 2, "description": "State what the append does NOT reach (plan prose / dispatch prompt)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 3, "description": "Name the plan-prose channel source (coupled-generated-surface declaration obligation)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 4, "description": "Add Deliberately not appended paragraph (part-2 ruling)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 5, "description": "Keep header addition within budget; verify untouched sections", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 6, "description": "Add Case 30 fixture to test-plan-file-scope-harvest.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"]},
+    {"id": 7, "description": "Assert harvested set equality for Case 30", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"]},
+    {"id": 8, "description": "Add append-only assertion inside Case 30", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"]},
+    {"id": 9, "description": "Add inert-case assertion inside Case 30", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"]},
+    {"id": 10, "description": "Add Case 30 to suite header's numbered case list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"]},
+    {"id": 11, "description": "Grep both files for task-number refs and record-versioning phrasings", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

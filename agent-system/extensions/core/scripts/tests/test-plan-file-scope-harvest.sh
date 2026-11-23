@@ -56,6 +56,13 @@
 #   28. A path containing a literal `$` that is not a variable reference survives unrefused.
 #   29. The deployed-tree refusal and the unexpanded-variable refusal both fire in the same run
 #       with no interference between them.
+#   30. The cited module-wiring shape (a new-module `.lean` path declared in one phase, its own
+#       README plus a docs/theorem-index.md ledger update declared in a second phase) against a
+#       fake repo whose root README carries the real consumer-repository marker spelling
+#       (`dir=FormalSystem rows=totals desc=no`): both claimed-missed surfaces (root README,
+#       status.typ) are appended; all three of the plan's own declared paths survive
+#       (append-only); and the same fixture plan under a capability-gate-closed repo appends
+#       nothing (inert case).
 #
 # Structural model: pass()/fail()/info() helpers, PASSED/FAILED integer counters, mktemp -d
 # workdir with an EXIT-trap cleanup, exit 0 all-pass / 1 any-fail / 2 environment error.
@@ -737,6 +744,80 @@ if grep -q "refused '.claude/scripts/planted.sh'" "$WORKDIR/case29.err" && grep 
 else
   common_test_fail "Case 29: stderr did not name both refused entries: $(cat "$WORKDIR/case29.err")"
 fi
+
+# ── Case 30: the cited module-wiring shape -- a new-module .lean declared in one phase, its own
+# README and a docs/theorem-index.md ledger update declared in a second phase, against a fake
+# repo whose root README carries the real consumer-repository marker spelling
+# (`dir=FormalSystem rows=totals desc=no`, with `desc=no` not modelled by any earlier case).
+# Pins three things at once: both claimed-missed surfaces (the root README and status.typ) ARE
+# appended for this shape; every one of the plan's own three declared paths survives unchanged
+# (append-only); and the same fixture plan under a capability-gate-closed repo yields exactly
+# those three declared paths with no appended surface (inert case). ─────────────────────────────
+FIXTURE_30="$WORKDIR/case30.md"
+cat > "$FIXTURE_30" << 'EOF'
+### Phase 1: Wire New Module [NOT STARTED]
+
+**Files to modify**:
+- `FormalSystem/OpenLanguage/OpenTruth.lean` - new module
+
+**Verification**:
+- ok
+
+---
+
+### Phase 2: Update Docs [NOT STARTED]
+
+**Files to modify**:
+- `FormalSystem/OpenLanguage/README.md` - inventory block will be stale once Phase 1 lands
+- `docs/theorem-index.md` - add the new ledger row
+
+**Verification**:
+- ok
+EOF
+FAKE_REPO_30="$(make_fake_repo)"
+mkdir -p "$FAKE_REPO_30/typst/generated" "$FAKE_REPO_30/FormalSystem/OpenLanguage"
+: > "$FAKE_REPO_30/typst/generated/status.typ"
+cat > "$FAKE_REPO_30/README.md" << 'EOF'
+<!-- BEGIN GENERATED: inventory dir=FormalSystem rows=totals desc=no -->
+| x |
+|---|
+<!-- END GENERATED -->
+EOF
+cat > "$FAKE_REPO_30/FormalSystem/README.md" << 'EOF'
+<!-- BEGIN GENERATED: inventory dir=FormalSystem rows=loose -->
+| x |
+|---|
+<!-- END GENERATED -->
+EOF
+cat > "$FAKE_REPO_30/FormalSystem/OpenLanguage/README.md" << 'EOF'
+<!-- BEGIN GENERATED: inventory dir=FormalSystem/OpenLanguage rows=loose -->
+| x |
+|---|
+<!-- END GENERATED -->
+EOF
+OUT_30="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$FAKE_REPO_30" bash "$HARVESTER" "$FIXTURE_30")"
+assert_json_array_eq "$OUT_30" '["FormalSystem/OpenLanguage/OpenTruth.lean","FormalSystem/OpenLanguage/README.md","FormalSystem/README.md","README.md","docs/theorem-index.md","typst/generated/status.typ"]' "Case 30 (cited wiring shape: both claimed-missed surfaces appended)"
+
+# Append-only: every one of the plan's own three declared paths must survive in the output.
+CASE30_DECLARED=("FormalSystem/OpenLanguage/OpenTruth.lean" "FormalSystem/OpenLanguage/README.md" "docs/theorem-index.md")
+CASE30_MISSING=()
+for declared_path in "${CASE30_DECLARED[@]}"; do
+  if ! echo "$OUT_30" | jq -e --arg p "$declared_path" 'index($p) != null' >/dev/null 2>&1; then
+    CASE30_MISSING+=("$declared_path")
+  fi
+done
+if [[ "${#CASE30_MISSING[@]}" -eq 0 ]]; then
+  common_test_pass "Case 30: append-only -- all three declared paths survive"
+else
+  common_test_fail "Case 30: append-only violated -- missing declared path(s): ${CASE30_MISSING[*]}"
+fi
+
+# Inert case: the same fixture plan under a capability-gate-closed (bare) repo yields exactly the
+# three declared paths and no appended surface.
+BARE_REPO_30="$(make_bare_repo)"
+OUT_30_BARE="$(PLAN_FILE_SCOPE_HARVEST_ROOT="$BARE_REPO_30" bash "$HARVESTER" "$FIXTURE_30")"
+assert_json_array_eq "$OUT_30_BARE" '["FormalSystem/OpenLanguage/OpenTruth.lean","FormalSystem/OpenLanguage/README.md","docs/theorem-index.md"]' "Case 30 (inert: capability gate closed appends nothing)"
+rm -rf "$FAKE_REPO_30" "$BARE_REPO_30"
 
 echo ""
 echo "=== Summary ==="

@@ -76,10 +76,31 @@
 #   and `scripts/typst-sync-check.sh`): the status-table typst file, every markdown README whose
 #   `<!-- BEGIN GENERATED: inventory -->` block covers a directory on the edited file's
 #   ancestor-directory chain, and (narrowly) the automation module map and the machine-readable
-#   axiom appendix. A plan that harvests a `.lean` path but omits these either blocks on the
-#   pre-commit `typst-sync-check.sh` gate or fails `check-module-invariants.sh`'s INV check
-#   mid-implementation -- this has happened twice independently. This stage appends them so the
-#   plan's declared `file_scope` already carries what the edit will force.
+#   axiom appendix. This stage appends those forced surfaces into the harvested array; the
+#   plan-postflight `--file-scope-add` write path then persists the merged array into the task's
+#   `file_scope` in `specs/state.json` at the `[PLANNING] -> [PLANNED]` transition -- that write
+#   is this stage's entire reach.
+#
+#   What this does NOT reach: this script only reads a plan file and never writes back into a
+#   plan's own per-phase `Files to modify` prose, and the implement-dispatch composer does not
+#   read the dispatching task's own `file_scope`. A correct append is therefore not by itself a
+#   mid-phase cue to an implementer, and a commit-time gate collision over one of these surfaces
+#   can still occur with this stage working exactly as designed -- a consumer repository's own
+#   issue log has recorded that recurrence; the count is not re-measurable from here, so none is
+#   stated. The channel that DOES reach an implementer mid-phase is the planner-side "Coupled-
+#   generated-surface declaration obligation" in `context/formats/plan-format.md` (declare the
+#   derived surface in the SAME phase that moves its input); this comment names that obligation
+#   in one direction only, without restating its content, so the two cannot drift apart.
+#
+#   Deliberately not appended: a lint-suppression allowlist entry, an identifier rename, a
+#   suppression-reason comment, and a per-ledger-row doc-comment obligation are NOT appended by
+#   this stage, even though all four can also be forced by wiring a module. This stage appends
+#   PATHS a mechanical regeneration overwrites; those four are CONTENT obligations whose required
+#   content is not computable from a plan's declared paths without running the lint, naming, or
+#   ledger check itself. A repository with a genuine trigger-glob-to-path coupling should declare
+#   it as its own `coupled_generated_surfaces` entry (`context/standards/repo-level-declarations.md`,
+#   read advisory-only by `validate-artifact.sh` at plan-acceptance time); a content obligation
+#   belongs in that repository's own human-facing wiring documentation instead.
 #
 #   Trigger: the harvested array contains at least one `*.lean` path.
 #   Guard 1 (capability): both generator scripts must exist as regular files under the resolved

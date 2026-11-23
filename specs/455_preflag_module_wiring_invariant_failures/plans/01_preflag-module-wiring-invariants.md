@@ -190,7 +190,7 @@ particular move.
 
 ---
 
-### Phase 2: Record the Finding and the Ruling, and Pin the Wiring Shape [NOT STARTED]
+### Phase 2: Record the Finding and the Ruling, and Pin the Wiring Shape [COMPLETED]
 
 **Goal**: Land the record and the fixture. The header of `plan-file-scope-harvest.sh` gains an
 accurate statement of what the generated-surface stage reaches and a short record of the
@@ -199,26 +199,27 @@ the inert case against that same fixture, and append-only behaviour as a named a
 executable line of the harvester changes.
 
 **Tasks**:
-- [ ] In `plan-file-scope-harvest.sh`'s `Generated-surface appending:` header subsection, replace
+- [x] In `plan-file-scope-harvest.sh`'s `Generated-surface appending:` header subsection, replace
       the sentence that asserts an outcome the stage does not produce (the "either blocks on the
       pre-commit gate or fails the INV check mid-implementation -- this has happened twice
       independently. This stage appends them so the plan's declared `file_scope` already carries
       what the edit will force." pair, re-located by grep in Phase 1) with a statement of the
       stage's actual reach: it appends the forced surfaces into the harvested array, which the
       plan-postflight `--file-scope-add` write path persists into the task's `file_scope` in
-      `specs/state.json` at the `[PLANNING] -> [PLANNED]` transition.
-- [ ] In the same subsection, state what the append does NOT reach: this script only reads a plan
+      `specs/state.json` at the `[PLANNING] -> [PLANNED]` transition. *(completed)*
+- [x] In the same subsection, state what the append does NOT reach: this script only reads a plan
       and never writes back into a plan's own per-phase `**Files to modify**:` prose, and the
       implement-dispatch composer does not read the dispatching task's own `file_scope` — so a
       correct append is not by itself a mid-phase cue to an implementer, and the gate collision
       the stage anticipates can still occur with the append working exactly as designed. State
       any recurrence count as carried from the consumer repository's own issue log and not
-      re-measurable here, or omit the count rather than overstate it.
-- [ ] In the same subsection, name where the plan-prose channel actually comes from: the
+      re-measurable here, or omit the count rather than overstate it. *(completed: count omitted,
+      stated as not re-measurable)*
+- [x] In the same subsection, name where the plan-prose channel actually comes from: the
       planner-side coupled-generated-surface declaration obligation in
       `context/formats/plan-format.md` (declare the derived surface in the phase that moves its
-      input). Point at it by name in one direction only; do not restate its content.
-- [ ] Add a short `Deliberately not appended:` paragraph recording the ruling: lint-suppression
+      input). Point at it by name in one direction only; do not restate its content. *(completed)*
+- [x] Add a short `Deliberately not appended:` paragraph recording the ruling: lint-suppression
       allowlist entries, identifier renames, suppression-reason comments, and per-ledger-row
       doc-comment obligations are NOT appended, because this stage appends PATHS a mechanical
       regeneration overwrites while those are CONTENT obligations whose required content is not
@@ -227,11 +228,13 @@ executable line of the harvester changes.
       `coupled_generated_surfaces` declaration (`context/standards/repo-level-declarations.md`,
       read advisory-only by `validate-artifact.sh` at plan-acceptance time) for a genuine
       trigger-glob-to-path coupling, and the consumer repository's own human-facing wiring
-      documentation for a content obligation.
-- [ ] Keep the whole header addition inside a ~25-line budget, and leave the `Contract:`,
+      documentation for a content obligation. *(completed)*
+- [x] Keep the whole header addition inside a ~25-line budget, and leave the `Contract:`,
       `Grammar accepted`, deployed-tree-refusal, unexpanded-variable-refusal, and
-      `generated_inventory_readmes()` mirroring comments untouched.
-- [ ] Add Case 30 to `test-plan-file-scope-harvest.sh`, after Case 29, reusing the existing
+      `generated_inventory_readmes()` mirroring comments untouched. *(completed: added content is
+      ~25 lines net new; git diff confirms changed hunks are comment-only and the four named
+      comments are untouched)*
+- [x] Add Case 30 to `test-plan-file-scope-harvest.sh`, after Case 29, reusing the existing
       `make_fake_repo`, `make_bare_repo`, and `assert_json_array_eq` helpers: a capable fake repo
       with `typst/generated/status.typ` present; a root `README.md` carrying the consumer
       repository's real marker spelling `<!-- BEGIN GENERATED: inventory dir=FormalSystem rows=totals desc=no -->`
@@ -240,20 +243,24 @@ executable line of the harvester changes.
       `dir=FormalSystem/OpenLanguage`; and a two-phase fixture plan declaring
       `FormalSystem/OpenLanguage/OpenTruth.lean` in one phase and
       `FormalSystem/OpenLanguage/README.md` plus `docs/theorem-index.md` in another — the cited
-      wiring shape.
-- [ ] Assert in Case 30 that the harvested set equals exactly
+      wiring shape. *(completed)*
+- [x] Assert in Case 30 that the harvested set equals exactly
       `["FormalSystem/OpenLanguage/OpenTruth.lean","FormalSystem/OpenLanguage/README.md","FormalSystem/README.md","README.md","docs/theorem-index.md","typst/generated/status.typ"]`
       — pinning that both claimed-missed surfaces ARE appended for this shape, which is the
-      behaviour the ruling selects.
-- [ ] Add an explicit append-only assertion inside Case 30: iterate the fixture plan's three
+      behaviour the ruling selects. *(completed: assertion passes)*
+- [x] Add an explicit append-only assertion inside Case 30: iterate the fixture plan's three
       declared paths and fail naming any that is absent from the output, so append-only is pinned
-      as a named behaviour rather than implied by the equality assertion alone.
-- [ ] Add an inert-case assertion inside Case 30: the same fixture plan under `make_bare_repo`
+      as a named behaviour rather than implied by the equality assertion alone. *(completed:
+      assertion passes)*
+- [x] Add an inert-case assertion inside Case 30: the same fixture plan under `make_bare_repo`
       (capability gate closed) yields exactly the three declared paths and no appended surface.
-- [ ] Add Case 30 to the suite header's numbered case list, matching the existing entries' style.
-- [ ] Grep both edited files for task-number references and for record-versioning phrasings
+      *(completed: assertion passes)*
+- [x] Add Case 30 to the suite header's numbered case list, matching the existing entries' style.
+      *(completed)*
+- [x] Grep both edited files for task-number references and for record-versioning phrasings
       (`no longer`, `previously`, `formerly`, `used to`, `supersedes`, `withdrawn`) and remove any
-      the edit introduced.
+      the edit introduced. *(completed: grep confirms the only pre-existing hits are the
+      unrelated `#417` citations in Case 23, which this edit did not introduce and did not touch)*
 
 **Timing**: 1.25 hours
 
