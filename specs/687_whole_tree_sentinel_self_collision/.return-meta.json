@@ -1,40 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/687_whole_tree_sentinel_self_collision/plans/01_concrete-path-precedence-sentinel.md",
-      "summary": "3-phase plan (1.75h) giving a concrete-path overlap precedence over the reserved __WHOLE_TREE__ sentinel when the same task pair overlaps on both, pinned by a new order-independence fixture; re-scoped after the dispatch's stated deliverable was measured already met."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 27,
   "metadata": {
-    "session_id": "sess_1795463295_b6ad0f_687",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 1.75,
-    "dependency_waves": 3
-  },
-  "user_decision": {
-    "question": "This record's stated deliverable (making WHOLE-TREE-CODISPATCH go green) is already satisfied in live code -- the fixture passes today and the whole_tree_claim branch already emits all asserted fields. The only measurably-unmet requirement is the description's own REGRESSION clause (a concrete-path collision between two sentinel-declaring tasks is masked as a bare whole-tree claim, order-dependently). Proceed against that clause, or close the record as already-satisfied?",
-    "options": [
-      "Proceed with the plan as written -- close the order-dependent concrete-path masking, the one requirement in the description that live state does not already meet",
-      "Close the record as already-satisfied with no code change, and file the masking as its own record"
-    ],
-    "recommended": "Proceed with the plan as written -- close the order-dependent concrete-path masking, the one requirement in the description that live state does not already meet",
-    "blocking": false,
-    "obligation": "The description's REGRESSION clause: two sentinel-declaring tasks whose concrete paths genuinely intersect must still report the concrete overlapping path rather than being relabelled as a bare whole-tree claim. Checkable against the plan's Phase 2 verification: both declaration orderings of a sentinel-plus-shared-concrete-path pair must yield defer_reason file_scope_collision with overlapping_path naming the concrete path and no claim_sentinel field, while WHOLE-TREE-CODISPATCH stays green with its assertions byte-identical."
-  },
-  "memory_candidates": [
-    {
-      "content": "A comparator that RELABELS one already-selected hit into a different, more specific verdict shape (orchestrate-batch-admit.sh relabeling a scopes_overlap_first hit on the reserved __WHOLE_TREE__ sentinel into defer_reason whole_tree_claim) inherits a masking hazard from the underlying predicate's first-match-wins return: when a task pair overlaps on BOTH the special token and a real path, which label fires depends on the ARRAY DECLARATION ORDER of the declared file_scope entries, not on which finding is stronger. The general fix is a precedence wrapper composed from the existing predicate (compare with the special token filtered out first; fall back to the unfiltered call only when that yields nothing), never a change to the predicate itself -- which keeps every other consumer of the shared comparator byte-identical. The masking is not merely cosmetic: in this case file_scope_collision carries a consumer-side --allow-scope-collision override (orchestrate-cycle-plan.sh, cross_batch only) that whole_tree_claim does not, so the relabel silently removes an operator remedy.",
-      "category": "PATTERN",
-      "source_artifact": "specs/687_whole_tree_sentinel_self_collision/plans/01_concrete-path-precedence-sentinel.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["file-scope-overlap", "relabeling-comparator", "first-match-wins", "declaration-order-dependence", "defer_reason", "precedence-wrapper"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 687 to execute the plan",
-  "dispatch_seq": 26
+    "session_id": "sess_1795463295_b6ad0f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

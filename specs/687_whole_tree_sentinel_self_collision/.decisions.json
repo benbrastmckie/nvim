@@ -1,0 +1,10 @@
+[
+  {
+    "question": "This record's stated deliverable (making WHOLE-TREE-CODISPATCH go green) is already satisfied in live code -- the fixture passes today and the whole_tree_claim branch already emits all asserted fields. The only measurably-unmet requirement is the description's own REGRESSION clause (a concrete-path collision between two sentinel-declaring tasks is masked as a bare whole-tree claim, order-dependently). Proceed against that clause, or close the record as already-satisfied?",
+    "answer": "Proceed with the plan as written -- close the order-dependent concrete-path masking, the one requirement in the description that live state does not already meet",
+    "cycle": 2,
+    "timestamp": "2026-11-23T20:15:22Z",
+    "description_fingerprint": "f82916f29533fd65455b61f25aa23460c6a083c02c8463bc67c3dfeaf65c9cd9",
+    "obligation": "The description's REGRESSION clause: two sentinel-declaring tasks whose concrete paths genuinely intersect must still report the concrete overlapping path rather than being relabelled as a bare whole-tree claim. Checkable against the plan's Phase 2 verification: both declaration orderings of a sentinel-plus-shared-concrete-path pair must yield defer_reason file_scope_collision with overlapping_path naming the concrete path and no claim_sentinel field, while WHOLE-TREE-CODISPATCH stays green with its assertions byte-identical."
+  }
+]

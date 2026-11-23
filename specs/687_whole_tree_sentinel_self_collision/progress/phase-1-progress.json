@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Pin the concrete-path masking with a new fixture",
+  "started_at": "2026-11-23T20:17:43Z",
+  "last_updated": "2026-11-23T20:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add WHOLE-TREE-REAL-PATH-PRECEDENCE fixture (sub-cases A and B) after WHOLE-TREE-INERT-PATH block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 2, "description": "Run suite and record RED baseline (sub-case B failing, all else passing)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Record issue-record.sh entry for premise invalidation if not already present", "status": "done", "note": "Premise-invalidation entry already recorded during planning (kind=issue, class='stale premise / carried figure'); recorded a supplementary win entry for the RED-baseline measurement instead of duplicating it.", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

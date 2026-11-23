@@ -1,7 +1,7 @@
 # Implementation Plan: Task #687
 
 - **Task**: 687 - Whole-tree sentinel self-collision
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/687_whole_tree_sentinel_self_collision/reports/01_sentinel-self-collision-fix.md
@@ -175,7 +175,7 @@ roadmap consultation was performed and no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Pin the concrete-path masking with a new fixture [NOT STARTED]
+### Phase 1: Pin the concrete-path masking with a new fixture [COMPLETED]
 
 **Goal**: Add one new fixture to `test-orchestrate-batch-admit.sh` that exercises the dispatch's
 REGRESSION clause in BOTH declaration orderings and asserts the target posture, establishing a
@@ -184,32 +184,37 @@ TDD convention is to write the final-form target-posture assertion first and rec
 pre-fix output; follow it.
 
 **Tasks**:
-- [ ] Add a fixture `WHOLE-TREE-REAL-PATH-PRECEDENCE` after the existing `WHOLE-TREE-INERT-PATH`
+- [x] Add a fixture `WHOLE-TREE-REAL-PATH-PRECEDENCE` after the existing `WHOLE-TREE-INERT-PATH`
       block (and before the Summary block), using fresh task numbers not already used in the file
       (409/410 and 411/412 are the next free pairs above `WHOLE-TREE-INERT-PATH`'s 407/408 --
-      confirm by grep before using them).
-- [ ] Sub-case A: two in-batch candidates, scopes `["scope/shared", "__WHOLE_TREE__"]` and
+      confirm by grep before using them). *(completed: confirmed 409-412 free by grep before use)*
+- [x] Sub-case A: two in-batch candidates, scopes `["scope/shared", "__WHOLE_TREE__"]` and
       `["scope/shared", "__WHOLE_TREE__"]` (concrete entry first). Assert the lower-numbered
       candidate admits; the higher-numbered defers with `defer_reason == "file_scope_collision"`,
       `overlapping_path == "scope/shared"`, `collision_scope == "in_batch"`,
       `colliding_task_number ==` the lower number, `has("claim_sentinel") == false`, and
       `whole_tree_claim == true` (the annotation field stays, per its own "hazard stays visible"
-      convention).
-- [ ] Sub-case B: the identical pair with the sentinel entry FIRST in both arrays
+      convention). *(completed: passed on first run)*
+- [x] Sub-case B: the identical pair with the sentinel entry FIRST in both arrays
       (`["__WHOLE_TREE__", "scope/shared"]`). Assert the IDENTICAL verdict shape as sub-case A --
       this is the order-independence property, and the one assertion that is RED today.
-- [ ] Write the fixture's header comment to state the target posture and the measured pre-fix
+      *(completed: failed exactly as predicted on defer_reason/overlapping_path/claim_sentinel)*
+- [x] Write the fixture's header comment to state the target posture and the measured pre-fix
       output for sub-case B (`defer_reason: "whole_tree_claim"`, `claim_sentinel` present,
       `overlapping_path` absent), in the same narrate-target-posture-inline style the four
       existing whole-tree fixture comments already use. Name durable anchors only -- no task
-      numbers, no record-versioning phrasing.
-- [ ] Clean up the fixture's injected `active_projects` entries at the end of the block, matching
+      numbers, no record-versioning phrasing. *(completed)*
+- [x] Clean up the fixture's injected `active_projects` entries at the end of the block, matching
       the `jq ... map(select(.project_number != ...))` teardown every neighbouring fixture uses.
-- [ ] Run the suite and record the RED baseline in the phase notes: sub-case A passing, sub-case B
+      *(completed: separate teardown after each sub-case)*
+- [x] Run the suite and record the RED baseline in the phase notes: sub-case A passing, sub-case B
       failing on `defer_reason`/`overlapping_path`/`claim_sentinel`, and all 15 pre-existing cases
-      still passing.
-- [ ] Record an `issue-record.sh` entry for the premise invalidation measured during planning if
-      one is not already present for this phase's own findings.
+      still passing. *(completed: "Results: 15 passed, 1 failed"; only WHOLE-TREE-REAL-PATH-PRECEDENCE
+      failed, and only on the three predicted fields for sub-case B)*
+- [x] Record an `issue-record.sh` entry for the premise invalidation measured during planning if
+      one is not already present for this phase's own findings. *(completed: a premise-invalidation
+      entry was already recorded during planning; recorded a supplementary win entry for this
+      phase's RED-baseline measurement instead of duplicating it)*
 
 **Timing**: 0.5 hours
 

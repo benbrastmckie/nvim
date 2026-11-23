@@ -95,7 +95,7 @@ next_project_number: 691
 ### File Scope Lifecycle
 
 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
-687 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
+687 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
@@ -251,7 +251,7 @@ CITATIONS -- issue-log entries this record is built from:
 ---
 
 ### 687. Whole tree sentinel self collision
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None

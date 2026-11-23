@@ -685,6 +685,89 @@ jq --argjson n1 "$NUM_WTI1" --argjson n2 "$NUM_WTI2" \
   "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
 
 # =============================================================================
+# Fixture case: WHOLE-TREE-REAL-PATH-PRECEDENCE -- a pair of candidates that overlap on BOTH a
+# real, shared path AND the reserved `__WHOLE_TREE__` sentinel must still report the real-path
+# collision (defer_reason "file_scope_collision", overlapping_path naming the shared path, no
+# claim_sentinel field) rather than being relabelled as a bare whole-tree claim. The real-path
+# collision is the stronger, more specific finding, and it is the shape that carries an operator
+# remedy (--allow-scope-collision, cross_batch only) that a bare whole-tree claim does not. Two
+# sub-cases exercise both declaration orderings of the two entries within each candidate's
+# file_scope array, since the target posture is that the verdict is independent of that order:
+#   - Sub-case A: the shared concrete path declared FIRST in both arrays
+#     (["scope/shared", "__WHOLE_TREE__"]). MEASURED pre-fix: already matches the target posture
+#     (file_scope_collision fires on the first scan before any sentinel-relabeling branch runs),
+#     so this sub-case is green before and after.
+#   - Sub-case B: the sentinel declared FIRST in both arrays (["__WHOLE_TREE__",
+#     "scope/shared"]). MEASURED pre-fix: the sentinel-relabeling branch intercepts the pair
+#     before the real-path comparison is reached, producing defer_reason "whole_tree_claim" with
+#     a claim_sentinel field present and no overlapping_path at all -- the declaration-order-
+#     dependent masking this fixture exists to close. EXPECTED TO FAIL against the unmodified
+#     comparator; closing it is this phase's own deliverable, not a prior phase's.
+# =============================================================================
+NUM_WTRA1=409
+NUM_WTRA2=410
+NUM_WTRB1=411
+NUM_WTRB2=412
+
+wt_precedence_a_json=$(jq \
+  --argjson n1 "$NUM_WTRA1" --argjson n2 "$NUM_WTRA2" \
+  '.active_projects += [
+    {"project_number": $n1, "project_name": "wt_precedence_a_lower", "status": "not_started", "task_type": "meta", "file_scope": ["scope/shared", "__WHOLE_TREE__"], "dependencies": []},
+    {"project_number": $n2, "project_name": "wt_precedence_a_higher", "status": "not_started", "task_type": "meta", "file_scope": ["scope/shared", "__WHOLE_TREE__"], "dependencies": []}
+  ]' "$STATE_FILE")
+echo "$wt_precedence_a_json" > "$STATE_FILE"
+
+out_wtra=$("$BA" --invocation-count 2 "$NUM_WTRA1" "$NUM_WTRA2" 2>/dev/null)
+v_wtra_1=$(echo "$out_wtra" | jq -c "select(.task_number == $NUM_WTRA1)")
+v_wtra_2=$(echo "$out_wtra" | jq -c "select(.task_number == $NUM_WTRA2)")
+
+wtra_ok=true
+[ "$(echo "$v_wtra_1" | jq -r '.decision')" = "admit" ] || { wtra_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case A, concrete first): lower-numbered candidate did not admit: $v_wtra_1"; }
+[ "$(echo "$v_wtra_2" | jq -r '.decision')" = "defer" ] || { wtra_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case A, concrete first): higher-numbered candidate did not defer: $v_wtra_2"; }
+[ "$(echo "$v_wtra_2" | jq -r '.defer_reason // empty')" = "file_scope_collision" ] || { wtra_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case A, concrete first): defer_reason was not file_scope_collision: $v_wtra_2"; }
+[ "$(echo "$v_wtra_2" | jq -r '.overlapping_path // empty')" = "scope/shared" ] || { wtra_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case A, concrete first): overlapping_path was not scope/shared: $v_wtra_2"; }
+[ "$(echo "$v_wtra_2" | jq -r '.collision_scope // empty')" = "in_batch" ] || { wtra_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case A, concrete first): collision_scope was not in_batch: $v_wtra_2"; }
+[ "$(echo "$v_wtra_2" | jq -r '.colliding_task_number // empty')" = "$NUM_WTRA1" ] || { wtra_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case A, concrete first): colliding_task_number was not the lower-numbered peer ($NUM_WTRA1): $v_wtra_2"; }
+[ "$(echo "$v_wtra_2" | jq -r 'has("claim_sentinel")')" = "false" ] || { wtra_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case A, concrete first): unexpectedly carries claim_sentinel on a real-path collision: $v_wtra_2"; }
+[ "$(echo "$v_wtra_2" | jq -r '.whole_tree_claim // false')" = "true" ] || { wtra_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case A, concrete first): whole_tree_claim annotation field was not true despite both candidates declaring the sentinel: $v_wtra_2"; }
+
+jq --argjson n1 "$NUM_WTRA1" --argjson n2 "$NUM_WTRA2" \
+  '.active_projects |= map(select(.project_number != $n1 and .project_number != $n2))' \
+  "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+wt_precedence_b_json=$(jq \
+  --argjson n1 "$NUM_WTRB1" --argjson n2 "$NUM_WTRB2" \
+  '.active_projects += [
+    {"project_number": $n1, "project_name": "wt_precedence_b_lower", "status": "not_started", "task_type": "meta", "file_scope": ["__WHOLE_TREE__", "scope/shared"], "dependencies": []},
+    {"project_number": $n2, "project_name": "wt_precedence_b_higher", "status": "not_started", "task_type": "meta", "file_scope": ["__WHOLE_TREE__", "scope/shared"], "dependencies": []}
+  ]' "$STATE_FILE")
+echo "$wt_precedence_b_json" > "$STATE_FILE"
+
+out_wtrb=$("$BA" --invocation-count 2 "$NUM_WTRB1" "$NUM_WTRB2" 2>/dev/null)
+v_wtrb_1=$(echo "$out_wtrb" | jq -c "select(.task_number == $NUM_WTRB1)")
+v_wtrb_2=$(echo "$out_wtrb" | jq -c "select(.task_number == $NUM_WTRB2)")
+
+wtrb_ok=true
+[ "$(echo "$v_wtrb_1" | jq -r '.decision')" = "admit" ] || { wtrb_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case B, sentinel first): lower-numbered candidate did not admit: $v_wtrb_1"; }
+[ "$(echo "$v_wtrb_2" | jq -r '.decision')" = "defer" ] || { wtrb_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case B, sentinel first): higher-numbered candidate did not defer: $v_wtrb_2"; }
+[ "$(echo "$v_wtrb_2" | jq -r '.defer_reason // empty')" = "file_scope_collision" ] || { wtrb_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case B, sentinel first): defer_reason was not file_scope_collision -- MEASURED pre-fix value is whole_tree_claim, the masking this fixture closes: $v_wtrb_2"; }
+[ "$(echo "$v_wtrb_2" | jq -r '.overlapping_path // empty')" = "scope/shared" ] || { wtrb_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case B, sentinel first): overlapping_path was not scope/shared -- MEASURED pre-fix this field is absent entirely: $v_wtrb_2"; }
+[ "$(echo "$v_wtrb_2" | jq -r '.collision_scope // empty')" = "in_batch" ] || { wtrb_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case B, sentinel first): collision_scope was not in_batch: $v_wtrb_2"; }
+[ "$(echo "$v_wtrb_2" | jq -r '.colliding_task_number // empty')" = "$NUM_WTRB1" ] || { wtrb_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case B, sentinel first): colliding_task_number was not the lower-numbered peer ($NUM_WTRB1): $v_wtrb_2"; }
+[ "$(echo "$v_wtrb_2" | jq -r 'has("claim_sentinel")')" = "false" ] || { wtrb_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case B, sentinel first): unexpectedly carries claim_sentinel on a real-path collision -- MEASURED pre-fix this field IS present, which is the masking this fixture closes: $v_wtrb_2"; }
+[ "$(echo "$v_wtrb_2" | jq -r '.whole_tree_claim // false')" = "true" ] || { wtrb_ok=false; common_test_info "WHOLE-TREE-REAL-PATH-PRECEDENCE (sub-case B, sentinel first): whole_tree_claim annotation field was not true despite both candidates declaring the sentinel: $v_wtrb_2"; }
+
+if [ "$wtra_ok" = true ] && [ "$wtrb_ok" = true ]; then
+  common_test_pass "WHOLE-TREE-REAL-PATH-PRECEDENCE: a real-path collision between two sentinel-declaring candidates is reported as file_scope_collision with the concrete overlapping_path in both declaration orderings (no declaration-order-dependent masking into a bare whole-tree claim)"
+else
+  common_test_fail "WHOLE-TREE-REAL-PATH-PRECEDENCE: target-posture assertion failed in at least one sub-case (see INFO lines above)"
+fi
+
+jq --argjson n1 "$NUM_WTRB1" --argjson n2 "$NUM_WTRB2" \
+  '.active_projects |= map(select(.project_number != $n1 and .project_number != $n2))' \
+  "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo ""
