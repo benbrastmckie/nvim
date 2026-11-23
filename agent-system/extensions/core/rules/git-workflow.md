@@ -82,15 +82,14 @@ template, and the fail-safe under-stage-not-over-stage direction).
 
 ## Branch
 
-A commit lands on the primary tree's already-checked-out branch — the declared
-`integration_branch` where one is declared, verified at admission, never switched during
-dispatch work. No script creates or switches a branch during dispatch work, the single
-exception being `git-snapshot.sh`'s `--branch` recovery path. An orchestration started off the
-declared integration branch, or with a dirty state territory, is refused at admission before any
-dispatch is composed; both refusals arm only where `integration_branch` is declared.
+A commit lands on the primary tree's checked-out branch — the declared `integration_branch`
+where declared, verified at admission; no script creates or switches one during dispatch work
+except `git-snapshot.sh`'s `--branch` recovery path. An invocation off that branch, or with a
+dirty state territory, is refused at admission before any dispatch is composed, arming only
+where `integration_branch` is declared.
 
-See `context/standards/git-workflow-narrative.md`'s Branch Strategy section for the full detail
-and `context/standards/repo-level-declarations.md` for the declaration schema.
+See `context/standards/git-workflow-narrative.md`'s Branch Strategy section and
+`context/standards/repo-level-declarations.md` for full detail.
 
 ## Git Safety
 
