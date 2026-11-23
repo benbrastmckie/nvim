@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Document the splice, regenerate, redeploy, and close",
+  "started_at": "2026-11-23T08:15:00Z",
+  "last_updated": "2026-11-23T08:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Document the fourth splice (and its Site-3 mirror) in git-staging-scope.md's Three Containment sites section", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 2, "description": "No task-number references / record-versioning language in agent-system/** edits", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Redeploy via deploy-headless.sh (regenerates index-entries.json line_count)", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Stage regenerated index-entries.json alongside doc edit", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record issues/wins via issue-record.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "batch_gate_deferral": "This phase declares Verification Tier: full. Per the dispatch's Batch Gate Deferral directive, the complete gate set was deferred to the once-per-invocation batch-level stage rather than run independently here. The scoped discharge run instead: `bash .claude/scripts/verify-touched.sh <5 touched paths>` -- 32 suites selected, 32 passed, 0 failed, run against the freshly-redeployed tree. deploy-headless.sh's own internal landing verification (41 checks, 0 failures, RESULT=landed_verify_clean) is a separate, unavoidable side effect of redeploying itself, not an independent full-battery invocation chosen for this phase's own criterion.",
+    "sync_manifest_scripts_check": "bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check -- clean (0 missing, 0 absent) across all 12 extensions; no new script file was added by this task.",
+    "lints": "check-task-references.sh and check-record-versioning.sh both clean (0 unexempted occurrences / 0 BLOCKING) against all four edited agent-system/** files."
+  }
+}

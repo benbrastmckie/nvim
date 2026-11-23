@@ -323,32 +323,43 @@ the phase's own notes.
 
 ---
 
-### Phase 3: Document the splice, regenerate, redeploy, and close [NOT STARTED]
+### Phase 3: Document the splice, regenerate, redeploy, and close [COMPLETED]
 
 **Goal**: `git-staging-scope.md`'s "Three Containment sites, not one" section describes the
 fourth splice and the recorded Option (2)/(3) rejection; the deployed tree is regenerated from
 the source store and the whole change is verified.
 
 **Tasks**:
-- [ ] Add a short paragraph to `agent-system/extensions/core/context/standards/git-staging-scope.md`'s
+- [x] Add a short paragraph to `agent-system/extensions/core/context/standards/git-staging-scope.md`'s
       "Three Containment sites, not one" section documenting the fourth Site-2 splice: its
       trigger condition (a `files_touched` path under an extension's own `scripts/` tree,
       `deprecated/` excluded, mirroring `sync-manifest-scripts.sh`'s MATCHING rule), its effect
       (that extension's own `manifest.json` admitted into `file_scope_arr` for this check only),
       and the explicit statement that it is local-only and never written back to the declared
       `file_scope` the batch-admission gate reads. State the Option (2)/(3) rejection in one
-      sentence each so the next similar request is answered here.
-- [ ] Write no task-number reference and no record-versioning language into any file landing
+      sentence each so the next similar request is answered here. *(completed: documented as "A
+      fourth per-site widening, at sites 2 and 3 only" — updated from "Site-2 splice" to cover
+      both sites, per Phase 2's deviation. 0 BLOCKING record-versioning findings, 0 task-reference
+      occurrences.)*
+- [x] Write no task-number reference and no record-versioning language into any file landing
       under `agent-system/**` (describe the current design only; cite durable anchors such as
       script names and section headings, never a task number or a "previously/no longer" framing).
-- [ ] Redeploy the source store into the deployed tree with
+      *(completed: verified via check-task-references.sh (0 occurrences) and
+      check-record-versioning.sh (0 BLOCKING; the 9 ADVISORY findings are all pre-existing lines
+      elsewhere in the file, none introduced by this phase's edit) against both edited
+      agent-system/** files)*
+- [x] Redeploy the source store into the deployed tree with
       `bash agent-system/extensions/core/scripts/deploy-headless.sh`, which also runs
       `generate-context-line-counts.sh --write` and therefore updates
       `agent-system/extensions/core/index-entries.json`'s `line_count` for the edited doc in this
-      same phase.
-- [ ] Stage the regenerated `index-entries.json` alongside the doc edit in this phase's own
+      same phase. *(completed: deploy-headless.sh reported "line_count auto-repair: 1 entry/
+      entries corrected from wc -l (extensions: core)" and finished with
+      RESULT=landed_verify_clean, 41 checks, 0 failures)*
+- [x] Stage the regenerated `index-entries.json` alongside the doc edit in this phase's own
       commit — it is declared below precisely so the Containment Self-Check admits it.
-- [ ] Record issues and wins via `issue-record.sh` as they arise.
+      *(completed)*
+- [x] Record issues and wins via `issue-record.sh` as they arise. *(completed: a `kind: win`
+      entry recorded for the clean task-reference/record-versioning lint pass)*
 
 **Timing**: 1 hour
 
@@ -367,16 +378,24 @@ the source store and the whole change is verified.
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/verify-touched.sh agent-system/extensions/core/context/standards/git-staging-scope.md agent-system/extensions/core/index-entries.json agent-system/extensions/core/scripts/git-commit-phase.sh agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`
-  is green over this task's full touched-path set.
+  is green over this task's full touched-path set. *(completed: re-run with the deviation's
+  fifth touched path, `git-commit-scoped.sh`, also included -- 32 suite(s) selected, 32 passed,
+  0 failed, against the freshly-redeployed tree)*
 - `bash .claude/scripts/check-task-references.sh` and the record-version lint report no new
-  finding against the edited `agent-system/**` files.
+  finding against the edited `agent-system/**` files. *(completed: 0 unexempted task-reference
+  occurrences and 0 BLOCKING record-versioning findings across all four edited files)*
 - `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` is clean (no new
-  script file was added by this task, so `provides.scripts` must be unchanged).
+  script file was added by this task, so `provides.scripts` must be unchanged). *(completed:
+  "CHECK PASSED: provides.scripts matches scripts/ tree exactly for every extension")*
 - As the plan's final phase, this phase's own in-dispatch obligation is the scoped touched-path
   check above plus an explicit deferral of the complete gate set
   (`bash .claude/scripts/verify-deploy.sh`) to the orchestration close under `/orchestrate` —
   never an independent full-battery invocation as this phase's own criterion. A standalone,
-  non-orchestrated run of this phase instead runs the complete gate set directly.
+  non-orchestrated run of this phase instead runs the complete gate set directly. *(completed:
+  deferred per the dispatch's Batch Gate Deferral directive -- see progress file
+  verification_notes. deploy-headless.sh's own internal landing check, 41 checks/0 failures, is
+  a separate unavoidable side effect of the redeploy step above, not this phase's chosen
+  criterion.)*
 
 ---
 
