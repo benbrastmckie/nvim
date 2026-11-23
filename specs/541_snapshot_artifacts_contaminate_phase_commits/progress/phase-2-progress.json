@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Scope the --no-revert untracked enumeration",
+  "started_at": "2026-11-23T04:40:00Z",
+  "last_updated": "2026-11-23T04:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Lift file_scope resolution into resolve_task_file_scope(), filter --no-revert untracked enumeration through it with own-directory admission, implement named-warning fallback, honor --allow-out-of-scope override, update header docs",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/git-snapshot.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

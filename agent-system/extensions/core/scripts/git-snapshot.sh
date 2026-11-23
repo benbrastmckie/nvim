@@ -40,8 +40,10 @@
 #                   then return to the original branch.
 #     --no-revert   Take the snapshot WITHOUT mutating the working tree (see modes).
 #     --allow-out-of-scope
-#                   Override the out-of-scope refusal guard below. Independent of the
-#                   three modes; combinable with either.
+#                   Override the out-of-scope refusal guard below (default and --branch
+#                   modes). For --no-revert, instead overrides the untracked-file backup
+#                   NARROWING described below, restoring the repository-wide backup.
+#                   Independent of the three modes; combinable with either.
 #     --help, -h    Print the usage summary and exit 0.
 #   --branch and --no-revert are mutually exclusive with each other; passing both is an
 #   error. --allow-out-of-scope is a separate boolean and does not count toward that
@@ -75,8 +77,10 @@
 #   condition that caused this guard to be written. Pass --allow-out-of-scope for the
 #   deliberate whole-tree case (the guard's refusal message names this flag). Dirty
 #   UNTRACKED paths outside scope are WARNED about on stderr, never refusal-triggering
-#   (see D3 in the implementation for why). --no-revert is NEVER guarded: it reverts
-#   nothing, so it has nothing to destroy.
+#   (see D3 in the implementation for why). --no-revert is NEVER refused/guarded in this
+#   sense: it reverts nothing, so it has nothing to destroy. It does, however, use the
+#   identical file_scope resolution for a DIFFERENT purpose -- narrowing its own untracked-
+#   file backup -- described next.
 #
 #   Default mode: writes specs/{NNN}_{SLUG}/working-progress-{ts}.patch (git diff HEAD)
 #   AND runs `git stash push -u -m git-snapshot-{task}-{ts}` (untracked-inclusive, without
@@ -91,6 +95,21 @@
 #   is still written: the resulting snapshot is genuinely recoverable, but note that
 #   because the tree stays dirty, a destructive command run afterwards discards the LIVE
 #   edits and recovery must come from the patch / stash / untracked backup.
+#
+#   --no-revert's untracked-file backup is SCOPE-NARROWED, not a raw repository-wide copy:
+#   the enumerated untracked list is filtered through the resolved task's declared
+#   file_scope (the same resolve_task_file_scope() the out-of-scope refusal guard above
+#   uses), with TASK_DIR itself always admitted regardless of file_scope. An unresolvable
+#   file_scope narrows the backup to TASK_DIR alone and prints a named WARNING -- never
+#   silent, never repository-wide by default, since this mode destroys nothing and must
+#   stay available as the sanctioned non-destructive checkpoint even on a RED tree or a task
+#   with no declared scope. Passing --allow-out-of-scope restores the pre-narrowing,
+#   repository-wide backup verbatim. This narrowing exists because the raw enumeration is
+#   genuinely repository-wide and would otherwise copy an unrelated task's own untracked
+#   directory into THIS task's untracked-backup-{ts}/ tree whenever one happens to be
+#   present at snapshot time -- UNTRACKED_BACKUP is a member of the canonical ephemeral
+#   runtime-file class (see scripts/lib/runtime-file-patterns.sh and
+#   context/standards/orchestrator-runtime-files.md), while PATCH_PATH deliberately is not.
 #
 #   Stash identity: every stash entry this script creates (default and --no-revert alike)
 #   is named git-snapshot-{task}-{ts}, where {task} is the owning task number (or
@@ -178,7 +197,8 @@ Usage: git-snapshot.sh [--branch | --no-revert] [--allow-out-of-scope] [TASK]
                         (wip-snapshot-{ts}), then returning to the original branch.
   --no-revert          Snapshot WITHOUT mutating the working tree.
   --allow-out-of-scope Override the out-of-scope refusal guard below (default and
-                        --branch modes only; --no-revert is never guarded).
+                        --branch modes). For --no-revert, instead restores the
+                        repository-wide untracked-file backup (see NARROWING below).
   --help, -h           Print this usage and exit 0.
 
 WARNING: the default and --branch modes BOTH revert the working tree.
@@ -200,6 +220,12 @@ OUT-OF-SCOPE REFUSAL GUARD: before reverting anything, default and --branch mode
   case. Dirty UNTRACKED out-of-scope paths are WARNED about (not refused) in reverting
   modes, since default mode's `-u` will delete them too but refusing on every untracked
   scratch/build artifact would make the guard fire on nearly every real tree.
+
+NARROWING (--no-revert only): the untracked-file backup is filtered through the same
+  resolved file_scope, with the task's own directory always admitted. An unresolvable
+  file_scope narrows the backup to the task's own directory and prints a named WARNING --
+  never silent, never repository-wide by default. --allow-out-of-scope restores the
+  repository-wide backup instead.
 
 --branch and --no-revert are mutually exclusive with each other; --allow-out-of-scope is
 an independent flag and may be combined with either (or neither).
@@ -358,47 +384,66 @@ fi
 # modes, and the stash-message use falls back to "unknown" (see below).
 TASK_NUM=$(basename "$TASK_DIR" | grep -oE '^[0-9]+' || true)
 
+# resolve_task_file_scope: populate the global SCOPE_ENTRIES array with the resolved task's
+# declared file_scope entries from specs/state.json. Lifted out of the out-of-scope refusal
+# guard below so BOTH that guard (default/--branch modes) and the --no-revert untracked-
+# enumeration narrowing (see the --no-revert branch further down) read one identical
+# resolution rather than each re-deriving it. On failure, sets FILE_SCOPE_RESOLVE_REASON to a
+# human-readable reason and returns 1; on success, clears it, populates SCOPE_ENTRIES, and
+# returns 0. Called directly (never inside a `$(...)` command substitution), since that would
+# run it in a subshell and discard the global array it sets.
+FILE_SCOPE_RESOLVE_REASON=""
+SCOPE_ENTRIES=()
+resolve_task_file_scope() {
+  FILE_SCOPE_RESOLVE_REASON=""
+  SCOPE_ENTRIES=()
+  local file_scope_json="[]"
+
+  if [ -z "$TASK_NUM" ]; then
+    FILE_SCOPE_RESOLVE_REASON="could not derive a task number from '$TASK_DIR' to look up its file_scope"
+  elif ! command -v jq >/dev/null 2>&1; then
+    FILE_SCOPE_RESOLVE_REASON="'jq' is not installed, so file_scope could not be read"
+  elif [ ! -f specs/state.json ]; then
+    FILE_SCOPE_RESOLVE_REASON="specs/state.json does not exist (cwd: $(pwd)); file_scope could not be read"
+  else
+    file_scope_json=$(jq -c --argjson n "$TASK_NUM" \
+      '[.active_projects[]? | select(.project_number == $n) | (.file_scope // [])[]]' \
+      specs/state.json 2>/dev/null) || file_scope_json=""
+    if [ -z "$file_scope_json" ] || [ "$file_scope_json" = "[]" ]; then
+      FILE_SCOPE_RESOLVE_REASON="task $TASK_NUM has no declared file_scope in specs/state.json"
+    fi
+  fi
+
+  if [ -n "$FILE_SCOPE_RESOLVE_REASON" ]; then
+    return 1
+  fi
+
+  mapfile -t SCOPE_ENTRIES < <(printf '%s' "$file_scope_json" | jq -r '.[]')
+  return 0
+}
+
 # ─── Out-of-scope refusal guard (D1-D5) ────────────────────────────────────────────────
 # Runs BEFORE any mutation (patch/stash/branch). Classifies every dirty TRACKED path
 # against the resolved task's declared file_scope in specs/state.json, using the
 # canonical path_covered_by_scope() predicate (see
 # context/patterns/file-footprint-overlap.md's "Containment vs. Overlap" section).
 # Skipped entirely for --no-revert (D2: it reverts nothing, so it has nothing to
-# destroy) and when --allow-out-of-scope was passed (the deliberate whole-tree
-# override).
+# destroy -- --no-revert instead NARROWS its untracked-file backup using the same
+# resolve_task_file_scope() below, a different response to the same resolution, never a
+# refusal) and when --allow-out-of-scope was passed (the deliberate whole-tree override).
 if [ "$MODE" != "no-revert" ] && [ "$ALLOW_OUT_OF_SCOPE" -ne 1 ]; then
-  FAIL_CLOSED_REASON=""
-  FILE_SCOPE_JSON="[]"
-
-  # D4: fail-closed no-file_scope fallback. Any of these three conditions means the
-  # script CANNOT distinguish task work from unrelated work -- precisely the state that
-  # produced the incident this guard exists to close -- so a reverting mode refuses
-  # rather than silently proceeding as before.
-  if [ -z "$TASK_NUM" ]; then
-    FAIL_CLOSED_REASON="could not derive a task number from '$TASK_DIR' to look up its file_scope"
-  elif ! command -v jq >/dev/null 2>&1; then
-    FAIL_CLOSED_REASON="'jq' is not installed, so file_scope could not be read"
-  elif [ ! -f specs/state.json ]; then
-    FAIL_CLOSED_REASON="specs/state.json does not exist (cwd: $(pwd)); file_scope could not be read"
-  else
-    FILE_SCOPE_JSON=$(jq -c --argjson n "$TASK_NUM" \
-      '[.active_projects[]? | select(.project_number == $n) | (.file_scope // [])[]]' \
-      specs/state.json 2>/dev/null) || FILE_SCOPE_JSON=""
-    if [ -z "$FILE_SCOPE_JSON" ] || [ "$FILE_SCOPE_JSON" = "[]" ]; then
-      FAIL_CLOSED_REASON="task $TASK_NUM has no declared file_scope in specs/state.json"
-    fi
-  fi
-
-  if [ -n "$FAIL_CLOSED_REASON" ]; then
+  # D4: fail-closed no-file_scope fallback. A resolution failure means the script CANNOT
+  # distinguish task work from unrelated work -- precisely the state that produced the
+  # incident this guard exists to close -- so a reverting mode refuses rather than silently
+  # proceeding as before.
+  if ! resolve_task_file_scope; then
     echo "git-snapshot.sh: refusing to run in ${MODE} mode (which reverts the working tree)." >&2
-    echo "  reason: $FAIL_CLOSED_REASON" >&2
+    echo "  reason: $FILE_SCOPE_RESOLVE_REASON" >&2
     echo "  Nothing has been mutated -- no patch, no stash, no marker, no branch." >&2
     echo "  fix:    pass --allow-out-of-scope to proceed anyway (reverts the WHOLE dirty" >&2
     echo "          tree), or --no-revert for a durable, non-reverting snapshot instead." >&2
     exit 1
   fi
-
-  mapfile -t SCOPE_ENTRIES < <(printf '%s' "$FILE_SCOPE_JSON" | jq -r '.[]')
 
   # Dirty TRACKED paths. `git diff --name-only HEAD` (no --cached) already reports every
   # path that differs from HEAD in the working tree, which covers staged AND unstaged
@@ -550,16 +595,59 @@ elif [ "$MODE" = "no-revert" ]; then
     exit 1
   fi
   if [ -n "$UNTRACKED_LIST" ]; then
-    UNTRACKED_BACKUP="${TASK_DIR}/untracked-backup-${TS}"
-    while IFS= read -r f; do
-      [ -z "$f" ] && continue || true
-      dest="${UNTRACKED_BACKUP}/${f}"
-      if ! mkdir -p "$(dirname "$dest")" >/dev/null 2>&1 || ! cp -p "$f" "$dest" >/dev/null 2>&1; then
-        echo "git-snapshot.sh: failed to back up untracked file '$f' to $dest (no-revert mode)" >&2
-        rm -f "$PATCH_TMP"
-        exit 1
-      fi
-    done <<< "$UNTRACKED_LIST"
+    # Narrow the enumeration to the dispatching task's declared file_scope -- this mode used
+    # to copy the raw, repository-wide enumeration above verbatim, which is how an unrelated
+    # task's own untracked directory ends up duplicated under THIS task's untracked-backup-*/
+    # tree (the measured incident this narrowing closes). The dispatching task's own
+    # directory ($TASK_DIR) is always admitted, unconditionally, mirroring the
+    # own-task-directory widening already universal at the containment sites elsewhere in
+    # this codebase -- so a task's own untracked work inside its own directory is never lost
+    # to this narrowing. --allow-out-of-scope restores the pre-narrowing, repository-wide
+    # enumeration verbatim, exactly as it does for the reverting modes' guard above: one
+    # explicit escape hatch, not removed by this change.
+    NARROWED_UNTRACKED=()
+    if [ "$ALLOW_OUT_OF_SCOPE" -eq 1 ]; then
+      while IFS= read -r f; do
+        [ -z "$f" ] && continue || true
+        NARROWED_UNTRACKED+=("$f")
+      done <<< "$UNTRACKED_LIST"
+    elif resolve_task_file_scope; then
+      while IFS= read -r f; do
+        [ -z "$f" ] && continue || true
+        if path_covered_by_scope "$f" "$TASK_DIR" "${SCOPE_ENTRIES[@]}"; then
+          NARROWED_UNTRACKED+=("$f")
+        fi
+      done <<< "$UNTRACKED_LIST"
+    else
+      # Unresolvable file_scope: narrow to the task's own directory only and say so loudly --
+      # never silent, never repository-wide by default. This is deliberately WEAKER than the
+      # reverting modes' fail-closed refusal (D4 above): --no-revert destroys nothing, and is
+      # the sanctioned non-destructive checkpoint, so it must stay available even when
+      # file_scope cannot be resolved (e.g. a RED tree, or a task with no declared scope).
+      echo "git-snapshot.sh: WARNING -- narrowing the --no-revert untracked-file backup to" >&2
+      echo "  ${TASK_DIR}/ only (repository-wide backup NOT taken)." >&2
+      echo "  reason: $FILE_SCOPE_RESOLVE_REASON" >&2
+      echo "  Untracked files outside ${TASK_DIR}/ will NOT be backed up. Pass" >&2
+      echo "  --allow-out-of-scope to restore the repository-wide backup instead." >&2
+      while IFS= read -r f; do
+        [ -z "$f" ] && continue || true
+        if path_covered_by_scope "$f" "$TASK_DIR"; then
+          NARROWED_UNTRACKED+=("$f")
+        fi
+      done <<< "$UNTRACKED_LIST"
+    fi
+
+    if [ "${#NARROWED_UNTRACKED[@]}" -gt 0 ]; then
+      UNTRACKED_BACKUP="${TASK_DIR}/untracked-backup-${TS}"
+      for f in "${NARROWED_UNTRACKED[@]}"; do
+        dest="${UNTRACKED_BACKUP}/${f}"
+        if ! mkdir -p "$(dirname "$dest")" >/dev/null 2>&1 || ! cp -p "$f" "$dest" >/dev/null 2>&1; then
+          echo "git-snapshot.sh: failed to back up untracked file '$f' to $dest (no-revert mode)" >&2
+          rm -f "$PATCH_TMP"
+          exit 1
+        fi
+      done
+    fi
   fi
 else
   # Default mode: belt-and-suspenders in-repo stash copy (patch above is the primary

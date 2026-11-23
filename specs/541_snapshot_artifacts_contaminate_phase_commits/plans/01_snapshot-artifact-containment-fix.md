@@ -226,29 +226,29 @@ exported interface, and are covered by running
 
 ---
 
-### Phase 2: Scope the `--no-revert` untracked enumeration [NOT STARTED]
+### Phase 2: Scope the `--no-revert` untracked enumeration [COMPLETED]
 
 **Goal**: Make the `--no-revert` backup copy only untracked files the dispatching task's declared
 `file_scope` covers, with a named, non-silent fallback when that scope cannot be resolved.
 
 **Tasks**:
-- [ ] Lift the `file_scope` resolution currently nested inside the reverting-modes-only guard
+- [x] Lift the `file_scope` resolution currently nested inside the reverting-modes-only guard
       into a form the `--no-revert` branch can also read. Leave the reverting modes' fail-closed
       refusal semantics exactly as they are -- this phase adds a second reader, it does not
-      relax the first.
-- [ ] In the `--no-revert` branch, filter the enumerated untracked list through the canonical
+      relax the first. *(completed)*
+- [x] In the `--no-revert` branch, filter the enumerated untracked list through the canonical
       containment predicate already sourced into this script, admitting the dispatching task's
-      own resolved directory unconditionally.
-- [ ] Implement the unresolvable-scope fallback: back up only untracked files inside the task's
+      own resolved directory unconditionally. *(completed)*
+- [x] Implement the unresolvable-scope fallback: back up only untracked files inside the task's
       own directory, and print a named warning on stderr stating that the backup was narrowed
-      and why. Never silent, never repository-wide by default.
-- [ ] Honor the deliberate whole-tree override flag by restoring the repository-wide enumeration
-      when it is passed.
-- [ ] Update the script's own header so the mode description and the artifact contract match the
+      and why. Never silent, never repository-wide by default. *(completed)*
+- [x] Honor the deliberate whole-tree override flag by restoring the repository-wide enumeration
+      when it is passed. *(completed)*
+- [x] Update the script's own header so the mode description and the artifact contract match the
       new behavior. Use durable anchors only -- variable names, flag names, filenames -- with no
-      record-number citation and no draft-history language.
-- [ ] Re-run the snapshot suite and confirm Phase 1's new case flips from RED to green with no
-      other case regressing.
+      record-number citation and no draft-history language. *(completed)*
+- [x] Re-run the snapshot suite and confirm Phase 1's new case flips from RED to green with no
+      other case regressing. *(completed)*
 
 **Timing**: 1.5 hours
 
