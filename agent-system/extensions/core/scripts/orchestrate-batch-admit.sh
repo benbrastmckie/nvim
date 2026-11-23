@@ -276,7 +276,18 @@
 #                                     (unlike plain file_scope_collision, which has no phase
 #                                     exemption at all). Any OTHER real-path collision is
 #                                     completely unaffected and still reports plain
-#                                     file_scope_collision.
+#                                     file_scope_collision. A sentinel-shaped verdict (the
+#                                     $hit.ov_path == whole_tree_claim_sentinel branch below)
+#                                     fires only when the colliding pair has NO concrete-path
+#                                     overlap: the collision scan's own per-peer overlap call
+#                                     (scopes_overlap_first_preferring_concrete, in
+#                                     file-scope-overlap.sh) compares each pair's real paths
+#                                     first and reports a concrete overlap as plain
+#                                     file_scope_collision with its real path, falling back to
+#                                     the sentinel comparison only when the real-path comparison
+#                                     finds nothing -- so a pair that overlaps on BOTH a real
+#                                     path and the sentinel is never relabeled into a bare
+#                                     whole-tree claim.
 #   dirty_scope_advisory       object Present (NEW, additive, no-bump sibling to whole_tree_claim
 #                                     above) on every verdict for a candidate whose OWN
 #                                     file_scope intersects the currently dirty working tree
@@ -1016,7 +1027,7 @@ if verdicts=$(jq -n -c \
             # unchanged): a duplicate folded twice looks itself up and finds its own
             # first-occurrence verdict.
             select($scope_kind == "cross_batch" or ($other_num < $c and ((($acc.results[($other_num|tostring)].decision) // "admit") == "admit"))) |
-            scopes_overlap_first($c_scope; ($other.file_scope // [])) as $ov_path |
+            scopes_overlap_first_preferring_concrete($c_scope; ($other.file_scope // [])) as $ov_path |
             select($ov_path != null and $ov_path != "") |
             {
               other_num: $other_num,

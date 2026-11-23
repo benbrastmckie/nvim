@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Give a concrete-path overlap precedence over the reserved sentinel",
+  "started_at": "2026-11-23T20:33:00Z",
+  "last_updated": "2026-11-23T20:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add scopes_overlap_first_preferring_concrete def to file-scope-overlap.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/file-scope-overlap.sh"]},
+    {"id": 2, "description": "Switch orchestrate-batch-admit.sh's $overlaps comprehension call-site to the new def; add header note", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 3, "description": "Run suites and confirm green; record issue-record.sh entry for cross-peer masking non-goal", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

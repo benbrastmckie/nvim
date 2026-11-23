@@ -250,42 +250,46 @@ before writing, and pick the next free pairs if they are not.
 
 ---
 
-### Phase 2: Give a concrete-path overlap precedence over the reserved sentinel [NOT STARTED]
+### Phase 2: Give a concrete-path overlap precedence over the reserved sentinel [COMPLETED]
 
 **Goal**: Add an additive, concrete-preferring overlap def to `file-scope-overlap.sh`, switch
 `orchestrate-batch-admit.sh`'s per-peer overlap computation to it, and take the new fixture green
 with every pre-existing assertion untouched.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/lib/file-scope-overlap.sh`, inside the
+- [x] In `agent-system/extensions/core/scripts/lib/file-scope-overlap.sh`, inside the
       `FILE_SCOPE_OVERLAP_JQ_DEFS` quoted heredoc and immediately after `scopes_overlap_first`,
       add a new def -- `scopes_overlap_first_preferring_concrete(own_scope; other_scope)` -- that
       (a) compares both scopes with every entry equal to `whole_tree_claim_sentinel` filtered
       out, and (b) falls back to an unfiltered `scopes_overlap_first(own_scope; other_scope)` only
       when that filtered comparison yields no hit. Leave `scopes_overlap_first` itself
-      byte-identical.
-- [ ] Mirror `scopes_overlap_first`'s `empty`-on-no-hit convention exactly, not `null` -- the one
+      byte-identical. *(completed)*
+- [x] Mirror `scopes_overlap_first`'s `empty`-on-no-hit convention exactly, not `null` -- the one
       consumer binds the result with `as $ov_path` inside an array comprehension. Read that def's
       own NOTE (on why `self_mod_match` deliberately returns `null` instead) before choosing, and
-      state the chosen convention in the new def's comment.
-- [ ] Write the new def's comment to explain WHY concrete beats sentinel: a real-path collision is
+      state the chosen convention in the new def's comment. *(completed: internal filtered-hit
+      binding converts empty->null via `[...] | first`, matching self_mod_match's own idiom, so
+      the fallback branch still runs; the def's own final result follows scopes_overlap_first's
+      empty convention)*
+- [x] Write the new def's comment to explain WHY concrete beats sentinel: a real-path collision is
       the stronger, more specific finding, it is the shape that carries an operator remedy
       (`--allow-scope-collision`, cross-batch only), and a bare whole-tree claim must not stand in
-      for it. Name durable anchors only.
-- [ ] In `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh`, replace the single
+      for it. Name durable anchors only. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh`, replace the single
       `scopes_overlap_first($c_scope; ($other.file_scope // [])) as $ov_path |` line inside the
       `$overlaps` comprehension (around line 1019) with a call to the new def. Change nothing else
       in that comprehension: the `$comparison_set` construction, the admitted-set-only `in_batch`
       narrowing `select(...)`, the `$hit` / `$idle_overlap` selections and the
-      `$overlaps` record shape all stay exactly as they are.
-- [ ] Add a short note to the script's own header block (the `whole_tree_claim` `defer_reason`
+      `$overlaps` record shape all stay exactly as they are. *(completed: single line replaced at
+      line 1019, confirmed via git diff -- no other line in the comprehension changed)*
+- [x] Add a short note to the script's own header block (the `whole_tree_claim` `defer_reason`
       paragraph around lines 255-278) recording that a sentinel-shaped verdict fires only when the
       pair has no concrete overlap, since a concrete overlap is reported as
       `file_scope_collision` with its real path. State the current design only -- no "previously"
-      or "no longer" phrasing, no task numbers.
-- [ ] Record via `issue-record.sh` the cross-peer masking case named in this plan's Non-Goals (a
+      or "no longer" phrasing, no task numbers. *(completed)*
+- [x] Record via `issue-record.sh` the cross-peer masking case named in this plan's Non-Goals (a
       candidate overlapping one peer on the sentinel and a different peer on a concrete path),
-      as a separate observation left deliberately unclosed with its reason.
+      as a separate observation left deliberately unclosed with its reason. *(completed)*
 
 **Timing**: 0.75 hours
 

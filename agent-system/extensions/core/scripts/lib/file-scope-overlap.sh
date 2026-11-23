@@ -75,6 +75,35 @@ def scopes_overlap_first(own_scope; other_scope):
     $pb
   ] | first // empty;
 
+# --- scopes_overlap_first_preferring_concrete: a precedence wrapper around scopes_overlap_first
+# above, for a caller that must not let a real-path collision be masked by the reserved
+# whole_tree_claim_sentinel when a candidate pair overlaps on BOTH. A real-path collision is the
+# stronger, more specific finding -- it is the shape that carries an operator remedy
+# (--allow-scope-collision, cross_batch only, in orchestrate-cycle-plan.sh), and a bare
+# whole-tree claim must not stand in for it. Compares both scopes with every entry equal to
+# whole_tree_claim_sentinel filtered out FIRST, falling back to the unfiltered
+# scopes_overlap_first(own_scope; other_scope) only when that filtered comparison yields no hit
+# -- so a pair whose only overlap is the sentinel itself still reaches the existing exact-match
+# branch unchanged, and a pair with no sentinel present at all reduces to an identical call (the
+# filter is then a no-op over both sides). scopes_overlap_first itself is left byte-identical;
+# this def is purely additive and composed from it.
+# Return convention: mirrors scopes_overlap_first's own `empty`-on-no-hit convention exactly,
+# not `null` -- the one known caller binds this via `as $ov_path` inside an array comprehension,
+# same binding site as scopes_overlap_first's own callers (see self_mod_match's NOTE below for
+# why `null`, not `empty`, is sometimes the correct choice instead -- the two conventions differ
+# by BINDING SITE, not by predicate). The filtered sub-comparison's own `empty` result is
+# converted to `null` via `[...] | first` (the same idiom self_mod_match uses, for the identical
+# reason: an `as` binding over a zero-output generator would short-circuit this def's own
+# fallback branch before it ever ran) purely as an internal step; the def's own final result
+# still follows the `empty` convention stated above.
+def scopes_overlap_first_preferring_concrete(own_scope; other_scope):
+  ((own_scope // []) | map(select(. != whole_tree_claim_sentinel))) as $sa_concrete |
+  ((other_scope // []) | map(select(. != whole_tree_claim_sentinel))) as $sb_concrete |
+  ([scopes_overlap_first($sa_concrete; $sb_concrete)] | first) as $concrete_hit |
+  if $concrete_hit != null then $concrete_hit
+  else scopes_overlap_first(own_scope; other_scope)
+  end;
+
 # --- self_mod_match: a further application of the SAME overlap predicate above -- the
 # candidate's own file_scope compared against a static declared list of orchestrator-critical
 # paths, rather than against another task's file_scope. Not a new matching rule; only what the
