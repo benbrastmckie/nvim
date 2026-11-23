@@ -668,6 +668,114 @@ rm -rf "$repo"
 # task-ref-ok:end
 
 # =====================================================================
+# Phase 4 (restack): detect a merged bottom-of-stack entry (PD7) and move descendants onto the
+# review base's new remote-tracking tip by compare-and-swap; refuse by name on anything
+# unresolvable.
+# =====================================================================
+
+# restack_fixture_repo -- stack_fixture_repo, but review_base is declared as a dedicated branch
+# "review-main" (pointed at basepoint) rather than the "basepoint" tag, since restack needs a
+# branch-shaped review base to probe refs/remotes/<remote>/<review_base>. No remote-tracking ref
+# for review-main exists until a case calls restack_set_remote_tracking.
+restack_fixture_repo() {
+  local d
+  d="$(stack_fixture_repo)"
+  git -C "$d" branch review-main basepoint
+  printf '%s' '{"review_base": "review-main"}' > "$d/.claude-extensions.json"
+  printf '%s' "$d"
+}
+
+# restack_set_remote_tracking <repo> [sha] -- points refs/remotes/<remote>/review-main at <sha>
+# (default: review-main's current tip) via `git update-ref`, simulating a prior fetch -- never a
+# real fetch, push, or git merge.
+restack_set_remote_tracking() {
+  local repo="$1" sha="${2:-}"
+  [ -n "$sha" ] || sha="$(git -C "$repo" rev-parse review-main)"
+  git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/review-main" "$sha"
+}
+
+# restack_entry_field <nn> <field> -- stdout: the value of <field> on the "ENTRY <nn>: ..." line
+# of $LAST_OUT, or nothing.
+restack_entry_field() {
+  local nn="$1" field="$2"
+  printf '%s\n' "$LAST_OUT" | grep -E "^ENTRY ${nn}: " | grep -oE "${field}=[^ ]*" | head -n 1 | cut -d= -f2-
+}
+
+# --- restack with no --stack-id refuses with stack_id_required, exit 41 (D6) ---------------
+repo="$(restack_fixture_repo)"
+restack_set_remote_tracking "$repo"
+run_rsp "$repo" restack
+assert_refusal "restack: no --stack-id refuses with stack_id_required, exit 41" 41 stack_id_required
+rm -rf "$repo"
+
+# --- restack against a stack with no manifest refuses with manifest_missing, exit 50 -------
+repo="$(restack_fixture_repo)"
+restack_set_remote_tracking "$repo"
+run_rsp "$repo" restack --stack-id no-such-stack
+assert_refusal "restack: no manifest on disk refuses with manifest_missing, exit 50" 50 manifest_missing
+rm -rf "$repo"
+
+# task-ref-ok:begin category 6-adjacent: synthetic 990 fixture task number and "task N: ..."
+# commit subject, the same convention the cut suite above already uses.
+repo="$(restack_fixture_repo)"
+stack_write_batch "$repo" "990"
+stack_add_task_entry "$repo" 990 "task-990" "" "2020-01-01T00:00:00Z"
+stack_commit "$repo" 990 "f990.txt" "solo work"
+stack_add_proof "$repo" 990 "$LAST_SHA" "f990.txt"
+run_rsp "$repo" cut --tasks 990 --stack-id stackRestackA
+before_head="$(git -C "$repo" rev-parse HEAD)"
+before_status="$(git -C "$repo" status --porcelain)"
+before_refs="$(git -C "$repo" for-each-ref | LC_ALL=C sort)"
+before_manifest="$(cat "$repo/specs/.orchestration/reviews/stackRestackA/manifest.json")"
+
+# --- an absent review-base remote-tracking ref refuses with review_base_remote_ref_absent,
+#     exit 53, naming the fetch command the operator runs; the same refusal fires with
+#     --merged NN supplied (D3: never bypasses the ref requirement) ------------------------
+run_rsp "$repo" restack --stack-id stackRestackA
+assert_refusal "restack: an absent review-base remote-tracking ref refuses with review_base_remote_ref_absent, exit 53" 53 review_base_remote_ref_absent
+if printf '%s' "$LAST_OUT" | grep -q "git fetch ${REMOTE_NAME} review-main"; then
+  common_test_pass "restack: the exit-53 refusal names the fetch command the operator runs"
+else
+  common_test_fail "restack: exit-53 fetch command" "out=${LAST_OUT}"
+fi
+run_rsp "$repo" restack --stack-id stackRestackA --merged 1
+assert_refusal "restack: --merged NN does not bypass the absent-remote-ref refusal, still exit 53" 53 review_base_remote_ref_absent
+after_head="$(git -C "$repo" rev-parse HEAD)"
+after_status="$(git -C "$repo" status --porcelain)"
+after_refs="$(git -C "$repo" for-each-ref | LC_ALL=C sort)"
+after_manifest="$(cat "$repo/specs/.orchestration/reviews/stackRestackA/manifest.json")"
+if [ "$before_head" = "$after_head" ] && [ "$before_status" = "$after_status" ] \
+   && [ "$before_refs" = "$after_refs" ] && [ "$before_manifest" = "$after_manifest" ]; then
+  common_test_pass "restack: both exit-53 refusals leave HEAD, status, every ref, and the manifest byte-identical"
+else
+  common_test_fail "restack: exit-53 writes-nothing" "refs_eq=$([ "$before_refs" = "$after_refs" ] && echo y || echo n) manifest_eq=$([ "$before_manifest" = "$after_manifest" ] && echo y || echo n)"
+fi
+
+# --- a review base whose local ref and remote-tracking ref disagree unexplainedly refuses
+#     with review_base_ref_divergence, exit 54, naming the review base's own ref -------------
+divergent_sha="$(git -C "$repo" commit-tree "$(git -C "$repo" rev-parse "review-main^{tree}")" -p "$(git -C "$repo" rev-parse review-main)" <<< "a local-only commit on the review base, never pushed or fetched")"
+git -C "$repo" update-ref refs/heads/review-main "$divergent_sha" "$(git -C "$repo" rev-parse review-main)"
+restack_set_remote_tracking "$repo" "$(git -C "$repo" rev-parse basepoint)"
+before_head="$(git -C "$repo" rev-parse HEAD)"
+before_status="$(git -C "$repo" status --porcelain)"
+run_rsp "$repo" restack --stack-id stackRestackA
+after_head="$(git -C "$repo" rev-parse HEAD)"
+after_status="$(git -C "$repo" status --porcelain)"
+if [ "$LAST_CODE" -eq 54 ] && printf '%s' "$LAST_OUT" | grep -q "REFUSED: review-stack-prepare.sh: review_base_ref_divergence:" \
+   && printf '%s' "$LAST_OUT" | grep -q "the review base's own ref disagreeing, not a stack branch's"; then
+  common_test_pass "restack: an unexplained review-base local/remote-tracking divergence refuses with review_base_ref_divergence, exit 54, naming the review base's own ref"
+else
+  common_test_fail "restack: exit-54 divergence" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+if [ "$before_head" = "$after_head" ] && [ "$before_status" = "$after_status" ]; then
+  common_test_pass "restack: the exit-54 refusal leaves HEAD and status unchanged"
+else
+  common_test_fail "restack: exit-54 writes-nothing" "head_eq=$([ "$before_head" = "$after_head" ] && echo y || echo n) status_eq=$([ "$before_status" = "$after_status" ] && echo y || echo n)"
+fi
+rm -rf "$repo"
+# task-ref-ok:end
+
+# =====================================================================
 # Writes-nothing check: a refusing invocation leaves the fixture's git state byte-identical.
 # =====================================================================
 repo="$(make_fixture_repo)"

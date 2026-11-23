@@ -42,8 +42,23 @@
 # written under `specs/.orchestration/reviews/<stack id>/` (gitignored, machine-local; see
 # `context/standards/orchestrator-runtime-files.md`).
 #
-#   restack           Move a stack's descendants onto a merged parent's new base. Body added by
-#                     a later plan phase; this phase resolves and stops.
+#   restack           Move a stack's descendants onto a merged parent's new base (decision PD7).
+#                     Reads the manifest and the review base's remote-tracking ref, never
+#                     fetching (an absent ref refuses and prints the fetch the operator runs).
+#                     Detects a merged bottom-of-stack entry bottom-up (ancestry or squash test
+#                     against the remote-tracking sha), or applies `--merged NN` as an override;
+#                     the merged entry's state becomes "merged" and the next entry's base
+#                     becomes the review base. Every descendant's new commit is recomputed with
+#                     the three-way `merge-tree` and moved by compare-and-swap; a conflict
+#                     refuses, names the path, and moves nothing. `--dry-run` resolves, detects,
+#                     and prints the same disposition without writing any ref or the manifest.
+#                       --stack-id NAME      required.
+#                       --merged NN          treat manifest entry NN as merged even when neither
+#                                            detection test fires; never bypasses the
+#                                            remote-tracking-ref requirement. Lexically distinct
+#                                            from cut's `--merge N+M`, which instead forces two
+#                                            selected *tasks* into one review *unit* before any
+#                                            entry exists.
 #   show              Print a stack's manifest with its literal commands (`--stack-id NAME`
 #                     required to read one; `--json` emits the manifest verbatim). With no
 #                     `--stack-id`, resolves and stops (unchanged from earlier phases).
@@ -86,7 +101,8 @@
 #   review-stack-prepare.sh cut [--dry-run] [--review-base REF] [--remote NAME]
 #       (--milestone ID | --batch SESSION | --tasks N,N,...) [--stack-id NAME]
 #       [--merge N+M]... [--order N,N,...] [--prefix NAME]
-#   review-stack-prepare.sh restack --stack-id NAME [--dry-run] [--review-base REF] [--remote NAME]
+#   review-stack-prepare.sh restack --stack-id NAME [--merged NN] [--dry-run] [--review-base REF]
+#       [--remote NAME]
 #   review-stack-prepare.sh show --stack-id NAME [--json] [--review-base REF] [--remote NAME]
 #   review-stack-prepare.sh record-request NN URL --stack-id NAME [--dry-run]
 #       [--review-base REF] [--remote NAME]
@@ -117,6 +133,10 @@
 #  50   manifest_missing       show/record-request given a --stack-id with no manifest on disk
 #  51   record_request_args_invalid   record-request was not given both NN and URL
 #  52   record_request_entry_not_found   NN does not name an entry in the stack's manifest
+#  53   review_base_remote_ref_absent   restack's review base has no remote-tracking ref;
+#                               refuses and prints the fetch the operator runs (never fetches)
+#  54   review_base_ref_divergence   restack's review base local ref and its remote-tracking ref
+#                               disagree in a way the manifest does not explain
 
 set -uo pipefail
 
@@ -1108,6 +1128,95 @@ rsp_record_request() {
   echo "NOTE: review-stack-prepare.sh: recorded request for stack '${stack_id}' entry ${ordinal}." >&2
 }
 
+# ---------------------------------------------------------------------------------------------
+# RESTACK: move a stack's descendants onto a merged parent's new base (decision PD7)
+# ---------------------------------------------------------------------------------------------
+
+# RST_* are parallel arrays, one entry per manifest entry, in manifest (ordinal) order -- the
+# same per-task-state convention PLAN_*/UNIT_* above use for cut. RST_{ORD,TASKS_JSON,BRANCH,
+# BASE,COMMIT,PARENT,TITLE,BODY,STATE,REQUEST} hold the manifest's own recorded fields,
+# unmodified, for the lifetime of one invocation; RST_{NEW_BASE,NEW_STATE,NEW_COMMIT,CHANGED,
+# STALE} hold this invocation's computed disposition, starting as a copy of the recorded fields
+# and diverging only where detection (rsp_restack_compute_disposition) finds a change.
+RST_N=0
+RST_ORD=() RST_TASKS_JSON=() RST_BRANCH=() RST_BASE=() RST_COMMIT=() RST_PARENT=()
+RST_TITLE=() RST_BODY=() RST_STATE=() RST_REQUEST=()
+RST_NEW_BASE=() RST_NEW_STATE=() RST_NEW_COMMIT=() RST_CHANGED=() RST_STALE=()
+RST_MANIFEST_PATH=""
+RST_ANY_MERGED="false"
+RST_REMOTE_HEAD_ABSENT="false"
+
+# rsp_restack_load_manifest <manifest_path> -- fills every RST_* array from the stack's on-disk
+# manifest, in its own recorded (ordinal) order. Refuses (50) when the manifest is absent, the
+# same reason/code show and record-request already use for the same situation.
+rsp_restack_load_manifest() {
+  local manifest_path="$1" ord tasks branch base commit parent title body state request
+  [ -f "$manifest_path" ] || rsp_refuse 50 manifest_missing "no manifest exists for stack '${stack_id}' at ${manifest_path}; run 'cut' first"
+  RST_MANIFEST_PATH="$manifest_path"
+  while IFS=$'\t' read -r ord tasks branch base commit parent title body state request; do
+    [ -n "$ord" ] || continue
+    RST_ORD+=("$ord")
+    RST_TASKS_JSON+=("$tasks")
+    RST_BRANCH+=("$branch")
+    RST_BASE+=("$base")
+    RST_COMMIT+=("$commit")
+    RST_PARENT+=("$parent")
+    RST_TITLE+=("$title")
+    RST_BODY+=("$body")
+    RST_STATE+=("$state")
+    RST_REQUEST+=("$request")
+    RST_NEW_BASE+=("$base")
+    RST_NEW_STATE+=("$state")
+    RST_NEW_COMMIT+=("")
+    RST_CHANGED+=("false")
+    RST_STALE+=("false")
+    RST_N=$((RST_N + 1))
+  done < <(jq -r '.entries[] | [.ordinal, (.tasks|tostring), .branch, .base, .commit, .parent_commit, .title, .body_path, .state, .request] | @tsv' "$manifest_path")
+}
+
+# rsp_restack_plan <stack_id> -- resolves every input restack needs and refuses by name on
+# anything unresolvable, writing no ref, no manifest and no file: loads the manifest (50);
+# resolves the review base's remote-tracking ref without fetching, refusing (53) unconditionally
+# -- including when --merged NN is given (D3) -- when it is absent and printing the fetch the
+# operator runs; checks the review base's local ref against that remote-tracking ref, refusing
+# (54) when they disagree in a way that is not simply the remote having moved ahead (D2); probes
+# refs/remotes/<remote>/HEAD for Phase 2's printed output. Sets RSP_RESTACK_REMOTE_SHA.
+RSP_RESTACK_REMOTE_SHA=""
+rsp_restack_plan() {
+  local manifest_path local_sha remote_ref remote_sha head_ref
+  manifest_path="${SPECS_DIR}/.orchestration/reviews/${stack_id}/manifest.json"
+  rsp_restack_load_manifest "$manifest_path"
+
+  remote_ref="refs/remotes/${remote}/${review_base}"
+  remote_sha="$(git rev-parse -q --verify "$remote_ref" 2>/dev/null || true)"
+  if [ -z "$remote_sha" ]; then
+    rsp_refuse 53 review_base_remote_ref_absent "'${remote_ref}' does not exist; this script never fetches, so run: git fetch ${remote} ${review_base}, then re-run restack"
+  fi
+
+  local_sha="$(git rev-parse -q --verify "${review_base}^{commit}" 2>/dev/null || true)"
+  if [ -n "$local_sha" ] && [ "$local_sha" != "$remote_sha" ] \
+     && ! git merge-base --is-ancestor "$local_sha" "$remote_sha" 2>/dev/null; then
+    rsp_refuse 54 review_base_ref_divergence "the review base's own local ref (${local_sha:0:12}) is not an ancestor of its remote-tracking ref '${remote_ref}' (${remote_sha:0:12}); this is the review base's own ref disagreeing, not a stack branch's"
+  fi
+  RSP_RESTACK_REMOTE_SHA="$remote_sha"
+
+  head_ref="$(git symbolic-ref --short "refs/remotes/${remote}/HEAD" 2>/dev/null || true)"
+  [ -n "$head_ref" ] || RST_REMOTE_HEAD_ABSENT="true"
+}
+
+# rsp_restack_print -- prints, per manifest entry, its ordinal/branch/state/base. Detection
+# (rsp_restack_compute_disposition) is filled in by a later plan phase; this phase resolves
+# every input and prints the as-recorded disposition skeleton, writing nothing.
+rsp_restack_print() {
+  local i tasks_csv
+  for ((i = 0; i < RST_N; i++)); do
+    tasks_csv="$(printf '%s' "${RST_TASKS_JSON[$i]}" | tr -d '[]')"
+    printf 'ENTRY %s: tasks=%s branch=%s base=%s state=%s\n' \
+      "${RST_ORD[$i]}" "$tasks_csv" "${RST_BRANCH[$i]}" "${RST_BASE[$i]}" "${RST_STATE[$i]}"
+  done
+  echo "NOTE: review-stack-prepare.sh: resolved ${RST_N} entrie(s) for stack '${stack_id}' (remote='${remote}' review_base='${review_base}'); restack's detection and ref-moving body is not yet implemented, nothing written." >&2
+}
+
 [ "$#" -ge 1 ] || rsp_usage
 subcommand="$1"
 shift
@@ -1128,6 +1237,10 @@ prefix="review"
 ORDER_FLAG=""
 json_flag="false"
 rest_args=()
+# restack's own override flag -- kept lexically and structurally distinct from cut's
+# MERGE_PAIRS (an array of N+M task pairs): RSP_MERGED_FLAG is a single bare entry ordinal, in
+# the same "NN" form record-request's own ordinal argument already takes (see D3).
+RSP_MERGED_FLAG=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -1168,6 +1281,10 @@ while [ "$#" -gt 0 ]; do
       MERGE_PAIRS+=("${2:-}")
       shift 2
       ;;
+    --merged)
+      RSP_MERGED_FLAG="${2:-}"
+      shift 2
+      ;;
     --order)
       ORDER_FLAG="${2:-}"
       shift 2
@@ -1205,15 +1322,21 @@ if [ "$subcommand" = "cut" ]; then
   rsp_cut_plan "$integration_branch"
   rsp_cut_print
   [ "$dry_run" = "true" ] || rsp_cut_execute "$integration_branch"
+elif [ "$subcommand" = "restack" ] && [ -n "$stack_id" ]; then
+  rsp_restack_plan "$stack_id"
+  rsp_restack_print
+elif [ "$subcommand" = "restack" ]; then
+  # D6: reuse 41 (stack_id_required) for restack given no --stack-id, rather than a fourth
+  # near-duplicate reason string for the same situation cut and record-request already refuse.
+  rsp_refuse 41 stack_id_required "restack needs --stack-id NAME"
 elif [ "$subcommand" = "show" ] && [ -n "$stack_id" ]; then
   rsp_show_stack "$json_flag"
 elif [ "$subcommand" = "record-request" ] && [ -n "$stack_id" ]; then
   rsp_record_request "${rest_args[0]:-}" "${rest_args[1]:-}"
 else
-  # restack's recompute is filled by a later plan phase; show/record-request with no --stack-id
-  # fall through here unchanged, so the review_base/remote/platform resolver assertions written
-  # against them stay reachable. This phase stops here, having resolved every input and refused
-  # on any input that cannot be resolved; it writes no ref, no manifest and no file.
+  # show/record-request with no --stack-id fall through here unchanged, so the
+  # review_base/remote/platform resolver assertions written against them stay reachable. This
+  # writes no ref, no manifest and no file.
   echo "NOTE: review-stack-prepare.sh: resolved integration_branch='${integration_branch}' review_base='${review_base}' remote='${remote}' platform='${platform}' for subcommand '${subcommand}' (stack_id='${stack_id}', dry_run=${dry_run}); subcommand body not yet implemented, nothing written." >&2
 fi
 exit 0

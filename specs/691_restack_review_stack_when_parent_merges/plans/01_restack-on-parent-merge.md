@@ -1,7 +1,7 @@
 # Implementation Plan: Task #691
 
 - **Task**: 691 - Restack review stack when parent merges
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None (the parent plan's Phase 3, which this phase depends on, has already landed)
 - **Research Inputs**: specs/691_restack_review_stack_when_parent_merges/reports/01_restack-on-parent-merge.md
@@ -217,7 +217,7 @@ extends the function the previous one introduced, so there is no parallelism to 
 
 ---
 
-### Phase 1: Flag, dispatch arm, and the ref-resolution refusal surface [NOT STARTED]
+### Phase 1: Flag, dispatch arm, and the ref-resolution refusal surface [COMPLETED]
 
 **Goal**: `restack --stack-id NAME [--merged NN]` parses, dispatches to its own body, resolves
 every input it needs — the manifest, the review base's remote-tracking ref, and the review base's
@@ -226,40 +226,45 @@ manifest, and no file.
 
 **Tasks**:
 
-- [ ] Re-read the live header table (`EXIT CODES` block) and the live flag parser before editing,
-      per the territory contract, and confirm 53/54 are still the next free values.
-- [ ] Add a `--merged` arm to the flag parser, storing its value in a variable whose name cannot
+- [x] Re-read the live header table (`EXIT CODES` block) and the live flag parser before editing,
+      per the territory contract, and confirm 53/54 are still the next free values. *(completed:
+      confirmed live table ended at 52 before this phase's edit)*
+- [x] Add a `--merged` arm to the flag parser, storing its value in a variable whose name cannot
       be confused with the existing `MERGE_PAIRS` that `--merge N+M` feeds. Validate it is a
-      bare entry ordinal in the same `NN` form `record-request` already takes.
-- [ ] Add the `elif [ "$subcommand" = "restack" ] && [ -n "$stack_id" ]; then` dispatch arm,
+      bare entry ordinal in the same `NN` form `record-request` already takes. *(completed:
+      `RSP_MERGED_FLAG`; existence against the manifest's ordinals is validated in
+      `rsp_restack_compute_disposition`, Phase 2)*
+- [x] Add the `elif [ "$subcommand" = "restack" ] && [ -n "$stack_id" ]; then` dispatch arm,
       parallel to the existing `show` and `record-request` arms, calling a new
       `rsp_restack_plan`. A `restack` with no `--stack-id` refuses 41 per D6 with a message
-      naming the subcommand.
-- [ ] In `rsp_restack_plan`: load the stack's manifest, reusing exit 50 (`manifest_missing`)
-      unchanged when none is on disk.
-- [ ] Resolve the review base's remote-tracking ref without fetching. Refuse 53
+      naming the subcommand. *(completed)*
+- [x] In `rsp_restack_plan`: load the stack's manifest, reusing exit 50 (`manifest_missing`)
+      unchanged when none is on disk. *(completed)*
+- [x] Resolve the review base's remote-tracking ref without fetching. Refuse 53
       (`review_base_remote_ref_absent`) when it does not exist, printing the exact fetch command
       the operator runs. Per D3 this refusal fires unconditionally, including when `--merged NN`
-      is supplied.
-- [ ] Check the review base's local ref against that remote-tracking ref. Refuse 54
+      is supplied. *(completed)*
+- [x] Check the review base's local ref against that remote-tracking ref. Refuse 54
       (`review_base_ref_divergence`) when they disagree in a way the manifest does not explain,
       with a message that says it is the review base's own ref that disagreed (D2) and names
-      both shas.
-- [ ] Probe `refs/remotes/<remote>/HEAD` with the inline `git symbolic-ref --short` idiom
+      both shas. *(completed)*
+- [x] Probe `refs/remotes/<remote>/HEAD` with the inline `git symbolic-ref --short` idiom
       (empty on failure), replicating `push-grant-lib.sh`'s shape rather than importing it, and
-      record whether it is absent for Phase 2's printed output to use.
-- [ ] Print the resolved disposition skeleton: one line per manifest entry with its ordinal,
+      record whether it is absent for Phase 2's printed output to use. *(completed:
+      `RST_REMOTE_HEAD_ABSENT`)*
+- [x] Print the resolved disposition skeleton: one line per manifest entry with its ordinal,
       branch, current `state`, and current `base`. Write nothing. (Detection fills this in
-      Phase 2.)
-- [ ] Extend the header's `USAGE` block with `[--merged NN]` and the `EXIT CODES` table with 53
+      Phase 2.) *(completed)*
+- [x] Extend the header's `USAGE` block with `[--merged NN]` and the `EXIT CODES` table with 53
       and 54, in the same edit, documenting `--merged NN` and `--merge N+M` side by side with
-      their differing meanings.
-- [ ] Suite cases: `restack` with no `--stack-id` refuses 41; `restack` against a stack with no
+      their differing meanings. *(completed)*
+- [x] Suite cases: `restack` with no `--stack-id` refuses 41; `restack` against a stack with no
       manifest refuses 50; an absent review-base remote-tracking ref refuses 53 and the printed
       output contains the fetch command; the same refusal fires with `--merged NN` supplied; a
       review base whose local and remote-tracking refs diverge unexplainedly refuses 54 and the
       message names the review base ref rather than a stack branch; every one of these leaves
       `HEAD`, the index, `git status --porcelain`, every ref, and the manifest byte-identical.
+      *(completed: 8 new cases, suite now at 46)*
 
 **Timing**: 0.5 hours
 

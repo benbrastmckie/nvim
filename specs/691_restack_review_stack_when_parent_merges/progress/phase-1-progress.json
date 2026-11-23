@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Flag, dispatch arm, and the ref-resolution refusal surface",
+  "started_at": "2026-11-23T22:50:00Z",
+  "last_updated": "2026-11-23T23:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read live EXIT CODES table and flag parser; confirm 53/54 next free", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add --merged flag parser arm (RSP_MERGED_FLAG), distinct from MERGE_PAIRS", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 3, "description": "Add restack dispatch arm calling rsp_restack_plan; refuse 41 with no --stack-id", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 4, "description": "rsp_restack_plan: load manifest, refuse 50 when missing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 5, "description": "Resolve review base remote-tracking ref; refuse 53 unconditionally when absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 6, "description": "Check review base local vs remote-tracking agreement; refuse 54 on unexplained divergence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 7, "description": "Probe refs/remotes/<remote>/HEAD inline (symbolic-ref --short idiom)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 8, "description": "Print resolved disposition skeleton (ordinal/branch/state/base), write nothing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 9, "description": "Extend USAGE and EXIT CODES header blocks with --merged NN, 53, 54", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 10, "description": "Suite cases: no --stack-id refuses 41; no manifest refuses 50; absent remote-tracking ref refuses 53 (with and without --merged); review base divergence refuses 54; writes-nothing assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"]}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
