@@ -271,6 +271,11 @@ squash across repositories.
 `git rebase -i` is unavailable in this environment and is not used. Every step above is
 non-interactive.
 
+**Amended by** specs/decisions/isolation-off-landing-verification-and-review-time-squash.md, 2026-11-23:
+for the isolation-off path nothing is picked or squashed on the integration branch; a completed
+task gets one landing proof from a five-part verification run before the status write, the
+refusal is keyed to a changed path of the task, and the back-merge is deferred with isolation.
+
 ### R5, amended
 
 Worktree isolation is reinstated at batch granularity ONLY.
@@ -368,6 +373,11 @@ near-zero rebuilds would be grounds for a dated amendment to this section.
 Every ruling in this record must hold with isolation off. Each successor's description carries
 that requirement.
 
+**Amended by** specs/decisions/isolation-off-landing-verification-and-review-time-squash.md, 2026-11-23:
+an isolation-off repository gains the landing verification and the recorded proof; its review
+unit is the task's attributed commit set, not a range, and one commit per task is built on a
+review ref at review time.
+
 ## Built-mechanism verdicts
 
 `milestone-ref-land.sh` as it stood, per defect:
@@ -408,6 +418,11 @@ a second identical refusal with `HEAD` unchanged means stop and report, not retr
 One residual is accepted. A sibling's commit landing on the work branch between a task's landing
 and its verify changes `HEAD`'s tree and fails the check on correct work. That failure is
 recoverable by one re-run, and the message says so.
+
+**Amended by** specs/decisions/isolation-off-landing-verification-and-review-time-squash.md, 2026-11-23:
+for the isolation-off path the question of what replaces `milestone-ref-land.sh` is ruled: the
+landing verification at the completion status write replaces it, in that record's retirement
+order.
 
 ## Cleanup and retention
 

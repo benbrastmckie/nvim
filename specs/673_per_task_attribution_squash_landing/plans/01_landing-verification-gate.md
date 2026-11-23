@@ -1,7 +1,7 @@
 # Implementation Plan: Task #673
 
 - **Task**: 673 - Land one reviewable commit per completed task on the integration branch and verify it before the status write
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: 669 (completed)
 - **Research Inputs**: specs/673_per_task_attribution_squash_landing/reports/01_isolation-off-landing-ruling.md
@@ -163,27 +163,27 @@ proof record and interface 685 consumes, and leaves the two narrative documents 
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Record the amendments and clarifications [NOT STARTED]
+### Phase 1: Record the amendments and clarifications [COMPLETED]
 
 **Goal**: The amending record points at the ruling that amends it, and the ruling record states
 the three clarifications this plan makes.
 
 **Tasks**:
-- [ ] Confirm both records exist:
+- [x] Confirm both records exist:
       `specs/decisions/batch-worktree-isolation-and-task-squash-landing.md` (sections
       `### R3, amended`, `## Isolation-off repositories (Option L1)`,
       `## Built-mechanism verdicts`) and
       `specs/decisions/isolation-off-landing-verification-and-review-time-squash.md`. Both were
       present at plan time, and the first carried zero `Amended by` notes. If either is missing,
-      stop and report; do not recreate a record from this plan.
-- [ ] Add one dated note under each of the three sections of the amending record, in the form
+      stop and report; do not recreate a record from this plan. *(completed)*
+- [x] Add one dated note under each of the three sections of the amending record, in the form
       `**Amended by** specs/decisions/isolation-off-landing-verification-and-review-time-squash.md, 2026-11-23:`
       followed by one sentence naming what changed for the isolation-off path. Change no other
-      text in that record.
-- [ ] Append a short "Implementation clarifications" section to the ruling record stating D2
+      text in that record. *(completed)*
+- [x] Append a short "Implementation clarifications" section to the ruling record stating D2
       (script name), D3 (exit codes), D4 (end commit definition) and D8 (the script file stays,
-      unwired), each in one or two sentences.
-- [ ] Record issues and wins with `issue-record.sh` as they arise, here and in every later phase.
+      unwired), each in one or two sentences. *(completed)*
+- [x] Record issues and wins with `issue-record.sh` as they arise, here and in every later phase. *(completed)*
 
 **Timing**: 0.5 hours
 

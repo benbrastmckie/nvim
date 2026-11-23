@@ -1,25 +1,20 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/673_per_task_attribution_squash_landing/plans/01_landing-verification-gate.md",
-      "summary": "Seven-phase plan building the isolation-off landing verification (V1-V5 predicate, proof record, exit-7 gate in update-task-status.sh, postflight reorder, milestone-ref-land unwiring, review-handoff re-point, redeploy)."
-    }
-  ],
-  "next_steps": "Run /orchestrate 673 to execute the plan",
-  "phase_count": 7,
-  "estimated_hours": 11,
-  "dependency_waves": [[1, 2], [3], [4], [5], [6], [7]],
-  "memory_candidates": [],
-  "metadata": {
-    "session_id": "sess_1795425897_6a25f2_673",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 11,
-    "dependency_waves": [[1, 2], [3], [4], [5], [6], [7]]
+  "status": "in_progress",
+  "dispatch_seq": 6,
+  "artifacts": [],
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Implementation dispatch started; no phase executed yet.",
+    "phases_completed": 0,
+    "phases_total": 7
   },
-  "dispatch_seq": 5
+  "modified_files": [],
+  "memory_candidates": [],
+  "sapience_notes": [],
+  "metadata": {
+    "session_id": "sess_1795425897_6a25f2",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

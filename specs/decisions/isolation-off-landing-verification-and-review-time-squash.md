@@ -244,3 +244,26 @@ side branches that merge one squashed commit per task, is delivered on the revie
 on the long-lived branch. The amending record already said this of isolation-off repositories.
 It becomes the general case while isolation is deferred, and returns to being the exception when
 isolation is reinstated.
+
+## Implementation clarifications
+
+Stated by the implementing plan,
+`specs/673_per_task_attribution_squash_landing/plans/01_landing-verification-gate.md`. None
+changes a ruling above.
+
+- **Script name.** The predicate and proof writer is `task-landing-verify.sh`, with the suite
+  `test-task-landing-verify.sh`. Nothing is squashed on the integration branch, so a name
+  containing "squash" would describe the mechanism this record rejects.
+- **Exit codes.** The predicate exits `0` on a pass, the idempotent no-op included, `2` on a
+  usage or environment error, `10` for V1, `11` for V2, `12` for V4 and `13` for V5.
+  `update-task-status.sh` exits `7`, "landing verification refused", having written no state and
+  stamped no plan file.
+- **End commit.** "Its last attributed commit" in V4 and in "Idempotence" means the task's last
+  attributed commit that touches at least one path outside `BATCH_ADMISSION_STATE_TERRITORY`.
+  The completion commit carries state files only and is attributed to the task; read literally
+  it would replace the end commit after every completion and no re-run could be a no-op.
+- **The script file stays.** `milestone-ref-land.sh` is unwired from postflight and stays on
+  disk as a snapshot utility that no lifecycle script calls. L5 retires it as a landing
+  mechanism and does not order the file deleted; deleting or reusing it is left to
+  `stack_pr_submission_from_integration_branch` (685) and
+  `branch_topology_documentation_parity` (675).

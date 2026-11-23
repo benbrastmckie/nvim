@@ -1,0 +1,35 @@
+{
+  "phase": 1,
+  "phase_name": "Record the amendments and clarifications",
+  "started_at": "2026-11-23T11:16:59Z",
+  "last_updated": "2026-11-23T11:17:37Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm both decision records exist with the three target sections",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add three dated Amended-by notes to the amending record",
+      "status": "done",
+      "files_touched": [
+        "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Append Implementation clarifications section to the ruling record",
+      "status": "done",
+      "files_touched": [
+        "specs/decisions/isolation-off-landing-verification-and-review-time-squash.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification": "grep -c Amended by = 3; git diff --numstat shows 15+/0- and 23+/0-: additions only"
+}

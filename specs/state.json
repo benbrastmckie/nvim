@@ -1253,12 +1253,12 @@
     {
       "project_number": 673,
       "project_name": "per_task_attribution_squash_landing",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Land one reviewable commit per completed task on the integration branch and verify it before the status write",
       "topic": "orchestrator",
       "created": "2026-11-20T20:26:53Z",
-      "last_updated": "2026-11-23T11:15:37Z",
+      "last_updated": "2026-11-23T11:16:02Z",
       "session_id": "sess_1795425897_6a25f2",
       "dependencies": [
         669
