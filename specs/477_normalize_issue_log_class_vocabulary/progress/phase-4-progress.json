@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "The class shape convention and the append-time warnings",
+  "started_at": "2026-11-23T00:00:00Z",
+  "last_updated": "2026-11-23T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add issue_fold_class() bash helper mirroring jq fold_class", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 2, "description": "Fold-aware seed membership test + canonical-spelling warning", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 3, "description": "Extend outside-the-seed-enum warning to point at class-shape convention", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 4, "description": "Add token-count style warning (>6 tokens)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 5, "description": "issue-log.md: Class Value Shape paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 6, "description": "issue-log.md: Promoting a Class subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 7, "description": "Confirm open-enum posture intact (never refuses)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

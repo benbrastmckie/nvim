@@ -281,3 +281,46 @@ outside the 18-class seed list above, across tasks, as part of its own synthesis
 recurs often enough across tasks is a candidate for promotion into this document's seed enum in a
 future revision. This tally is explicitly the conclusion stage's job, not this log's own —
 recording here stays CAPTURE ONLY.
+
+## Class Value Shape
+
+`class` is a short noun phrase — roughly 2-5 words — naming a *category* of failure or success,
+never a narrated finding, a conclusion, or a full sentence. A finding, a conclusion, or a
+narrated sentence belongs in `what_happened`, never in `class`, because a sentence cannot group:
+`scripts/orchestrate-conclusion-aggregate.sh`'s grouping pipeline keys on `class` exactly (after
+the mechanical case/separator fold described above), so two entries describing the same category
+in different full-sentence wording will never be recognized as the same category unless `class`
+itself stays a short, reusable label.
+
+Three examples observed in practice, each a free-text sentence rather than a category, with a
+category each could instead have carried:
+
+| Written (wrong, sentence-shaped) | A category it could have carried instead |
+|---|---|
+| `research-confirmed-hypothesis` | `design-record defect or ambiguity`, or whichever seed class names what the confirmed hypothesis actually resolved |
+| `reuse-not-reimplement confirmed by direct source read` | `planned feature absent`, or `design-record defect or ambiguity`, depending on what the direct source read actually settled |
+| `reuse_of_existing_machinery` | `planned feature absent`, or a `kind: "win"` entry under whichever seed class names the category of the reuse finding |
+
+A spelling that merely varies case or separators from a seed class (for example `Scope_Excursion`
+for `scope excursion`) is not a shape violation — `scripts/issue-record.sh` folds case and
+separators before comparing `--class` against the seed list and warns naming the canonical
+spelling, then appends the value exactly as given regardless. The shape convention above is
+about what belongs in the field at all, never about exact-string matching against the seed list.
+
+### Promoting a Class
+
+Promoting a recurring non-seed `class` into this document's seed enum touches exactly three
+list-holding files, plus any further prose elsewhere that restates the enum's current size:
+
+- `context/formats/issue-log.md` (this file) — the gloss table above, and every count mention
+  this document itself carries (the section heading, the Entry Field Table's `class` row, the
+  Extensibility Rule, and the Unknown-Class Tally section).
+- `scripts/issue-record.sh` — the `ISSUE_SEED_CLASSES` array (and its comment-only convenience
+  copy above it), the header reference, and the stderr warning text.
+- `scripts/orchestrate-conclusion-aggregate.sh` — the `SEED_CLASSES_JSON` literal, the header
+  reference, and the comment above the literal.
+
+After editing all three, run `grep -rn "N-class\|N classes\|N class"` (substituting the enum's
+previous count) across `agent-system/extensions/core/` to find every further prose restatement
+outside the three list-holding files above — this document's own count mentions, and several
+further contract/pattern/standard files elsewhere, were only found this way, not by inspection.

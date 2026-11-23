@@ -293,15 +293,49 @@ ISSUE_SEED_CLASSES=(
   "knowledge-capture gap"
   "scope excursion"
 )
+# issue_fold_class() is the bash twin of orchestrate-conclusion-aggregate.sh's jq fold_class()
+# def (SHARED FRAGILITY: a change to either requires a matching change to the other).
+# Grouping/comparison-time normalization only -- lowercase, collapse hyphen/underscore/
+# whitespace runs to a single space, trim leading/trailing space. This NEVER mutates what gets
+# appended: the line this script writes below always carries the raw --class value the caller
+# passed, verbatim. Folding is consulted only to decide which warning, if any, to print.
+issue_fold_class() {
+  local s="$1"
+  s="${s,,}"
+  s="$(printf '%s' "$s" | sed -E 's/[-_[:space:]]+/ /g')"
+  s="${s# }"
+  s="${s% }"
+  printf '%s' "$s"
+}
+
+folded_class_arg="$(issue_fold_class "$class_arg")"
 class_known="false"
+canonical_match=""
 for seed_class in "${ISSUE_SEED_CLASSES[@]}"; do
-  if [ "$class_arg" = "$seed_class" ]; then
+  if [ "$folded_class_arg" = "$(issue_fold_class "$seed_class")" ]; then
     class_known="true"
+    canonical_match="$seed_class"
     break
   fi
 done
-if [ "$class_known" = "false" ]; then
-  echo "warning: --class '$class_arg' is outside the 18-class seed enum (see context/formats/issue-log.md); recording it anyway -- class is deliberately open/extensible" >&2
+
+if [ "$class_known" = "true" ]; then
+  if [ "$class_arg" != "$canonical_match" ]; then
+    echo "warning: --class '$class_arg' folds to the canonical seed spelling '$canonical_match'; recording the value you passed verbatim -- consider using '$canonical_match' going forward" >&2
+  fi
+else
+  echo "warning: --class '$class_arg' is outside the 18-class seed enum (see context/formats/issue-log.md); recording it anyway -- class is deliberately open/extensible. See issue-log.md's \"Class Value Shape\" convention: class is a short noun phrase (roughly 2-5 words) naming a category of failure or success, never a narrated finding or a full sentence -- a finding or conclusion belongs in --what-happened, not in --class" >&2
+fi
+
+# Token-count style warning: a folded class above 6 whitespace-separated tokens is usually
+# sentence-shaped rather than a short noun phrase (the longest legitimate seed gloss, "cost-
+# forced exclusion or substituted verification", folds to 6 tokens). This is an ADDITIONAL,
+# sharper signal layered on top of the outside-the-seed-enum warning above -- it never replaces
+# it, it never refuses the call, and it fires even when the class is already known to be outside
+# the seed enum (both warnings can print for the same entry).
+class_token_count="$(printf '%s' "$folded_class_arg" | wc -w | tr -d '[:space:]')"
+if [ "${class_token_count:-0}" -gt 6 ]; then
+  echo "warning: --class '$class_arg' is $class_token_count tokens long, above the ~2-5-word style guideline (see issue-log.md's \"Class Value Shape\" convention); a long class value is often a narrated finding that belongs in --what-happened instead -- recording it anyway" >&2
 fi
 
 # --- Paths ---

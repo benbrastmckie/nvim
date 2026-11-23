@@ -404,35 +404,35 @@ the script's header records the audit result for every other flag.
 
 ---
 
-### Phase 4: The `class` shape convention and the append-time warnings [NOT STARTED]
+### Phase 4: The `class` shape convention and the append-time warnings [COMPLETED]
 
 **Goal**: An author writing a sentence into `class`, or a non-canonical spelling of a seed class,
 is told so at append time; the convention and the promotion procedure are written down.
 
 **Tasks**:
 
-- [ ] Add a bash `issue_fold_class()` helper to `scripts/issue-record.sh` mirroring the jq
+- [x] Add a bash `issue_fold_class()` helper to `scripts/issue-record.sh` mirroring the jq
       `fold_class` of Phase 2 (lowercase, collapse `-`/`_`/whitespace runs to a single space,
       trim), with a SHARED FRAGILITY comment naming the jq twin and stating that a change to
-      either requires a matching change to the other.
-- [ ] Make the seed-membership test fold both sides. When the folded value matches a seed class
+      either requires a matching change to the other. *(completed)*
+- [x] Make the seed-membership test fold both sides. When the folded value matches a seed class
       but the raw value differs from the canonical spelling, emit a warning naming the canonical
-      spelling, then append.
-- [ ] When no folded value matches, keep the existing outside-the-seed-enum warning and extend its
+      spelling, then append. *(completed)*
+- [x] When no folded value matches, keep the existing outside-the-seed-enum warning and extend its
       text to point at `issue-log.md`'s class-shape convention. **This is the warning that
-      discharges 1d** — it fires on all three of the dispatch's named examples.
-- [ ] Add the token-count check: after folding, count whitespace-separated tokens; above 6, emit an
-      additional style warning naming the convention. Never refuse; always append.
-- [ ] `context/formats/issue-log.md`: add a "Class Value Shape" paragraph — `class` is a short noun
+      discharges 1d** — it fires on all three of the dispatch's named examples. *(completed)*
+- [x] Add the token-count check: after folding, count whitespace-separated tokens; above 6, emit an
+      additional style warning naming the convention. Never refuse; always append. *(completed)*
+- [x] `context/formats/issue-log.md`: add a "Class Value Shape" paragraph — `class` is a short noun
       phrase (roughly 2-5 words) naming a *category* of failure or success; a finding, a
       conclusion, or a narrated sentence belongs in `what_happened`, never in `class`, because a
       sentence cannot group. Include the three dispatch examples as counter-examples with the
-      category each should have carried.
-- [ ] `context/formats/issue-log.md`: add a "Promoting a Class" subsection naming the three
+      category each should have carried. *(completed)*
+- [x] `context/formats/issue-log.md`: add a "Promoting a Class" subsection naming the three
       list-holding files (`issue-log.md`, `issue-record.sh`, `orchestrate-conclusion-aggregate.sh`)
       plus the `grep -rn "N-class"` self-check for the prose restatements, so the next promotion
-      does not have to rediscover the file set by hand.
-- [ ] Confirm the open-enum posture is intact: no path added here refuses a call.
+      does not have to rediscover the file set by hand. *(completed)*
+- [x] Confirm the open-enum posture is intact: no path added here refuses a call. *(completed)*
 
 **Timing**: 1.25 hours
 
