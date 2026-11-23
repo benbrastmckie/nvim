@@ -1085,18 +1085,14 @@ fi
 # ("WARNING: git-commit-phase.sh: dropping out-of-scope path") never fires, and nothing is
 # proposed into proposed_file_scope by THIS script.
 #
-# Deliberately NOT asserted here: the full end-to-end commit outcome (rc, whether the path
-# actually lands in the commit). git-commit-scoped.sh carries its own SEPARATE V10 containment
-# guard (context/standards/git-staging-scope.md's "Three Containment sites, not one" -- Site 3),
-# which re-reads the UNSTRIPPED file_scope directly from specs/state.json and is not touched by
-# this task's declared file_scope (git-commit-scoped.sh and test-git-commit-scoped.sh are not
-# members of it). A `.claude/`-only declared file_scope therefore still interacts with Site 3's
-# own (separately scoped, un-patched) containment predicate for a files_touched path that is not
-# otherwise carve-out-admitted there -- a residual, OUT-OF-SCOPE-FOR-THIS-TASK gap recorded via
-# issue-record.sh rather than silently masked by weakening this assertion to match whatever Site
-# 3 happens to do. See this task's own implementation summary for the full citation.
+# End-to-end outcome now also asserted: git-commit-scoped.sh's own SEPARATE V10 containment
+# guard (context/standards/git-staging-scope.md's "Three Containment sites, not one" -- Site 3)
+# carries the identical deployed-tree strip ported from this script's Site-2 Self-Check, so a
+# `.claude/`-only declared file_scope strips to empty at Site 3 too and fails open there as well
+# -- the commit actually lands and src/a.txt is present in HEAD. See test-git-commit-scoped.sh's
+# dedicated Z19 case for the direct, Site-3-only pin of this same behaviour.
 # =====================================================================
-common_test_info "=== Case 26: a file_scope of only .claude/ strips to empty at THIS script's own Containment Self-Check (fails open at Site 2 only) ==="
+common_test_info "=== Case 26: a file_scope of only .claude/ strips to empty at both Site 2 and Site 3, so the commit lands end to end ==="
 
 repo26="$(build_repo)"
 cat > "$repo26/specs/state.json" <<'STATE26_EOF'
@@ -1108,6 +1104,8 @@ write_progress "$repo26" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt
 echo "mod a" > "$repo26/src/a.txt"
 
 out26="$(run_phase_commit "$repo26" --task 999 --project probe --phase 1 --message "case26" --session sess_26 2>&1)"
+rc26=$?
+show26="$(git -C "$repo26" show --name-only --format= HEAD 2>/dev/null)"
 proposed26="$(jq -c '.proposed_file_scope // []' "$repo26/specs/999_probe/.return-meta.json" 2>/dev/null)"
 
 if ! echo "$out26" | grep -q "WARNING: .*: dropping out-of-scope path"; then
@@ -1120,6 +1118,12 @@ if echo "$proposed26" | jq -e 'length == 0' >/dev/null 2>&1; then
   common_test_pass "Case 26: nothing proposed into proposed_file_scope (Site 2's check never ran)"
 else
   common_test_fail "Case 26: expected empty proposed_file_scope; got $proposed26"
+fi
+
+if [ "$rc26" -eq 0 ] && echo "$show26" | grep -qF "src/a.txt" && ! echo "$out26" | grep -q "WARNING: .*dropping out-of-scope path"; then
+  common_test_pass "Case 26: the commit lands end to end (rc=0, src/a.txt in HEAD) -- Site 3's V10 resolution also strips the claude-only scope to empty and fails open"
+else
+  common_test_fail "Case 26: expected rc=0 and src/a.txt in HEAD (Site 3 should also fail open); got rc=$rc26 show='$show26' out=$out26"
 fi
 
 # =====================================================================

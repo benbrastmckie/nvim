@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Pin Site 3 directly and restore Case 26's end-to-end assertion",
+  "started_at": "2026-11-23T03:35:00Z",
+  "last_updated": "2026-11-23T04:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add case Z19 to test-git-commit-scoped.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 2, "description": "Build Z19 fixture, dirty a.txt and sibling out.txt, commit both with --task 999", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 3, "description": "Assert Z19 check-fully-disabled shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 4, "description": "Replace Case 26's stale Site-2-only comment block in test-git-commit-phase.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 5, "description": "Extend Case 26's assertions to the end-to-end outcome", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 6, "description": "Run full test-git-commit-phase.sh and confirm Case 20 unmodified/passing", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "test-git-commit-scoped.sh": "88 passed, 0 failed, including new Z19",
+    "test-git-commit-phase.sh": "98 passed, 0 failed, including widened Case 26 and unmodified Case 20",
+    "sanity_revert": "Temporarily reverted Phase 1's strip in git-commit-scoped.sh (working copy only, never committed) and re-ran test-git-commit-scoped.sh: Z19 FAILED exactly as expected (rc=7, sibling out.txt dropped as out-of-scope) -- confirms Z19 genuinely pins Site 3. Strip restored immediately afterward; git diff confirmed byte-identical to HEAD before proceeding.",
+    "verify_touched_phase2": "10 passed, 0 failed over the two touched test files"
+  }
+}

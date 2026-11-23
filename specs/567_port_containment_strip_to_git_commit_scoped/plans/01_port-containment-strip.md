@@ -164,36 +164,36 @@ and checking that the only changed hunk is the inserted strip, and that the
 
 ---
 
-### Phase 2: Pin Site 3 directly and restore Case 26's end-to-end assertion [NOT STARTED]
+### Phase 2: Pin Site 3 directly and restore Case 26's end-to-end assertion [COMPLETED]
 
 **Goal**: The new behaviour is asserted at both sites — a dedicated V10 case proves Site 3's check
 is fully disabled by a strips-to-empty scope, and Case 26 asserts the full end-to-end commit
 outcome it was narrowed away from.
 
 **Tasks**:
-- [ ] Add a new case `Z19` to `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`,
+- [x] Add a new case `Z19` to `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`,
       inserted after Z18's closing `fi` (currently line 1932) and **before** the
       `# task-ref-ok:end` marker (currently line 1934), so its `--task 999` literals stay inside the
-      existing Z-series exemption region.
-- [ ] Build the Z19 fixture with `build_repo_with_scope 999 probe '[".claude/"]'`, dirty both
+      existing Z-series exemption region. *(completed)*
+- [x] Build the Z19 fixture with `build_repo_with_scope 999 probe '[".claude/"]'`, dirty both
       `specs/999_probe/a.txt` and the sibling `specs/998_sibling/out.txt` that helper already seeds,
-      and commit both with `--task 999`.
-- [ ] Assert the Z9 "check fully disabled" shape: `rc=0`, `HEAD` advanced by one, **both** paths
+      and commit both with `--task 999`. *(completed)*
+- [x] Assert the Z9 "check fully disabled" shape: `rc=0`, `HEAD` advanced by one, **both** paths
       present in `git show --name-only`, and no `WARN: ... dropping out-of-scope pathspec` anywhere
       in the captured output. Including the sibling path is what proves the scope is fully
-      disabled rather than merely still admitting the task directory.
-- [ ] In `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`, replace Case 26's
+      disabled rather than merely still admitting the task directory. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`, replace Case 26's
       "Deliberately NOT asserted here" comment block (currently lines 1088-1097) with a statement
       that Site 3 now carries the same strip, and drop the stale reference to the out-of-scope
-      residual and to an implementation summary.
-- [ ] Extend Case 26's assertions, mirroring Case 18's existing style: `rc=0`, `src/a.txt` present
+      residual and to an implementation summary. *(completed)*
+- [x] Extend Case 26's assertions, mirroring Case 18's existing style: `rc=0`, `src/a.txt` present
       in `git show --name-only`, and no `WARNING: ... dropping out-of-scope path` anywhere in
       `$out26`. Keep the two existing Site-2 assertions (no drop warning from this script's own
-      Self-Check, empty `proposed_file_scope`) unchanged.
-- [ ] Run the whole `test-git-commit-phase.sh` suite and confirm Case 20 passes **unmodified** —
+      Self-Check, empty `proposed_file_scope`) unchanged. *(completed)*
+- [x] Run the whole `test-git-commit-phase.sh` suite and confirm Case 20 passes **unmodified** —
       its fixture dirties `other/outside.txt`, not a `.claude/` path, so this change cannot reach
       it; a Case 20 failure would mean the strip leaked into the `proposed_file_scope` mechanism
-      and must stop the phase.
+      and must stop the phase. *(completed)*
 
 **Timing**: 0.75 hours
 

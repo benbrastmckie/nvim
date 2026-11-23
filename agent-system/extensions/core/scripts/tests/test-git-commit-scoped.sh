@@ -1931,6 +1931,32 @@ else
   fi
 fi
 
+# --- Z19: a `.claude/`-only declared file_scope strips to empty at Site 3's V10 resolution
+# (the deployed-tree strip ported from git-commit-phase.sh's Site-2 Containment Self-Check) and
+# so disables the V10 Containment check entirely -- both the in-scope task-directory path
+# (specs/999_probe/a.txt) AND the genuinely out-of-scope sibling path (specs/998_sibling/out.txt)
+# land in the same commit, with no out-of-scope drop WARN. Including the sibling path is what
+# proves the check is fully disabled, not merely still admitting the task's own directory. ---
+
+repo_z19="$(build_repo_with_scope 999 probe '[".claude/"]')"
+echo "modified a" > "$repo_z19/specs/999_probe/a.txt"
+echo "modified out" > "$repo_z19/specs/998_sibling/out.txt"
+before_z19=$(git -C "$repo_z19" rev-list --count HEAD)
+out_z19="$(run_commit "$repo_z19" --message "Z19 probe commit" --session "sess_z19" --task 999 \
+  -- "specs/999_probe/a.txt" "specs/998_sibling/out.txt" 2>&1)"
+rc_z19=$?
+after_z19=$(git -C "$repo_z19" rev-list --count HEAD 2>/dev/null || echo "$before_z19")
+show_z19="$(git -C "$repo_z19" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z19" -eq 0 ] && [ "$after_z19" -eq $((before_z19 + 1)) ] \
+  && echo "$show_z19" | grep -qF "specs/999_probe/a.txt" \
+  && echo "$show_z19" | grep -qF "specs/998_sibling/out.txt" \
+  && ! echo "$out_z19" | grep -q "dropping out-of-scope pathspec"; then
+  common_test_pass "Z19: a .claude/-only declared file_scope strips to empty at Site 3's V10 resolution and disables the Containment check entirely -- both the task-directory path and the genuinely out-of-scope sibling path land, exit 0"
+else
+  common_test_fail "Z19: expected rc=0, HEAD+1, a.txt and out.txt both in HEAD, no out-of-scope pathspec WARN; got rc=$rc_z19 before=$before_z19 after=$after_z19 show='$show_z19' output=$out_z19"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================
