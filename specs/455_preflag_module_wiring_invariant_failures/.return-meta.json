@@ -1,10 +1,84 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/455_preflag_module_wiring_invariant_failures/summaries/01_preflag-module-wiring-invariants-summary.md",
+      "summary": "Re-validated the plan's premise live (agreed exactly), recorded the part-(1) finding and part-(2) NO ruling in plan-file-scope-harvest.sh's own header, and pinned the cited wiring shape, append-only behaviour, and the inert case with a new Case 30 in the existing suite. No behaviour change; deployed and the full verification tier discharged via the Batch Gate Deferral directive."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Recorded the part-(1) finding and the part-(2) NO ruling in plan-file-scope-harvest.sh's header comment (comment-only, no behaviour change) and added Case 30 to test-plan-file-scope-harvest.sh pinning the cited module-wiring shape, append-only behaviour, and the capability-gate-closed inert case. Deployed via deploy-headless.sh and discharged the full verification tier per the Batch Gate Deferral directive."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/plan-file-scope-harvest.sh",
+    "agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a foreground Bash call's command genuinely needs more than ~120s (e.g. a repo-wide verify-touched.sh/run-all.sh pass over 60+ suites), an inner `timeout N` wrapper on the command does NOT prevent the harness's own Bash tool from auto-backgrounding the call at its default ~120s ceiling. The fix is to raise the Bash tool's own `timeout` parameter (up to 600000ms) on that call, not just the inner shell timeout. Once a call has already been auto-backgrounded, recover by polling its output file directly (grep for a completion marker in a bounded loop) rather than idly waiting for the harness notification or re-running the command.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/455_preflag_module_wiring_invariant_failures/summaries/01_preflag-module-wiring-invariants-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash timeout", "auto-background", "verify-touched.sh", "bounded wait", "harness timeout"]
+    },
+    {
+      "content": "Decision pattern for a generated-surface-appending stage (plan-file-scope-harvest.sh): append PATHS a mechanical regeneration overwrites, and deliberately exclude CONTENT obligations (a lint-suppression allowlist entry, an identifier rename, a suppression-reason comment, a per-ledger-row doc-comment requirement) even when they are forced by the same triggering edit, because the required content cannot be computed from a plan's declared paths alone -- it would require running the actual lint/naming/ledger check. Reusable test when deciding whether to widen any similar append-only mechanical stage: can the exact content be derived from the declared paths alone, or does deriving it require running the check itself?",
+      "category": "PATTERN",
+      "source_artifact": "specs/455_preflag_module_wiring_invariant_failures/summaries/01_preflag-module-wiring-invariants-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["generated-surface", "append-only", "content vs path", "plan-file-scope-harvest", "scope discipline"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "plan-file-scope-harvest.sh generated-surface appending",
+      "value": "The stage correctly computes and appends both claimed-missed surfaces (a root README.md generated-inventory block and typst/generated/status.typ) for the cited BimodalLogic module-wiring incident; both offered hypotheses for why it allegedly missed them (no .lean path harvested; ancestor-chain walk stopping short of repo root) were falsified by direct reproduction against the live checkout.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"
+    },
+    {
+      "subject": "plan-file-scope-harvest.sh scope ruling",
+      "value": "Ruled NO on widening the generated-surface append to cover content obligations (lint-suppression allowlist entries, identifier renames, suppression-reason comments, per-ledger-row doc-comment requirements), because the stage appends PATHS a mechanical regeneration overwrites, while those four are CONTENT obligations whose required content is not computable from a plan's declared paths without running the lint/naming/ledger check itself.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"
+    },
+    {
+      "subject": "orchestrate-build-dispatch.sh file_scope visibility",
+      "value": "The implement-dispatch prompt composer does not read the dispatching task's own file_scope -- confirmed by grep: exactly one file_scope reference in the whole script, a sibling-batch comment. A surface correctly appended into a task's file_scope is therefore not itself a mid-phase cue to an implementer, so a commit-time gate collision can still occur even when the generated-surface stage works exactly as designed.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"
+    },
+    {
+      "subject": "plan-postflight file_scope persistence",
+      "value": "plan-file-scope-harvest.sh's harvested array is fed as --file-scope-add into update-task-status.sh postflight for operation_type=plan, persisting the merged array into specs/state.json's file_scope at the [PLANNING] -> [PLANNED] transition. Confirmed by reading orchestrator-postflight.sh's Stage 7 fsa_args construction.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrator-postflight.sh:318-341"
+    },
+    {
+      "subject": "Bash tool auto-backgrounding",
+      "value": "A foreground Bash call wrapped in an inner `timeout N` shell command still gets auto-backgrounded by the harness if it runs past the harness's own default ~120s ceiling; the inner timeout does not raise the harness's own limit. The Bash tool call's own `timeout` parameter (up to 600000ms) must be raised explicitly to avoid this for a genuinely long local command.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/455_preflag_module_wiring_invariant_failures/summaries/01_preflag-module-wiring-invariants-summary.md"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795391913_f9e5cc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }

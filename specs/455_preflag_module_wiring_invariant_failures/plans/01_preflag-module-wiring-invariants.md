@@ -303,26 +303,33 @@ use the next free number instead and keep the header list in step.
 
 ---
 
-### Phase 3: Deploy and Discharge the Gate [NOT STARTED]
+### Phase 3: Deploy and Discharge the Gate [COMPLETED]
 
 **Goal**: Regenerate the deploy tree so the deployed copies match the source store, then
 discharge this task's verification obligation.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` from the repository root.
-- [ ] Confirm the deployed copies match the source store:
+- [x] Run `bash .claude/scripts/deploy-headless.sh` from the repository root. *(completed: exit 0,
+      internal verify-deploy.sh pass green -- 41 checks, 0 failures, RESULT=landed_verify_clean)*
+- [x] Confirm the deployed copies match the source store:
       `diff agent-system/extensions/core/scripts/plan-file-scope-harvest.sh .claude/scripts/plan-file-scope-harvest.sh`
-      and the same for the test suite, both empty.
-- [ ] Run the dispatch's named scoped narrowing against the deployed tree:
-      `bash .claude/scripts/tests/run-all.sh --only test-plan-file-scope-harvest.sh`.
-- [ ] Discharge the full tier: under `/orchestrate`, run the scoped touched-path check
+      and the same for the test suite, both empty. *(completed: both diffs empty)*
+- [x] Run the dispatch's named scoped narrowing against the deployed tree:
+      `bash .claude/scripts/tests/run-all.sh --only test-plan-file-scope-harvest.sh`. *(completed:
+      1 passed, 0 failed)*
+- [x] Discharge the full tier: under `/orchestrate`, run the scoped touched-path check
       `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/scripts/plan-file-scope-harvest.sh agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh`
       and record explicitly in the phase's verification notes that the complete gate set is
       deferred to the orchestration close rather than independently run. Standalone (no
       orchestration close to defer to): run `bash .claude/scripts/verify-deploy.sh` directly.
-- [ ] Record the part-(1) finding, the part-(2) ruling, and the residual dispatch-prompt
+      *(completed per this dispatch's own Batch Gate Deferral directive, using its canonical
+      no-argument `bash .claude/scripts/verify-touched.sh` invocation rather than the explicit-path
+      form above: 60 suites selected, 98 passed, 0 failed, 5 OWED, across 17 touched paths. The
+      complete gate set is deferred to the once-per-batch close, not independently run here --
+      recorded in the Verification section below and via `issue-record.sh`.)*
+- [x] Record the part-(1) finding, the part-(2) ruling, and the residual dispatch-prompt
       visibility seam as a follow-up recommendation in the task summary; create no task from this
-      dispatch.
+      dispatch. *(completed: see the implementation summary)*
 
 **Timing**: 0.5 hours
 
@@ -341,6 +348,18 @@ discharge this task's verification obligation.
 - The scoped touched-path check is green and the deferral of the complete gate set to the
   orchestration close is recorded in the phase's verification notes (or, standalone,
   `verify-deploy.sh` is green).
+
+**Verification notes (recorded at implementation time)**: all three criteria above passed.
+`deploy-headless.sh` exited 0 (`RESULT=landed_verify_clean`, 41 internal checks, 0 failures); both
+`diff` invocations (harvester, test suite) against the deployed tree were empty; the scoped
+narrowing (`run-all.sh --only test-plan-file-scope-harvest.sh`) passed 1/1. Per this dispatch's
+`## Batch Gate Deferral` directive, the full tier was discharged with the canonical no-argument
+`bash .claude/scripts/verify-touched.sh` invocation rather than independently running
+`verify-deploy.sh`'s complete gate set: 60 suites selected, 98 passed, 0 failed, 5 OWED (unmapped
+touched paths attributed to the once-per-batch full sweep), across 17 touched paths. The complete
+gate set is deferred to the batch-level close and attributed back to this task by its own
+`modified_files`, never forgiven — see `context/formats/plan-format.md`'s "Batch-aware deferral"
+subsection.
 
 ## Testing & Validation
 
