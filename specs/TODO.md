@@ -13,19 +13,18 @@ next_project_number: 685
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,535,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,679,680,684 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,509,523,533,540,541,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,511,519,535,539,542,563,577,586,599,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,472,480,484,492,513,561,588,594,669 | 439,479,491,509,541,552,556,570,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 4 | 473,486,518,581,595,641,671 | 454,472,484,492,539,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 5 | 501,508,571,596,642 | 472,486,518,595,641 | file-scope-lifecycle, agent-system |
-| 6 | 524 | 501 | core-agent-system |
-| 7 | 536 | 524 | agent-system |
-| 8 | 548 | 536 | agent-system |
-| 9 | 553,598 | 548 | agent-system |
-| 10 | 655,670 | 513,553,669 | orchestrator |
-| 11 | 672,673 | 670,671 | orchestrator |
-| 12 | 674 | 673 | orchestrator |
-| 13 | 675 | 672,674 | orchestrator |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,541,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,679,680,684 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,439,474,479,481,484,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,669 | 383,390,410,431,438,452,453,511,519,539,541,542,563,577,586,599,629 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,472,480,486,492,513,561,588,594,671 | 439,479,484,491,509,552,556,570,593,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 473,501,508,518,581,595,641 | 454,472,486,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 5 | 524,571,596,642 | 501,518,595,641 | core-agent-system, agent-system |
+| 6 | 536 | 524 | agent-system |
+| 7 | 548 | 536 | agent-system |
+| 8 | 553,598 | 548 | agent-system |
+| 9 | 655,670 | 513,553,669 | orchestrator |
+| 10 | 672,673 | 670,671 | orchestrator |
+| 11 | 674 | 673 | orchestrator |
+| 12 | 675 | 672,674 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -138,13 +137,12 @@ next_project_number: 685
 512 [PLANNED] — Exempt built-in commands from the dead-command-recommendation...
 529 [NOT STARTED] — Evaluate whether formal:logic implement routing should...
 530 [NOT STARTED] — Land the three agent-system context extensions recorded by...
-535 [IMPLEMENTING] — Carve a task's own specs/ artifacts out of...
-  └─ 541 [NOT STARTED] — Stop git-snapshot.sh --no-revert artifacts from contaminating...
 539 [NOT STARTED] — State the precedence and snapshot-prerequisite rules for a...
   └─ 540 [NOT STARTED] — Record five measured lean4 facts: the decide-synthesis...
   └─ 544 [NOT STARTED] — Make a fixture-dependent Lean gate statement expressible and...
   └─ 595 [NOT STARTED] — Define Goal Polarity semantics for decision-gate plans
     └─ 596 [NOT STARTED] — Separate generator-written files from hand-edited read-only...
+541 [NOT STARTED] — Stop git-snapshot.sh --no-revert artifacts from contaminating...
 542 [NOT STARTED] — Record the launch-side PID-fidelity condition on the...
   └─ 552 [NOT STARTED] — Extend the bounded-waiter lint beyond Rule 2 to the...
     └─ 561 [NOT STARTED] — Record the load-sized bound and the diagnostic-preserving...
@@ -5601,7 +5599,7 @@ RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-lay
 ---
 
 ### 535. Carve a task's own specs/ artifacts out of git-commit-phase.sh's containment filter
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 567
