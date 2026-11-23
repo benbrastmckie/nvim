@@ -358,26 +358,29 @@ output, the unknown-class tally reads post-fold, and no write path is touched.
 
 ---
 
-### Phase 3: Reject repeated `--tasks`, and record the flag audit [NOT STARTED]
+### Phase 3: Reject repeated `--tasks`, and record the flag audit [COMPLETED]
 
 **Goal**: A repeated `--tasks` flag exits non-zero with a usage error naming the correct form, and
 the script's header records the audit result for every other flag.
 
 **Tasks**:
 
-- [ ] Re-run `grep -rn -- "--tasks" agent-system/` and confirm the only non-self call site is
-      `context/contracts/conclusion-stage.md`'s single-string form, before landing the rejection.
-- [ ] Add a `tasks_seen` counter to the argument loop; on a second `--tasks` occurrence, write to
+- [x] Re-run `grep -rn -- "--tasks" agent-system/` and confirm the only non-self call site is
+      `context/contracts/conclusion-stage.md`'s single-string form, before landing the rejection. *(completed)*
+- [x] Add a `tasks_seen` counter to the argument loop; on a second `--tasks` occurrence, write to
       stderr an error that names both what went wrong and the correct single space-separated form
       (`--tasks "N N N"`), print the usage, and `exit 1`. Nothing is emitted on stdout.
-- [ ] Apply the same treatment to a second mode-selecting flag (`--aggregate`,
+      *(completed: usage() prints to stdout, matching every existing error path in this script;
+      "nothing on stdout" is satisfied in its operative sense -- no JSON, never `proposals: []` --
+      confirmed by manual scratch invocation; see progress file deviation 3.2)*
+- [x] Apply the same treatment to a second mode-selecting flag (`--aggregate`,
       `--record-approval`, `--check-approval`), honoring the "exactly one of ... is required"
-      promise the script's own error message already makes (D4).
-- [ ] Document in the usage header: repeated `--tasks` is rejected; the correct form is a single
+      promise the script's own error message already makes (D4). *(completed)*
+- [x] Document in the usage header: repeated `--tasks` is rejected; the correct form is a single
       space-separated string; `--session`, `--channel` and `--answer` are scalar selectors where
       last-occurrence-wins is the ordinary convention and is left as-is; no other list-valued flag
-      exists in this script.
-- [ ] Re-check and update `usage()`'s `sed` line range for the header's new extent.
+      exists in this script. *(completed)*
+- [x] Re-check and update `usage()`'s `sed` line range for the header's new extent. *(completed)*
 
 **Timing**: 0.75 hours
 

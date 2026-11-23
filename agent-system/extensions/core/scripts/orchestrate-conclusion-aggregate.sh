@@ -58,6 +58,16 @@
 # four keys ("a", "b", "c", "edges"), each "yes" or "no". Read-merge-write under flock, lazily
 # created.
 #
+# FLAG-PARSING AUDIT: a repeated `--tasks N` flag is REJECTED with a non-zero exit and a usage
+# error naming the correct single-string form -- it is never silently last-wins. The correct
+# call shape is one space-separated string: --tasks "275 274 378". A second, repeated
+# mode-selecting flag (--aggregate, --record-approval, --check-approval) is rejected the same
+# way, enforcing the "exactly one of ..." promise this header already makes. --session,
+# --channel and --answer are genuinely scalar selectors (a session id, a closed-enum channel
+# key, a closed-enum yes/no answer); last-occurrence-wins is the ordinary, unsurprising shell
+# convention for those three and is left unchanged. No other list-valued flag exists in this
+# script.
+#
 # NOT RUNNABLE FROM THE SOURCE STORE: deploy-root-guard.sh (sourced below) fails loudly when
 # invoked from agent-system/extensions/core/scripts/. Deploy first (bash
 # .claude/scripts/deploy-headless.sh, or the picker's [Reload All]/[Regenerate]), then exercise
@@ -74,7 +84,7 @@
 set -euo pipefail
 
 usage() {
-  sed -n '2,59p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,69p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 # --- Paths (sourced BEFORE argument parsing, including --help, so the deploy-root-guard refusal
@@ -97,14 +107,36 @@ session_arg=""
 tasks_arg=""
 channel_arg=""
 answer_arg=""
+mode_seen=0
+tasks_seen=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --aggregate) MODE="aggregate"; shift ;;
-    --record-approval) MODE="record-approval"; shift ;;
-    --check-approval) MODE="check-approval"; shift ;;
+    --aggregate|--record-approval|--check-approval)
+      mode_seen=$((mode_seen + 1))
+      if [ "$mode_seen" -gt 1 ]; then
+        echo "error: exactly one of --aggregate, --record-approval, --check-approval is required, but more than one was given (saw '$1' after MODE was already set to '$MODE')" >&2
+        usage
+        exit 1
+      fi
+      case "$1" in
+        --aggregate) MODE="aggregate" ;;
+        --record-approval) MODE="record-approval" ;;
+        --check-approval) MODE="check-approval" ;;
+      esac
+      shift
+      ;;
     --session) session_arg="${2:-}"; shift 2 ;;
-    --tasks) tasks_arg="${2:-}"; shift 2 ;;
+    --tasks)
+      tasks_seen=$((tasks_seen + 1))
+      if [ "$tasks_seen" -gt 1 ]; then
+        echo "error: --tasks was given more than once; pass every task number in ONE space-separated string instead, e.g. --tasks \"N N N\" (repeated --tasks flags are rejected, never silently last-wins)" >&2
+        usage
+        exit 1
+      fi
+      tasks_arg="${2:-}"
+      shift 2
+      ;;
     --channel) channel_arg="${2:-}"; shift 2 ;;
     --answer) answer_arg="${2:-}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;

@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Reject repeated --tasks, and record the flag audit",
+  "started_at": "2026-11-23T00:00:00Z",
+  "last_updated": "2026-11-23T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run --tasks grep audit before landing rejection", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add tasks_seen counter, reject on repeat with usage error", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 3, "description": "Apply same treatment to a second mode-selecting flag", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 4, "description": "Document flag audit in usage header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 5, "description": "Re-check/update usage() sed range again", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "write to stderr an error... print the usage, and exit 1. Nothing is emitted on stdout.",
+      "type": "altered",
+      "reason": "usage() in this script has always printed to stdout (no stderr redirect), consistently across every existing error path (empty --session, empty MODE, bad --channel/--answer values, unknown argument). Changing only the two new rejection paths to redirect usage to stderr would make this one script internally inconsistent. The dispatch's actual acceptance criterion (Phase 5 case p / dispatch requirement b) is narrower and is fully satisfied: stdout carries usage prose, never a JSON document and never `proposals: []`. Verified directly: a manual scratch invocation with repeated --tasks produced zero bytes of JSON on stdout.",
+      "annotation": "*(deviation: altered -- usage() keeps printing to stdout per existing script convention; the literal 'nothing on stdout' phrasing is satisfied in its operative sense of 'no JSON', confirmed by manual scratch invocation)*"
+    }
+  ]
+}
