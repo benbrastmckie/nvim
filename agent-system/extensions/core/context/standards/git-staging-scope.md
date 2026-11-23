@@ -485,6 +485,43 @@ invoked, so V10 can neither see nor restore a derived-output path site 2 has alr
 upstream of that call. A regenerated declared derived-output surface therefore needed this
 splice at site 2 specifically; being already widened at sites 1 and 3 was never sufficient.
 
+**A fourth per-site widening, at sites 2 and 3 only: the extension-manifest member.** Whenever a
+commit's own candidate path set (`files_touched` at site 2, `pathspecs` at site 3) names a path
+under one extension's own `scripts/` tree (`scripts/deprecated/` excluded), that SAME
+extension's own `manifest.json` is admitted into that check's scope for this commit alone. The
+trigger mirrors `sync-manifest-scripts.sh`'s own MATCHING rule verbatim ("full relative path
+under `scripts/` (not basename), `deprecated/*` excluded"): that script and Rule Q
+(`check_undeclared_scripts` in `check-extension-docs.sh`) enforce the `scripts/`<->`manifest.json`
+pairing mechanically, so a phase that adds or removes a script under an extension owes that
+extension's manifest registration as a structurally derivable obligation, not an unforeseeable
+newly-discovered path. The derivation is a pure string operation (case-pattern match plus
+parameter expansion) over paths already in hand at each site — no filesystem, git, or `jq` call
+— so fail-open at both sites is structural, exactly like the three widenings above; the
+extension prefix is taken verbatim from the matching entry, never a hardcoded path-root literal,
+so a source store rooted elsewhere is handled identically. **This widening needed BOTH sites
+from the start, unlike the engine-written-state and derived-output-prefix widenings documented
+above, which could land at site 2 alone because sites 1 and 3 already carried them.** Admitting
+the manifest path into site 2's own `kept_files_touched`/`stage_paths` without an identical
+mirror at site 3 does not make the path land: site 3's own, independent `containment_scope_arr`
+resolution would still drop it, which trips the post-commit completeness check — turning a
+silent, recoverable drop into a loud failure. The widening is therefore implemented at both
+sites with the identical case-pattern logic, duplicated inline rather than factored into a
+shared library (unlike the engine-written-state and derived-output-prefix widenings, which ARE
+library-shared): the underlying rule here is a derivation, not a static list, so there is no
+shared list for a library to hold — only glue code, which the three pre-existing widenings
+already duplicate per-site in exactly this way. Like every widening above, this one is local to
+each site's own in-memory scope array for the one check it runs; neither site ever writes it
+back to the task's own declared `file_scope`, so the batch-admission gate's conflict-detection
+input is untouched. Site 1 (`orchestrate-cycle-postflight.sh`'s whole-task completion commit) is
+deliberately NOT covered — a different surface outside this widening's scope, matching the
+asymmetry already noted for site 1 elsewhere in this section. Two narrower mechanisms were
+considered and rejected in favor of this widening: a pre-commit nag surfacing a MISSING
+registration before the commit fires (duplicates `sync-manifest-scripts.sh`/Rule Q's own
+post-redeploy enforcement of the same pairing) and relying solely on the general
+declaration-staleness `proposed_file_scope` follow-up-commit mechanism described below (that
+mechanism only recovers AFTER a drop; it does not prevent the first one, which is the
+structurally-derivable case this widening exists for).
+
 **A third asymmetry, now closed at both sites: the deployed-tree strip runs at site 2 AND site
 3; the within-dispatch `proposed_file_scope` lookup stays site-2-only.** Site 2's
 `file_scope_arr` has every entry equal to `.claude`/`.claude/` or prefixed `.claude/` stripped
