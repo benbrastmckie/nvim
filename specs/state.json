@@ -198,7 +198,7 @@
     {
       "project_number": 693,
       "project_name": "merge_command_stack_mode",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\nORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.\n\nLANDED AND NOT TO BE REDONE: scripts/review-stack-prepare.sh already carries `cut`, `show`, `record-request` and the shared resolvers for review_base (PD1, exit codes 10-13), remote and platform (PD9, exit codes 30-32), plus selection/attribution/union-find unit merging/topological ordering (exit codes 40-47) and the manifest writer with exit codes 49-52. Its suite scripts/tests/test-review-stack-prepare.sh stands at 38 passing cases. Verify against the live file before writing anything.\n\nTHIS RECORD OWNS PHASE 4 ONLY -- \"Restack when a parent merges\". Deliverable, per that phase section: `restack --stack-id NAME [--merged NN]` reads the manifest and the review base's remote-tracking ref (never fetching -- an absent ref refuses and prints the fetch the operator runs); detects a merged entry per PD7 bottom-up, moving that entry to state `merged` and the next entry's base to the review base; recomputes each descendant with a three-way `merge-tree` onto its new parent, writes it with `git commit-tree`, and moves its ref by compare-and-swap, so a conflict refuses naming the path and moves nothing; and refuses when a local review ref and its remote-tracking ref disagree in a way the manifest does not explain.\n\nTHIS RECORD OWNS PHASE 6 ONLY -- \"`/merge` stack mode\". Deliverable, per that phase section: add `--stack <stack id>`, `--only NN` and `--retarget` (alongside the existing `--draft`) to commands/merge.md, updating the frontmatter argument hint and the options table while leaving the single-branch mode exactly as it is. Stack mode's steps, in order: revoke the prompt-minted grant, since this mode pushes nothing; read the manifest via `review-stack-prepare.sh show --json`; refuse a platform PD9 does not support; show ONE approval prompt listing every PR with its head and base. Then per entry, bottom-up: confirm the remote branch tip equals the manifest commit with `git ls-remote <remote> refs/heads/<branch>`, stopping and naming the `/please push` to type when it does not; look for an open PR on that head; create one with the manifest's head, base, title and body file when there is none; and record the URL.\n\nUSER-ONLY, AND THE PROHIBITION STILL BINDS: `/merge` may only be invoked by the user, never by an agent (rules/pr-prohibition.md). This record ADDS A MODE to the command's documented behaviour; implementing it must not cause any agent-reachable path to push or to open a PR. The grant revocation in step one is load-bearing precisely because stack mode pushes nothing.\n\nVERIFY BY: the command file's own documented contract being internally consistent (argument hint, options table and step list agreeing), the single-branch mode's text unchanged, and whatever suite covers commands/merge.md staying green. If skills/skill-git-workflow/SKILL.md carries merge-mode wiring that this mode must reach, declare it before editing it rather than widening scope mid-dispatch.",
       "topic": "orchestrator",
@@ -208,7 +208,7 @@
         "agent-system/extensions/core/skills/skill-git-workflow/SKILL.md"
       ],
       "created": "2026-11-23T22:15:32Z",
-      "last_updated": "2026-11-23T22:15:32Z",
+      "last_updated": "2026-11-23T22:23:42Z",
       "audit_verdict": {
         "proposal": {
           "id": "merge_command_stack_mode",
@@ -403,12 +403,13 @@
           "semantic": true
         },
         "degradations_count": 47
-      }
+      },
+      "session_id": "sess_1795472390_63c292_693"
     },
     {
       "project_number": 692,
       "project_name": "handoff_prints_review_stack",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\nORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.\n\nLANDED AND NOT TO BE REDONE: scripts/review-stack-prepare.sh already carries `cut`, `show`, `record-request` and the shared resolvers for review_base (PD1, exit codes 10-13), remote and platform (PD9, exit codes 30-32), plus selection/attribution/union-find unit merging/topological ordering (exit codes 40-47) and the manifest writer with exit codes 49-52. Its suite scripts/tests/test-review-stack-prepare.sh stands at 38 passing cases. Verify against the live file before writing anything.\n\nTHIS RECORD OWNS PHASE 5 ONLY -- \"Handoff prints the stack\". Deliverable, per that phase section: in scripts/milestone-review-handoff.sh, after the per-task listing, call `review-stack-prepare.sh cut --milestone <id>` non-fatally and then `show`; on success write that `show` output into specs/milestones/<id>-review-handoff.md and print it as the final output in place of the two lines printed today; on refusal print the refusal reason, keep the per-task listing, print `/please push <integration branch>` alone, and do NOT print `/merge`; and add one printed line stating that a grant is bound to HEAD at the time it is typed, so a commit by another session in between means typing the grant again.\n\nWHY THE `/merge` SUPPRESSION MATTERS: the handoff currently prints a `/merge` that cannot work, because `/merge` acts on the checked-out branch, refuses outright on main or master, and hardcodes the remote name origin and the target main. Not printing it on the refusal arm is the point of this phase, not an incidental detail.\n\nHARD CONSTRAINT: the handoff script itself still contains no ref-writing git call. It only PREPARES and prints; it never pushes, never opens a PR, and never mints a push grant.\n\nVERIFY BY: scripts/tests/test-milestone-review-handoff.sh green, with new cases covering the cut-succeeds arm (show output written and printed), the cut-refuses arm (reason printed, per-task listing kept, `/please` alone, no `/merge`), and the HEAD-binding line's presence.",
       "topic": "orchestrator",
@@ -418,7 +419,7 @@
         "agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh"
       ],
       "created": "2026-11-23T22:15:32Z",
-      "last_updated": "2026-11-23T22:15:32Z",
+      "last_updated": "2026-11-23T22:23:32Z",
       "audit_verdict": {
         "proposal": {
           "id": "handoff_prints_review_stack",
@@ -637,12 +638,13 @@
           "semantic": true
         },
         "degradations_count": 45
-      }
+      },
+      "session_id": "sess_1795472390_63c292_692"
     },
     {
       "project_number": 691,
       "project_name": "restack_review_stack_when_parent_merges",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\nORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.\n\nLANDED AND NOT TO BE REDONE: scripts/review-stack-prepare.sh already carries `cut`, `show`, `record-request` and the shared resolvers for review_base (PD1, exit codes 10-13), remote and platform (PD9, exit codes 30-32), plus selection/attribution/union-find unit merging/topological ordering (exit codes 40-47) and the manifest writer with exit codes 49-52. Its suite scripts/tests/test-review-stack-prepare.sh stands at 38 passing cases. Verify against the live file before writing anything.\n\nTHIS RECORD OWNS PHASE 4 ONLY -- \"Restack when a parent merges\". Deliverable, per that phase section: `restack --stack-id NAME [--merged NN]` reads the manifest and the review base's remote-tracking ref (never fetching -- an absent ref refuses and prints the fetch the operator runs); detects a merged entry per PD7 bottom-up, moving that entry to state `merged` and the next entry's base to the review base; recomputes each descendant with a three-way `merge-tree` onto its new parent, writes it with `git commit-tree`, and moves its ref by compare-and-swap, so a conflict refuses naming the path and moves nothing; and refuses when a local review ref and its remote-tracking ref disagree in a way the manifest does not explain.\n\nHARD CONSTRAINT, inherited from the parent plan and already statically asserted by the existing suite: this script contains no push, checkout, switch, merge, rebase, replay, gh or glab invocation, and no literal origin/main/master/upstream word outside comments. Two static assertions in scripts/tests/test-review-stack-prepare.sh enforce both; they must keep passing unmodified.\n\nVERIFY BY: scripts/tests/test-review-stack-prepare.sh green with its existing 38 cases unmodified, plus new cases for the restack paths -- a clean bottom-up restack, a conflicting descendant that refuses and moves nothing, an absent remote-tracking ref, and an unexplained local/remote disagreement. Treat an existing assertion you had to edit to pass as evidence the change is wrong.",
       "topic": "orchestrator",
@@ -652,7 +654,7 @@
         "agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"
       ],
       "created": "2026-11-23T22:15:32Z",
-      "last_updated": "2026-11-23T22:15:32Z",
+      "last_updated": "2026-11-23T22:33:14Z",
       "audit_verdict": {
         "proposal": {
           "id": "restack_review_stack_when_parent_merges",
@@ -871,7 +873,16 @@
           "semantic": true
         },
         "degradations_count": 46
-      }
+      },
+      "session_id": "sess_1795472390_63c292",
+      "artifacts": [
+        {
+          "path": "specs/691_restack_review_stack_when_parent_merges/reports/01_restack-on-parent-merge.md",
+          "type": "report",
+          "summary": "Maps the parent plan's Phase 4 (restack-on-merge) design onto the live review-stack-prepare.sh code: reusable primitives, manifest schema, dispatcher/flag gaps, three PD7 ambiguities with recommended readings, exit-code allocation, and reusable test-fixture scaffolding."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 689,

@@ -113,11 +113,11 @@ next_project_number: 695
 674 [HOLD] — Build batch worktree cleanup, retention on partial batches,...
 686 [HOLD] — Create the per-batch worktree and batch branch when isolation...
 689 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-691 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+691 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-692 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+692 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
-693 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+693 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
@@ -210,7 +210,7 @@ VERIFY BY: the three doc surfaces naming stack mode consistently, `deploy-headle
 ---
 
 ### 693. Merge command stack mode
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -232,7 +232,7 @@ VERIFY BY: the command file's own documented contract being internally consisten
 ---
 
 ### 692. Handoff prints review stack
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -254,10 +254,11 @@ VERIFY BY: scripts/tests/test-milestone-review-handoff.sh green, with new cases 
 ---
 
 ### 691. Restack review stack when parent merges
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [691_restack_review_stack_when_parent_merges/reports/01_restack-on-parent-merge.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
