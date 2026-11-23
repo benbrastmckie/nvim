@@ -4,8 +4,15 @@
     "session_id": "sess_1795400947_bb64cf",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "task_number": 486
   },
-  "dispatch_seq": 18
+  "dispatch_seq": 18,
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+  ]
 }

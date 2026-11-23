@@ -1,0 +1,34 @@
+{
+  "phase": 2,
+  "phase_name": "Pin the rule and every surviving constraint with fixtures",
+  "started_at": "2026-11-22T00:30:00Z",
+  "last_updated": "2026-11-23T08:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test file tail; find next free case number and task-ref-ok:end marker", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Admit fixture: new extension script + undeclared manifest.json both land", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh", "agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 3, "description": "deprecated/ exclusion fixture: manifest still dropped", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 4, "description": "Cross-extension negative fixture: other extension's manifest still dropped", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 5, "description": "Genuine-excursion survival fixture: out-of-territory path still dropped+warned+collapsed issue row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 6, "description": "Fail-open fixture: absent/empty/malformed file_scope unaffected", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 7, "description": "Trailing-slash fixture still works", "status": "done", "files_touched": [], "note": "Folded into existing Case 12 (unmodified, still passes) rather than duplicated -- see plan Phase 2 deviation note."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "Admit fixture (Case 45) must land the extension manifest end-to-end in the actual git commit.",
+      "type": "altered",
+      "reason": "Plan's Non-Goals forbade touching git-commit-scoped.sh's V10 containment guard (Site 3), on the premise a Site-2-only splice would suffice. Testing proved this false: Site 2 admitting the manifest path into kept_files_touched/stage_paths just hands it to git-commit-scoped.sh as a positive pathspec, which Site 3's own unwidened V10 guard then drops anyway, tripping the post-commit completeness check (exit 6) -- a regression versus the pre-existing silent drop. Fixed by mirroring the identical pure-string derivation into git-commit-scoped.sh's own containment_scope_arr resolution, matching how the three pre-existing splices are already mirrored at both sites. Non-vacuous pinning re-verified for BOTH splices by temporarily disabling each in turn and confirming Case 45/48 fail, then restoring (git diff --stat empty afterward, confirming byte-identical restoration).",
+      "annotation": "*(deviation: altered -- Site-3 mirror added to git-commit-scoped.sh, not in original plan scope)*"
+    },
+    {
+      "task_id": "2.7",
+      "description": "Trailing-slash fixture (dispatch VERIFY item d).",
+      "type": "altered",
+      "reason": "Existing Case 12 already pins trailing-slash normalization and continues to pass unmodified by this phase's splice (the splice never itself declares a trailing-slash entry). Folded rather than duplicated, per the phase's own Scope Hypothesis instruction.",
+      "annotation": "*(deviation: altered -- folded into existing Case 12 rather than a new fixture)*"
+    }
+  ]
+}

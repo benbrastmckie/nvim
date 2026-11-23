@@ -215,41 +215,74 @@ re-plan rather than widen silently.
 
 ---
 
-### Phase 2: Pin the rule and every surviving constraint with fixtures [NOT STARTED]
+### Phase 2: Pin the rule and every surviving constraint with fixtures [COMPLETED]
 
 **Goal**: `test-git-commit-phase.sh` carries fixtures that fail if the splice is removed, and
 that fail if any of the dispatch's HARD CONSTRAINT behaviours regresses.
 
 **Tasks**:
-- [ ] Re-read the test file's tail to find the next free case number and the
+- [x] Re-read the test file's tail to find the next free case number and the
       `# task-ref-ok:end` marker; insert every new case BEFORE that marker (each new case uses
       the synthetic `--task 999` / `999_probe` literals the file-level `task-ref-ok` block
-      already covers).
-- [ ] **Admit fixture** — `files_touched` names a declared source file, a path under
+      already covers). *(completed: highest existing case was 44; new cases numbered 45-49)*
+- [x] **Admit fixture** — `files_touched` names a declared source file, a path under
       `agent-system/extensions/foo/scripts/lib/new-lib.sh` (declared via a `scripts/` scope
       entry), and `agent-system/extensions/foo/manifest.json` (NOT declared). Assert all three
       land in the commit, no drop warning names the manifest, and no `"class":"scope excursion"`
-      row is written.
-- [ ] **`deprecated/` exclusion fixture** — identical shape, but the touched script path is
+      row is written. *(completed: Case 45. DEVIATION — see note below: this fixture initially
+      FAILED with exit 6 until a mirrored splice was also added to git-commit-scoped.sh's own
+      V10 guard; see Phase 2 deviation note)*
+- [x] **`deprecated/` exclusion fixture** — identical shape, but the touched script path is
       under `agent-system/extensions/foo/scripts/deprecated/old.sh`. Assert the undeclared
       `manifest.json` is STILL dropped, with its warning and its collapsed issue row.
-- [ ] **Cross-extension negative fixture** — the phase touches extension `foo`'s `scripts/`
+      *(completed: Case 46)*
+- [x] **Cross-extension negative fixture** — the phase touches extension `foo`'s `scripts/`
       tree (declared) and a DIFFERENT extension `bar`'s `manifest.json` (undeclared). Assert
       `bar`'s manifest is still dropped: the splice admits only the touched extension's own
-      manifest.
-- [ ] **Genuine-excursion survival fixture** (dispatch VERIFY item b) — a fixture that exercises
+      manifest. *(completed: Case 47)*
+- [x] **Genuine-excursion survival fixture** (dispatch VERIFY item b) — a fixture that exercises
       the splice AND an ordinary out-of-territory path (e.g. `other/outside.txt`) in the same
       commit. Assert the out-of-territory path is dropped, its `warn()` fires, and exactly one
       `"class":"scope excursion"` row is written naming it — the COLLAPSED shape, mirroring
-      existing Cases 43/44's assertion style, never a per-path shape.
-- [ ] **Fail-open fixture** (dispatch VERIFY item c) — the splice-triggering `files_touched` set
+      existing Cases 43/44's assertion style, never a per-path shape. *(completed: Case 48)*
+- [x] **Fail-open fixture** (dispatch VERIFY item c) — the splice-triggering `files_touched` set
       against an absent / empty / malformed `file_scope`. Assert the whole Containment
       Self-Check is skipped, everything stages, no warning fires, and the exit code is unchanged
-      from the pre-splice behaviour.
-- [ ] **Trailing-slash fixture** (dispatch VERIFY item d) — a declared scope entry written with
+      from the pre-splice behaviour. *(completed: Case 49, three shape-variants mirroring Case
+      22's own shared-shape-function style)*
+- [x] **Trailing-slash fixture** (dispatch VERIFY item d) — a declared scope entry written with
       a trailing slash (`agent-system/extensions/foo/scripts/`) still admits its children.
-      Assert the child path lands and is not dropped.
-- [ ] Record issues and wins via `issue-record.sh` as they arise.
+      Assert the child path lands and is not dropped. *(deviation: folded into existing Case 12,
+      which already pins this behaviour and continues to pass unmodified by this phase's splice
+      — no duplicate fixture added, per this phase's own Scope Hypothesis fold-instead-of-
+      duplicate instruction)*
+- [x] Record issues and wins via `issue-record.sh` as they arise. *(completed: see
+      `issue-record.sh --class "plan premise error"` call recorded during this phase — the
+      Site-3 discovery below)*
+
+**DEVIATION (discovered during this phase, altering Phase 1's own deliverable)**: the plan's
+Non-Goals stated "Any change to `git-commit-scoped.sh`'s own, separate V10 containment guard
+(Site 3)" was out of scope, on the premise that a Site-2-only (`git-commit-phase.sh`
+`file_scope_arr`) splice would suffice to make the admitted manifest path actually land. Writing
+Case 45 disproved this directly: Site 2's widened `file_scope_arr` admits the manifest path into
+`kept_files_touched`/`stage_paths`, which is handed to `git-commit-scoped.sh` as a positive
+pathspec; `git-commit-scoped.sh`'s own, independent V10 `containment_scope_arr` resolution
+(re-reading `specs/state.json` raw, with no knowledge of Site 2's new splice) still dropped it,
+tripping the post-commit completeness check (exit 6) — turning the pre-existing silent,
+recoverable drop-and-warn into a loud completeness-check failure, a regression rather than a
+fix. All three pre-existing splices (own-task-directory, engine-written-state,
+derived-output-prefix) are already independently mirrored at BOTH Site 2 and Site 3; the new
+splice needed to be too. Resolved by adding the identical pure-string derivation to
+`git-commit-scoped.sh`'s own `containment_scope_arr` resolution (same placement convention:
+inside the non-empty guard, after the derived-output-prefix widening, before `is_contained_v10`
+— see that script's own new comment block). This is a necessary correction to Phase 1's
+deliverable, not a new Phase 1 task; `agent-system/extensions/core/scripts/git-commit-scoped.sh`
+is accordingly added to this phase's own Files to modify below. No `specs/state.json` write, no
+declared-`file_scope` mutation, and no new `lib/*.sh` file were introduced — the duplication is
+inline case-pattern logic only, matching the existing precedent's own glue-code duplication
+(the three existing splices duplicate their OWN glue code identically in both files; only their
+underlying static lists are shared via a library, which this derivation-based splice has no
+equivalent of).
 
 **Timing**: 1.5 hours
 
@@ -268,8 +301,15 @@ existing case, fold the new assertion into that case instead of adding a duplica
 the phase's own notes.
 
 **Files to modify**:
-- `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` - six new fixture cases
-  inserted before the `# task-ref-ok:end` marker.
+- `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` - five new fixture case
+  blocks (Cases 45-49; Case 49 covers three fail-open shape-variants) inserted before the
+  `# task-ref-ok:end` marker. The plan's original estimate of "six new fixture cases" folded to
+  five case blocks because the trailing-slash fixture was folded into existing Case 12 rather
+  than duplicated — see the deviation note above.
+- `agent-system/extensions/core/scripts/git-commit-scoped.sh` - **(deviation, not in the
+  original plan)** mirrored extension-manifest widening added to the V10 `containment_scope_arr`
+  resolution, required for Case 45/48's fixtures to actually pass — see the deviation note above
+  for the full discovery and justification.
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` exits 0 with every
@@ -277,6 +317,8 @@ the phase's own notes.
 - Temporarily reverting the Phase 1 splice (locally, not committed) makes the admit fixture FAIL
   — confirming the fixture actually pins the new behaviour rather than passing vacuously. Restore
   the splice before committing.
+- `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` exits 0 (regression
+  check for the Site-3 mirror added by the deviation above).
 - The narrowed pass named in Tier Justification above is green.
 
 ---

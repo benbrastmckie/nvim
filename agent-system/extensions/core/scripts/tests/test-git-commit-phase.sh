@@ -1926,6 +1926,236 @@ fi
 
 rm -f "$repo44/.git/hooks/pre-commit"
 
+# =====================================================================
+# Case 45 (extension-manifest admit fixture): files_touched names a declared ordinary source
+# file, a path under a DECLARED extension scripts/ tree, and that SAME extension's manifest.json
+# (NOT itself in the declared file_scope). The fourth Containment splice must admit the manifest
+# path for this commit alone; it must still land with no "dropping out-of-scope path" warning and
+# no scope-excursion issue row naming it.
+# =====================================================================
+common_test_info "=== Case 45: a touched extension's own manifest.json is admitted, not dropped ==="
+
+repo45="$(build_repo)"
+cat > "$repo45/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":["src/a.txt","agent-system/extensions/foo/scripts"]}]}
+STATE_EOF
+git -C "$repo45" add specs/state.json
+git -C "$repo45" commit -q -m "declare src/a.txt and foo's scripts/ tree only"
+mkdir -p "$repo45/agent-system/extensions/foo/scripts/lib"
+echo '{"name":"foo","provides":{"scripts":[]}}' > "$repo45/agent-system/extensions/foo/manifest.json"
+echo "orig lib" > "$repo45/agent-system/extensions/foo/scripts/lib/new-lib.sh"
+git -C "$repo45" add agent-system/extensions/foo/manifest.json agent-system/extensions/foo/scripts/lib/new-lib.sh
+git -C "$repo45" commit -q -m "seed foo extension fixture"
+write_progress "$repo45" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","agent-system/extensions/foo/scripts/lib/new-lib.sh","agent-system/extensions/foo/manifest.json"]}]'
+echo "mod a" > "$repo45/src/a.txt"
+echo "updated lib" > "$repo45/agent-system/extensions/foo/scripts/lib/new-lib.sh"
+echo '{"name":"foo","provides":{"scripts":["scripts/lib/new-lib.sh"]}}' > "$repo45/agent-system/extensions/foo/manifest.json"
+
+out45="$(run_phase_commit "$repo45" --task 999 --project probe --phase 1 --message "case45" --session sess_45 2>&1)"
+rc45=$?
+show45="$(git -C "$repo45" show --name-only --format= HEAD)"
+
+if [ "$rc45" -eq 0 ] \
+  && echo "$show45" | grep -qF "src/a.txt" \
+  && echo "$show45" | grep -qF "agent-system/extensions/foo/scripts/lib/new-lib.sh" \
+  && echo "$show45" | grep -qF "agent-system/extensions/foo/manifest.json" \
+  && ! echo "$out45" | grep -q "dropping out-of-scope path 'agent-system/extensions/foo/manifest.json'"; then
+  common_test_pass "Case 45: all three paths land, including the undeclared foo/manifest.json, with no drop warning"
+else
+  common_test_fail "Case 45: expected rc=0, all three paths committed, no drop warning for foo/manifest.json; got rc=$rc45 show='$show45' out=$out45"
+fi
+
+if [ -f "$repo45/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo45/specs/999_probe/issues.jsonl" 2>/dev/null \
+  && grep -q "agent-system/extensions/foo/manifest.json" "$repo45/specs/999_probe/issues.jsonl" 2>/dev/null; then
+  common_test_fail "Case 45: expected no scope-excursion issue record for foo/manifest.json; got $(cat "$repo45/specs/999_probe/issues.jsonl" 2>/dev/null)"
+else
+  common_test_pass "Case 45: no scope-excursion issue row was written for the admitted foo/manifest.json"
+fi
+
+# =====================================================================
+# Case 46 (deprecated/ exclusion fixture): the touched script lives under that extension's own
+# scripts/deprecated/ tree -- the splice's trigger must NOT fire for this, mirroring
+# sync-manifest-scripts.sh's own MATCHING rule verbatim ("deprecated/* excluded"). The same
+# extension's undeclared manifest.json must still be dropped exactly as before this phase.
+# =====================================================================
+common_test_info "=== Case 46: a deprecated/ script does not admit the extension's manifest.json ==="
+
+repo46="$(build_repo)"
+cat > "$repo46/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":["agent-system/extensions/foo/scripts"]}]}
+STATE_EOF
+git -C "$repo46" add specs/state.json
+git -C "$repo46" commit -q -m "declare foo's scripts/ tree only"
+mkdir -p "$repo46/agent-system/extensions/foo/scripts/deprecated"
+echo '{"name":"foo"}' > "$repo46/agent-system/extensions/foo/manifest.json"
+echo "orig old" > "$repo46/agent-system/extensions/foo/scripts/deprecated/old.sh"
+git -C "$repo46" add agent-system/extensions/foo/manifest.json agent-system/extensions/foo/scripts/deprecated/old.sh
+git -C "$repo46" commit -q -m "seed deprecated-script fixture"
+write_progress "$repo46" 1 '[{"id":1,"status":"done","files_touched":["agent-system/extensions/foo/scripts/deprecated/old.sh","agent-system/extensions/foo/manifest.json"]}]'
+echo "touched old" > "$repo46/agent-system/extensions/foo/scripts/deprecated/old.sh"
+echo '{"name":"foo","note":"unrelated edit"}' > "$repo46/agent-system/extensions/foo/manifest.json"
+
+out46="$(run_phase_commit "$repo46" --task 999 --project probe --phase 1 --message "case46" --session sess_46 2>&1)"
+rc46=$?
+show46="$(git -C "$repo46" show --name-only --format= HEAD)"
+
+if [ "$rc46" -eq 0 ] \
+  && echo "$show46" | grep -qF "agent-system/extensions/foo/scripts/deprecated/old.sh" \
+  && ! echo "$show46" | grep -qF "agent-system/extensions/foo/manifest.json" \
+  && echo "$out46" | grep -q "WARNING.*dropping out-of-scope path 'agent-system/extensions/foo/manifest.json'"; then
+  common_test_pass "Case 46: a deprecated/-tree-only touch does not admit the extension's manifest.json -- it is still dropped with a warning"
+else
+  common_test_fail "Case 46: expected rc=0, old.sh committed, manifest.json dropped with a warning; got rc=$rc46 show='$show46' out=$out46"
+fi
+
+if [ -f "$repo46/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo46/specs/999_probe/issues.jsonl" \
+  && grep -q "agent-system/extensions/foo/manifest.json" "$repo46/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 46: the scope-excursion issue row still fires for the deprecated-script-only commit's manifest.json"
+else
+  common_test_fail "Case 46: expected a scope-excursion issue record naming foo/manifest.json; got $(cat "$repo46/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+# =====================================================================
+# Case 47 (cross-extension negative fixture): the phase touches extension foo's scripts/ tree
+# (declared) and a DIFFERENT extension bar's manifest.json (undeclared). The splice admits only
+# the TOUCHED extension's own manifest -- bar's manifest.json must still be dropped.
+# =====================================================================
+common_test_info "=== Case 47: a different extension's manifest.json is not admitted by foo's splice ==="
+
+repo47="$(build_repo)"
+cat > "$repo47/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":["agent-system/extensions/foo/scripts"]}]}
+STATE_EOF
+git -C "$repo47" add specs/state.json
+git -C "$repo47" commit -q -m "declare foo's scripts/ tree only"
+mkdir -p "$repo47/agent-system/extensions/foo/scripts/lib" "$repo47/agent-system/extensions/bar"
+echo '{"name":"foo"}' > "$repo47/agent-system/extensions/foo/manifest.json"
+echo '{"name":"bar"}' > "$repo47/agent-system/extensions/bar/manifest.json"
+echo "orig x" > "$repo47/agent-system/extensions/foo/scripts/lib/x.sh"
+git -C "$repo47" add agent-system/extensions/foo/manifest.json agent-system/extensions/bar/manifest.json agent-system/extensions/foo/scripts/lib/x.sh
+git -C "$repo47" commit -q -m "seed cross-extension fixture"
+write_progress "$repo47" 1 '[{"id":1,"status":"done","files_touched":["agent-system/extensions/foo/scripts/lib/x.sh","agent-system/extensions/bar/manifest.json"]}]'
+echo "updated x" > "$repo47/agent-system/extensions/foo/scripts/lib/x.sh"
+echo '{"name":"bar","note":"unrelated edit"}' > "$repo47/agent-system/extensions/bar/manifest.json"
+
+out47="$(run_phase_commit "$repo47" --task 999 --project probe --phase 1 --message "case47" --session sess_47 2>&1)"
+rc47=$?
+show47="$(git -C "$repo47" show --name-only --format= HEAD)"
+
+if [ "$rc47" -eq 0 ] \
+  && echo "$show47" | grep -qF "agent-system/extensions/foo/scripts/lib/x.sh" \
+  && ! echo "$show47" | grep -qF "agent-system/extensions/bar/manifest.json" \
+  && echo "$out47" | grep -q "WARNING.*dropping out-of-scope path 'agent-system/extensions/bar/manifest.json'"; then
+  common_test_pass "Case 47: touching foo's scripts/ tree does not admit bar's manifest.json -- it is still dropped with a warning"
+else
+  common_test_fail "Case 47: expected rc=0, foo's x.sh committed, bar/manifest.json dropped with a warning; got rc=$rc47 show='$show47' out=$out47"
+fi
+
+if [ -f "$repo47/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo47/specs/999_probe/issues.jsonl" \
+  && grep -q "agent-system/extensions/bar/manifest.json" "$repo47/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 47: the scope-excursion issue row still fires for bar/manifest.json"
+else
+  common_test_fail "Case 47: expected a scope-excursion issue record naming bar/manifest.json; got $(cat "$repo47/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+# =====================================================================
+# Case 48 (genuine-excursion survival fixture): the splice admits foo's own manifest.json, AND
+# an ordinary, wholly unrelated out-of-territory path is touched in the same commit. The
+# out-of-territory path must still be dropped, still warned about, and still recorded as exactly
+# one collapsed "scope excursion" issue row naming only itself -- never the admitted manifest.
+# =====================================================================
+common_test_info "=== Case 48: the splice survives alongside a genuine, unrelated out-of-territory drop ==="
+
+repo48="$(build_repo)"
+cat > "$repo48/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":["agent-system/extensions/foo/scripts"]}]}
+STATE_EOF
+git -C "$repo48" add specs/state.json
+git -C "$repo48" commit -q -m "declare foo's scripts/ tree only"
+mkdir -p "$repo48/agent-system/extensions/foo/scripts/lib" "$repo48/other"
+echo '{"name":"foo"}' > "$repo48/agent-system/extensions/foo/manifest.json"
+echo "orig y" > "$repo48/agent-system/extensions/foo/scripts/lib/y.sh"
+echo "orig outside" > "$repo48/other/outside.txt"
+git -C "$repo48" add agent-system/extensions/foo/manifest.json agent-system/extensions/foo/scripts/lib/y.sh other/outside.txt
+git -C "$repo48" commit -q -m "seed genuine-excursion-survival fixture"
+write_progress "$repo48" 1 '[{"id":1,"status":"done","files_touched":["agent-system/extensions/foo/scripts/lib/y.sh","agent-system/extensions/foo/manifest.json","other/outside.txt"]}]'
+echo "updated y" > "$repo48/agent-system/extensions/foo/scripts/lib/y.sh"
+echo '{"name":"foo","provides":{"scripts":["scripts/lib/y.sh"]}}' > "$repo48/agent-system/extensions/foo/manifest.json"
+echo "updated outside" > "$repo48/other/outside.txt"
+
+out48="$(run_phase_commit "$repo48" --task 999 --project probe --phase 1 --message "case48" --session sess_48 2>&1)"
+rc48=$?
+show48="$(git -C "$repo48" show --name-only --format= HEAD)"
+issues48="$repo48/specs/999_probe/issues.jsonl"
+
+if [ "$rc48" -eq 0 ] \
+  && echo "$show48" | grep -qF "agent-system/extensions/foo/scripts/lib/y.sh" \
+  && echo "$show48" | grep -qF "agent-system/extensions/foo/manifest.json" \
+  && ! echo "$show48" | grep -qF "other/outside.txt" \
+  && echo "$out48" | grep -q "WARNING.*dropping out-of-scope path 'other/outside.txt'" \
+  && ! echo "$out48" | grep -q "dropping out-of-scope path 'agent-system/extensions/foo/manifest.json'"; then
+  common_test_pass "Case 48: foo/manifest.json lands via the splice while other/outside.txt is still genuinely dropped"
+else
+  common_test_fail "Case 48: expected rc=0, y.sh and manifest.json committed, outside.txt dropped with a warning; got rc=$rc48 show='$show48' out=$out48"
+fi
+
+scope_excursion_lines48="$(grep -c '"class":"scope excursion"' "$issues48" 2>/dev/null || true)"
+if [ "$scope_excursion_lines48" = "1" ] && grep -q "other/outside.txt" "$issues48" 2>/dev/null \
+  && ! grep -q "agent-system/extensions/foo/manifest.json" "$issues48" 2>/dev/null; then
+  common_test_pass "Case 48: exactly one collapsed scope-excursion row names only other/outside.txt, never the admitted manifest.json"
+else
+  common_test_fail "Case 48: expected exactly 1 scope-excursion line naming only other/outside.txt; got $scope_excursion_lines48 lines: $(cat "$issues48" 2>/dev/null)"
+fi
+
+# =====================================================================
+# Case 49 (fail-open fixture, splice-triggering files_touched): the SAME splice-triggering
+# files_touched shape as Case 45 (a scripts/ path plus that extension's own undeclared
+# manifest.json), run against a missing/empty/malformed file_scope in turn. The whole
+# Containment Self-Check -- including the new splice -- must be skipped exactly as it was
+# before this phase: everything stages, no warning fires, nothing is proposed, and the exit
+# code is unchanged. Mirrors Case 22's own shared-shape-function style.
+# =====================================================================
+common_test_info "=== Case 49: fail-open on absent/empty/malformed file_scope is unchanged by the new splice ==="
+
+run_case49_shape() {
+  local shape_label="$1" state_json="$2"
+  local repo
+  repo="$(build_repo)"
+  printf '%s' "$state_json" > "$repo/specs/state.json"
+  git -C "$repo" add specs/state.json
+  git -C "$repo" commit -q -m "declare $shape_label file_scope"
+  mkdir -p "$repo/agent-system/extensions/foo/scripts/lib"
+  echo '{"name":"foo"}' > "$repo/agent-system/extensions/foo/manifest.json"
+  echo "orig z" > "$repo/agent-system/extensions/foo/scripts/lib/z.sh"
+  git -C "$repo" add agent-system/extensions/foo/manifest.json agent-system/extensions/foo/scripts/lib/z.sh
+  git -C "$repo" commit -q -m "seed foo fixture ($shape_label)"
+  write_progress "$repo" 1 '[{"id":1,"status":"done","files_touched":["agent-system/extensions/foo/scripts/lib/z.sh","agent-system/extensions/foo/manifest.json"]}]'
+  echo "updated z" > "$repo/agent-system/extensions/foo/scripts/lib/z.sh"
+  echo '{"name":"foo","provides":{"scripts":["scripts/lib/z.sh"]}}' > "$repo/agent-system/extensions/foo/manifest.json"
+
+  local out rc proposed
+  out="$(run_phase_commit "$repo" --task 999 --project probe --phase 1 --message "case49-$shape_label" --session "sess_49_$shape_label" 2>&1)"
+  rc=$?
+  proposed="$(jq -c '.proposed_file_scope // []' "$repo/specs/999_probe/.return-meta.json" 2>/dev/null)"
+
+  if [ "$rc" -eq 0 ] && ! echo "$out" | grep -q "dropping out-of-scope" \
+    && echo "$proposed" | jq -e 'length == 0' >/dev/null 2>&1; then
+    common_test_pass "Case 49 ($shape_label file_scope): fail-open preserved against a splice-triggering files_touched set -- nothing dropped, nothing proposed"
+  else
+    common_test_fail "Case 49 ($shape_label file_scope): expected rc=0, no drop, empty proposed_file_scope; got rc=$rc proposed=$proposed out=$out"
+  fi
+}
+
+run_case49_shape "missing" '{"active_projects":[{"project_number":999,"project_name":"probe"}]}'
+run_case49_shape "empty" '{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":[]}]}'
+run_case49_shape "malformed" '{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":"not-an-array"}]}'
+
+# Case 12 already pins trailing-slash normalization (dispatch VERIFY item d) and continues to
+# pass unmodified by this phase -- its scenario is unaffected by the new splice (which never
+# itself declares a trailing-slash entry), so no duplicate trailing-slash fixture is added here;
+# see this task's own plan Phase 2 Scope Hypothesis for the fold-instead-of-duplicate instruction
+# this follows.
+
 # task-ref-ok:end
 
 # =====================================================================
