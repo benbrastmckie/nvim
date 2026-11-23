@@ -260,8 +260,11 @@ batch_admission_evaluate() {
         for member in "${BATCH_ADMISSION_STATE_TERRITORY[@]}"; do
           territory="${territory:+${territory}, }${member}"
         done
+        # shellcheck disable=SC2034  # result variable, read by the sourcing caller
         BATCH_ADMISSION_VERDICT="refuse"
+        # shellcheck disable=SC2034  # result variable, read by the sourcing caller
         BATCH_ADMISSION_REASON="dirty_primary_tree"
+        # shellcheck disable=SC2034  # result variable, read by the sourcing caller
         BATCH_ADMISSION_MESSAGE="Admission refused: ${count} tracked path(s) outside the state territory (${territory}) differ from HEAD: ${listed}. Commit them or set them aside, then re-run."
         return 0
       fi

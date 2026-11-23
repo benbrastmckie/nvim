@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy and close",
+  "started_at": "2026-11-23T10:13:00Z",
+  "last_updated": "2026-11-23T10:36:07Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy from the source store; repair what the deploy's fast gates reject", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/batch-admission-lib.sh", "agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh"], "note": "First redeploy landed with the shellcheck gate red (three SC2034 findings on the library's result variables); inline exceptions added, second redeploy landed_verify_clean. The new suite lacked its exec bit and was skipped by run-all; chmod +x."},
+    {"id": 2, "description": "Confirm deployed copies, dry-run, declarations, lints", "status": "in_progress", "files_touched": []},
+    {"id": 3, "description": "Scoped verification over the full touched set", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

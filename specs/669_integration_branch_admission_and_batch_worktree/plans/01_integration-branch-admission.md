@@ -391,7 +391,7 @@ edits and recorded as a deviation.
 
 ---
 
-### Phase 4: Redeploy and close [NOT STARTED]
+### Phase 4: Redeploy and close [IN PROGRESS]
 
 **Goal**: The deployed tree carries the admission gate and documents, and the task's whole
 touched set is verified against it.
