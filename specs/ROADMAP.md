@@ -6,19 +6,39 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 3/21 | none |
-| [M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse](#milestone-m3) | planned | 0/8 | none |
+| [M5: Integration-branch landing and the PR stack](#milestone-m5) | active | 0/4 | none |
+| [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 8/21 | none |
+| [M3: Batch worktree isolation and generated-path collapse](#milestone-m3) | planned | 0/1 | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
 | [M1: Current work](#milestone-m1) | active | 15/106 | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
+
+<a id="milestone-m5"></a>
+## M5: Integration-branch landing and the PR stack
+
+Make a completed task land as one reviewable commit on an admitted integration branch, verified before its status write, then cut review branches so that landed work reaches review as a stack of pull requests the branch-strategy docs describe.
+
+- **Progress**: active -- 0/1 batches, 0/4 tasks done -- Ready to dispatch; the worktree-isolation half is held by operator direction and sited in no batch.
+- **Review**: none
+- **Gate**: Integration-branch admission and the isolation declaration are in place; every completed task leaves one reviewable commit on the integration branch, verified before the status write; a stack of pull requests is cut from that landed work; and the branch-strategy documentation states the contract as implemented.
+
+**Batch 1** -- Admit the integration branch, land one reviewable commit per task, then stack the PRs
+
+```
+/orchestrate 669, 673, 685, 675 --hard
+673 blocked:669     Land one reviewable commit per completed task on the integration branch and v...
+675 blocked:673     Rewrite the branch-strategy documentation to state the implemented integratio...
+685 blocked:673     Cut review branches and submit a stack of PRs from landed integration-branch ...
+669 ready           Add integration-branch admission and the isolation declaration
+```
 
 <a id="milestone-m4"></a>
 ## M4: Clear the path to isolated batch landing: measurement, commit layer, detectors
 
 Close everything standing in front of the batch-worktree landing work: measure the harness against an external worktree, settle which paths a commit drops and from which root, and land the phase-commit boundary detector whose expected ref the two-root contract makes per tree.
 
-- **Progress**: planned -- 2/6 batches, 3/21 tasks done -- Not the landing work itself -- only the measurement and the commit-layer and detector fixes it waits on.
+- **Progress**: planned -- 2/6 batches, 8/21 tasks done -- Not the landing work itself -- only the measurement and the commit-layer and detector fixes it waits on.
 - **Review**: none
 - **Gate**: The four harness behaviours are measured and recorded, or R2's worktree siting is amended by what they show; the containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and integration-branch admission and the two-root tasks have no open dependency left.
 
@@ -26,16 +46,16 @@ Close everything standing in front of the batch-worktree landing work: measure t
 
 **Batch 2** (done) -- Make a phase commit own the surfaces it stales, so the isolation declaration has a schema row
 
-**Batch 3** -- Settle which paths a phase commit may drop, and how one drop event is recorded
+**Batch 3** -- Settle which paths a phase commit may drop, and how one drop event is recorded (5/6 done)
 
 ```
-/orchestrate 567, 535, 541, 477, 484, 486
-484 blocked:477,541 Collapse per-path scope excursion issue rows into one record per drop event
-486 blocked:484,541 Stop a required extension manifest.json registration being dropped from a pha...
-535 blocked:567     Carve a task's own specs/ artifacts out of git-commit-phase.sh's containment ...
-541 blocked:535     Stop git-snapshot.sh --no-revert artifacts from contaminating phase commits w...
-477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
-567 ready           Port the deployed-tree containment strip into git-commit-scoped.sh
+/orchestrate 486
+486 IN FLIGHT       Stop a required extension manifest.json registration being dropped from a pha...
+477 done            Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
+484 done            Collapse per-path scope excursion issue rows into one record per drop event
+535 done            Carve a task's own specs/ artifacts out of git-commit-phase.sh's containment ...
+541 done            Stop git-snapshot.sh --no-revert artifacts from contaminating phase commits w...
+567 done            Port the deployed-tree containment strip into git-commit-scoped.sh
 ```
 
 **Batch 4** -- Make every containment and commit site agree before the two-root split lands on them
@@ -43,8 +63,8 @@ Close everything standing in front of the batch-worktree landing work: measure t
 ```
 /orchestrate 556, 519, 570, 472, 501, 524, 536
 472 blocked:556,570 Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
-501 blocked:472,484,486,570  Give the cycle-postflight containment site predicate parity and a gu...   <- the ignored-specs postflight narrowing it must not co-admit with has closed, so that bar can no longer bind
-524 blocked:484,501 Rule on a staged-vs-working-tree divergence signal for a pathspec commit, and...
+501 blocked:472,486,570  Give the cycle-postflight containment site predicate parity and a guarde...   <- the ignored-specs postflight narrowing it must not co-admit with has closed, so that bar can no longer bind
+524 blocked:501     Rule on a staged-vs-working-tree divergence signal for a pathspec commit, and...
 536 blocked:524     Source-store-aware commit path and plan-time registration-description review
 570 blocked:519     Stop the stall signal firing on commits it cannot attribute to the dispatch u...
 519 ready           Infra exempt transport error dispatch deaths
@@ -69,40 +89,15 @@ Close everything standing in front of the batch-worktree landing work: measure t
 ```
 
 <a id="milestone-m3"></a>
-## M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse
+## M3: Batch worktree isolation and generated-path collapse
 
-Make a batch's work land as reviewable git history: run each batch in its own worktree off an admitted integration branch, land one attribution-built squash commit per completed task, and declare machine-written paths so a diff collapses them.
+Run each batch in its own worktree off its own batch branch so concurrent dispatches cannot collide over one working tree, and declare machine-written paths so a reviewer's diff collapses them by default.
 
-- **Progress**: planned -- 0/4 batches, 0/8 tasks done -- Prerequisites moved to M4; the topology starts once the stale-surface declaration and the harness measurement close.
+- **Progress**: planned -- 0/1 batches, 0/1 tasks done -- Worktree isolation is held by operator direction and sited in no batch; the declaration batch waits on the detectors in M4.
 - **Review**: none
-- **Gate**: A batch run in an isolated worktree leaves one attribution-built squash commit per completed task on its integration branch, verified before the status write; a partial batch retains its worktree and /refresh reports an orphan; the branch-strategy documentation states the implemented contract; declared generated paths render collapsed in review.
+- **Gate**: A batch runs in an isolated worktree off its batch branch; a partial batch retains its worktree and /refresh reports it as an orphan; every remaining project-root consumer is classified code-root, state-root or both, and the write-time and git-guard hooks honour that split; declared generated paths render collapsed in review.
 
-**Batch 1** -- Admit the integration branch, stand up the batch worktree, make the hooks two-root aware
-
-```
-/orchestrate 669, 671 --hard
-669 blocked:541     Add integration-branch admission, the isolation declaration, and idempotent b...
-671 blocked:669     Make the write-time and git-guard hooks two-root aware
-```
-
-**Batch 2** -- Carry the two-root contract into dispatch and the commit scripts, then land the per-task squash
-
-```
-/orchestrate 670, 672, 673 --hard
-670 blocked:513,536,553,567,669  Build the two-root contract in the dispatch composer and the com...
-672 blocked:670     Classify every remaining project-root consumer as code-root, state-root or both
-673 blocked:670,671 Land one attribution-built squash commit per completed task and verify it bef...
-```
-
-**Batch 3** -- Close the worktree lifecycle: cleanup, partial retention, orphan reporting, docs parity
-
-```
-/orchestrate 674, 675
-674 blocked:673     Build batch worktree cleanup, retention on partial batches, and orphan report...
-675 blocked:672,673,674  Rewrite the branch-strategy documentation to state the implemented batch...
-```
-
-**Batch 4** -- Declare machine-written paths so a reviewer's diff collapses them by default
+**Batch 1** -- Declare machine-written paths so a reviewer's diff collapses them by default
 
 ```
 /orchestrate 655
@@ -417,6 +412,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 - **This file describes the current plan only.** No revision history, no pass numbers.
 - **A scope cut justified by an unverified premise is not a scope cut.** Test the premise before dropping the work it would make unnecessary.
 - **A redundancy census is re-derived, never remembered.** Fan-out, unordered-overlap counts and duplicate readings all change with every edge and every closure. Compute from `state.json` plus `scripts/lib/file-scope-overlap.sh` with transitive closure as the ordering test.
+- **Work held by operator direction is sited in no batch.** `/orchestrate` refuses a held task, so siting one renders a command an operator cannot run as printed. It stays visible under *Open tasks in no batch* with its `HOLD` token until the hold lifts.
 
 ### Conventions
 
@@ -444,8 +440,14 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 
 ```
 498 HOLD            Replace the email preference harvest tally substrate
+670 HOLD            Build the two-root contract in the dispatch composer and the commit scripts
+671 HOLD            Make the write-time and git-guard hooks two-root aware
+672 HOLD            Classify every remaining project-root consumer as code-root, state-root or both
+674 HOLD            Build batch worktree cleanup, retention on partial batches, and orphan report...
+686 HOLD            Create the per-batch worktree and batch branch when isolation is declared on
 664 ready           Add a /tmp sweep pass to /refresh for dead scratchpad sessions and agent-test...
 665 ready           Record the last dispatching orchestration batch in a displaced Previous work ...
 666 ready           re_site_branch_aware_batch_after_prerequisites
 680 ready           gate_cache_key_in_deployed_repos
+684 ready           Sweep and fix stale command and sub-mode references across the source store
 ```
