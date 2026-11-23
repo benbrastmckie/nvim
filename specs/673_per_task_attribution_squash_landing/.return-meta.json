@@ -1,93 +1,25 @@
 {
-  "status": "researched",
-  "dispatch_seq": 4,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/673_per_task_attribution_squash_landing/reports/01_isolation-off-landing-ruling.md",
-      "summary": "Rules the isolation-off landing contradiction (verification at landing, per-task squash at review time), with fixture and live-history measurements and a phased recommendation."
-    },
-    {
-      "type": "implementation",
-      "path": "specs/decisions/isolation-off-landing-verification-and-review-time-squash.md",
-      "summary": "Decision record: landing predicate V1-V5, landing proof shape, review-submission interface, retirement order, and the amending-record assertions it amends."
+      "type": "plan",
+      "path": "specs/673_per_task_attribution_squash_landing/plans/01_landing-verification-gate.md",
+      "summary": "Seven-phase plan building the isolation-off landing verification (V1-V5 predicate, proof record, exit-7 gate in update-task-status.sh, postflight reorder, milestone-ref-land unwiring, review-handoff re-point, redeploy)."
     }
   ],
-  "next_steps": "Run /orchestrate 673 to create implementation plan",
+  "next_steps": "Run /orchestrate 673 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 11,
+  "dependency_waves": [[1, 2], [3], [4], [5], [6], [7]],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1795425897_6a25f2_673",
-    "agent_type": "general-research-agent",
-    "duration_seconds": 1400,
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "research",
-      "general-research-agent"
-    ],
-    "findings_count": 9
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 11,
+    "dependency_waves": [[1, 2], [3], [4], [5], [6], [7]]
   },
-  "modified_files": [
-    "specs/673_per_task_attribution_squash_landing/reports/01_isolation-off-landing-ruling.md",
-    "specs/decisions/isolation-off-landing-verification-and-review-time-squash.md",
-    "specs/673_per_task_attribution_squash_landing/reports/01_fixtures/options-abc.sh",
-    "specs/673_per_task_attribution_squash_landing/reports/01_fixtures/review-overlay.sh",
-    "specs/673_per_task_attribution_squash_landing/reports/01_fixtures/corpus-predicate.sh"
-  ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/update-task-status.sh",
-    "agent-system/extensions/core/scripts/lib/batch-admission-lib.sh",
-    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
-    "agent-system/extensions/core/context/patterns/ref-plumbing-landing.md"
-  ],
-  "user_decision": {
-    "question": "With isolation off, the integration branch keeps one commit per phase and one commit per task is built only on the review branch at PR time. Accept that, or pay for per-task commits on the integration branch itself?",
-    "options": [
-      "Accept: phase commits stay on the integration branch; the review branch carries one commit per task",
-      "Require one commit per task on the integration branch: route every phase commit through a plumbing side ref, leaving the primary tree dirty for the life of each batch and reworking the commit scripts"
-    ],
-    "recommended": "Accept: phase commits stay on the integration branch; the review branch carries one commit per task",
-    "blocking": false,
-    "obligation": "The task criterion that a multi-task batch produces one reviewable unit per completed task on the integration branch with its phase list recorded, discharged by a per-task landing proof and completion-commit body rather than by a squash commit."
-  },
-  "memory_candidates": [
-    {
-      "content": "Attributing commits to a task by the `task {N}` subject convention must be bounded below by the task`s `created` timestamp (git log --since). Task numbers are reused after vault renumbering: in the source-store repository 438 numbers have more than one completion commit, and an unbounded match attributed 22 commits to a task that made 9. A batch record`s integration_tip_at_cut is not a safe lower bound either, because a resumed task has commits from earlier invocations.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/673_per_task_attribution_squash_landing/reports/01_isolation-off-landing-ruling.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "commit attribution",
-        "task number reuse",
-        "git log since",
-        "landing",
-        "vault renumber"
-      ]
-    },
-    {
-      "content": "A one-commit-per-task review ref can be built from an interleaved branch without a worktree by blob overlay: read the ref tip into a private GIT_INDEX_FILE, set each of the task`s paths to its blob at the task`s end commit with update-index --cacheinfo, write-tree, commit-tree, compare-and-swap update-ref, then one trailing commit carrying the remaining tree. Replaying the same commits with git merge-tree --write-tree --merge-base conflicts on generated state files that ride in every task`s commits.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/673_per_task_attribution_squash_landing/reports/01_isolation-off-landing-ruling.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "ref plumbing",
-        "merge-tree",
-        "blob overlay",
-        "review branch",
-        "squash per task"
-      ]
-    },
-    {
-      "content": "guard-destructive-git.sh judges a Bash command by its text and the hook`s own process directory, so a research fixture script that runs a HEAD-moving reset, a checkout-discard or add-all inside a throwaway scratch repository is refused while any writer is live in the real repository. Write fixtures without those forms: build a fresh fixture instead of dropping a commit, rewrite file content instead of discarding, stage explicit paths.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/673_per_task_attribution_squash_landing/reports/01_isolation-off-landing-ruling.md",
-      "confidence": 0.75,
-      "suggested_keywords": [
-        "guard-destructive-git",
-        "scratch fixture",
-        "hook collision",
-        "git reset",
-        "research experiments"
-      ]
-    }
-  ]
+  "dispatch_seq": 5
 }

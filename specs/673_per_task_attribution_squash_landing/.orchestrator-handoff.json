@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "summary": "Wrote a seven-phase, 11-hour plan for the isolation-off landing verification: a V1-V5 predicate script with observed-failing negative fixtures, a postflight reorder, an unconditional exit-7 gate in update-task-status.sh, unwiring of milestone-ref-land.sh and a re-pointed review handoff, then redeploy. Plan-time re-validation found the report's completion-caller list incomplete and one of its defect claims partly stale; both are recorded in the plan and the issue log. No user decision is raised.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/673_per_task_attribution_squash_landing/plans/01_landing-verification-gate.md",
+      "summary": "Seven-phase plan for the landing verification gate, proof record and milestone-ref-land retirement."
+    }
+  ],
+  "dispatch_seq": 5
+}

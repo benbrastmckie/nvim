@@ -1253,30 +1253,40 @@
     {
       "project_number": 673,
       "project_name": "per_task_attribution_squash_landing",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Land one reviewable commit per completed task on the integration branch and verify it before the status write",
       "topic": "orchestrator",
       "created": "2026-11-20T20:26:53Z",
-      "last_updated": "2026-11-23T11:07:34Z",
+      "last_updated": "2026-11-23T11:15:37Z",
       "session_id": "sess_1795425897_6a25f2",
       "dependencies": [
         669
       ],
       "file_scope": [
+        "__WHOLE_TREE__",
         "agent-system/extensions/core/context/patterns/ref-plumbing-landing.md",
         "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+        "agent-system/extensions/core/index-entries.json",
         "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/lib/batch-admission-lib.sh",
         "agent-system/extensions/core/scripts/milestone-ref-land.sh",
         "agent-system/extensions/core/scripts/milestone-review-handoff.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/task-landing-verify.sh",
         "agent-system/extensions/core/scripts/task-squash-land.sh",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data",
+        "agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh",
         "agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh",
         "agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-postflight-landing-gate.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-landing-verify.sh",
         "agent-system/extensions/core/scripts/tests/test-task-squash-land.sh",
-        "agent-system/extensions/core/scripts/update-task-status.sh"
+        "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+        "agent-system/extensions/core/scripts/update-task-status.sh",
+        "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md",
+        "specs/decisions/isolation-off-landing-verification-and-review-time-squash.md"
       ],
       "next_artifact_number": 2,
       "artifacts": [
@@ -1284,6 +1294,11 @@
           "path": "specs/673_per_task_attribution_squash_landing/reports/01_isolation-off-landing-ruling.md",
           "type": "report",
           "summary": "Rules the isolation-off landing contradiction (verification at landing, per-task squash at review time), with fixture and live-history measurements and a phased recommendation."
+        },
+        {
+          "path": "specs/673_per_task_attribution_squash_landing/plans/01_landing-verification-gate.md",
+          "type": "plan",
+          "summary": "Seven-phase plan for the landing verification gate, proof record and milestone-ref-land retirement."
         }
       ],
       "description": "Land one reviewable commit per completed task on the integration branch and verify it before the status write\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nRULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record), sections \"R3, amended\", \"Defects engaged\" entry 4, and \"Built-mechanism verdicts\" (the retirement). Read them before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md.\n\nSCOPE RE-POINTED BY OPERATOR DIRECTION, 2026-11-23. Worktree isolation is deferred and its tasks are on hold. The isolation-off path, which the amending record treated as a constraint the design must also satisfy, is now the ONLY path this task builds and verifies. The two-root prerequisites are held and this task no longer waits on them: it runs in the one primary tree, where there is exactly one root.\n\n=== THE CONTRADICTION THIS TASK MUST RULE BEFORE IT BUILDS ===\n\nThe amending record's landing mechanism reads a batch branch: \"select the task's own commits on the batch branch between the merge base and the batch tip by the `task {N}` subject convention\". Its own standing constraint says every behaviour must hold where \"no worktree and no batch branch exist\". With isolation off there is no batch branch to read, and the primary tree is already on the integration branch, so a task's phase commits land there directly as they are made. There is therefore nothing to cherry-pick FROM, and one-commit-per-task cannot be produced by picking.\n\nThis was survivable while isolation-on was the primary path. It is now the blocking design question, and the research round must rule it rather than inherit it. RULE between at least these, state the reasoning, and record it as a decision record under specs/decisions/:\n\nA. SIDE BRANCH WITHOUT A WORKTREE. Phase commits are built onto a per-batch ref by plumbing (`git commit-tree` plus compare-and-swap `git update-ref`, the idiom context/patterns/ref-plumbing-landing.md already documents and milestone-ref-land.sh already implements), never by checkout, so the primary tree never changes branch and R1-amended holds. The task's own range is then readable and the squash is a real pick. Cost: every phase commit goes through plumbing rather than ordinary commit, which touches the commit scripts the held two-root tasks also touch.\n\nB. NO SQUASH; LANDING DEGRADES TO VERIFICATION. Phase commits stay on the integration branch as made. \"Landing\" becomes the pre-completion check that the task's work is present at the tip, plus the review handoff. The reviewable unit is the phase sequence, not one commit. Cost: gives up one-commit-per-task, which R3-amended asserts; the record must be amended, not quietly departed from.\n\nC. SQUASH AT REVIEW TIME, NOT LANDING TIME. Phase commits stay as made; the squash happens when the review branch is cut or when the forge merges. Cost: pushes the unit-of-review decision into the PR task that depends on this one; state the interface explicitly if chosen.\n\nA history rewrite of the integration branch is NOT a candidate: guard-destructive-git.sh refuses a HEAD-moving reset while another writer is live, and `git rebase -i` is unavailable.\n\n=== WHAT THE TASK BUILDS ONCE RULED ===\n\n1. LANDING at a task's [IMPLEMENTING] -> [COMPLETED] transition in orchestrate-cycle-postflight.sh, under the existing specs/.commit-lock mutex, in the PRIMARY tree, which never changes branch. Subject `task {N}: {title}`, body carrying the session identity and the phase list. `git merge --squash` of an end commit is rejected by the record: it co-lands a sibling's unfinished commits when tasks interleave. Do not rely on `modified_files` to find the work; read the refs.\n2. REFUSAL, never a skip: a commit in the range attributable to no task, or a pick conflict, refuses the landing, leaves the task un-completed and the refs intact, and names the offending commit.\n3. VERIFICATION strictly BEFORE the completion status write: blob equality over the task's own path set, between the new integration tip and the task's end commit. Full-tree equality is the wrong predicate here. Ship a deliberate NEGATIVE fixture proving the check fails when work did not land, and record that it was observed failing. This item is the one that closes defect 4 (silent non-landing under a completed status) and it survives every option above -- build it whichever way the ruling goes.\n4. IDEMPOTENT: a re-run after a recorded landing proof is a no-op. Record the proof in the batch record that the admission task registers; cleanup depends on it.\n5. TWO CONCURRENT BATCHES on one integration branch: the second landing can conflict. Build the conflict fixture; the response is refusal with the refs intact.\n6. SOURCE-STORE COMMITS made by commit-source-store-path.sh in a second repository are outside the range and outside the squash. State them in the body or rule otherwise, with reasons.\n7. RETIRE milestone-ref-land.sh as a landing mechanism and point milestone-review-handoff.sh's review range at the integration branch. Its `--verify` tree-equality predicate is weaker than item 3's blob equality; do not leave the repository with no pre-completion landing verification at any point in the transition.\n8. INTERFACE TO PR SUBMISSION: whatever the ruling, state in the decision record what a downstream PR-cutting step receives -- the ref it branches from, the commit range it covers, and whether that range is already one commit per task. The PR and stacking task depends on this contract and must not have to re-derive it.\n\nDEFERRED WITH THE WORKTREE TASKS: the back-merge of the integration branch into a batch branch after each landing, which exists only to fix a batch branch's merge base. Reinstate it when isolation returns.\n\nSTANDING CONSTRAINTS: (1) repo-agnostic -- no literal branch name and no consumer-repo path in any deliverable; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both at their byte ceilings; (3) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.\n\nVERIFICATION CRITERIA THIS TASK OWNS:\n- The contradiction above is ruled in a decision record under specs/decisions/ before any code lands, and the ruling names which of the record's assertions it amends.\n- A multi-task batch produces one reviewable unit per completed task on the integration branch, with its phase list recorded, the primary tree never having changed branch.\n- A task failing mid-batch leaves its commits and refs intact while its sibling lands.\n- A completion status write cannot occur without the landing verification having passed, demonstrated by a negative fixture observed failing.",
