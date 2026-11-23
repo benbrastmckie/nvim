@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795451386_ec8465_675",
+  "task_number": 675,
+  "dispatch_seq": 19,
+  "findings_count": 8,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/675_branch_topology_documentation_parity/reports/01_branch-topology-doc-parity.md",
+      "summary": "Classifies the five dispatch-named edit targets against the implemented integration-branch contract (verified against live scripts): ref-plumbing-landing.md and repo-level-declarations.md are already current; git-workflow-narrative.md's Branch Strategy section and rules/git-workflow.md need a rewrite/addition; index-entries.json counts are mechanical and deferred to edit time. Sweep confirms shared-worktree-discipline.md's opening sentence is stale and conclusion-stage.md (outside file_scope) needs the same fix per the implementing task's own follow-up note; git-staging-scope.md is checked and found not stale."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "index-entries.json only carries line_count entries for paths under context/** in this agent-system source store; rules/**, scripts/**, and hooks/** files have no index row and need no line-count maintenance when edited. Confirmed by querying .entries[] for rules/git-workflow.md (absent) vs context/standards/*.md (present and accurate).",
+      "category": "CONFIG",
+      "source_artifact": "specs/675_branch_topology_documentation_parity/reports/01_branch-topology-doc-parity.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries.json", "line_count", "context-index", "source-store", "agent-system"]
+    },
+    {
+      "content": "When an implementing task's own research report or summary explicitly names a follow-up document as belonging to a specific successor documentation-parity task (e.g. 'this page belongs to task X by its description'), that note is a reliable signal the successor's file_scope should be widened at plan time even when the task description's own literal file list omits it. Found for conclusion-stage.md via per_task_attribution_squash_landing's report Recommendations section.",
+      "category": "PATTERN",
+      "source_artifact": "specs/675_branch_topology_documentation_parity/reports/01_branch-topology-doc-parity.md",
+      "confidence": 0.65,
+      "suggested_keywords": ["file_scope", "documentation-parity", "follow-up", "task-sweep", "decision-record"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 675 to create implementation plan"
+}

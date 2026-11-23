@@ -756,13 +756,13 @@
     {
       "project_number": 675,
       "project_name": "branch_topology_documentation_parity",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Rewrite the branch-strategy documentation to state the implemented integration-branch contract",
       "topic": "orchestrator",
       "created": "2026-11-20T20:30:54Z",
-      "last_updated": "2026-11-23T08:55:39Z",
-      "session_id": "sess_1795203458_188c22",
+      "last_updated": "2026-11-23T16:51:05Z",
+      "session_id": "sess_1795451386_ec8465",
       "dependencies": [
         673
       ],
@@ -773,8 +773,14 @@
         "agent-system/extensions/core/context/standards/repo-level-declarations.md",
         "agent-system/extensions/core/index-entries.json"
       ],
-      "next_artifact_number": 1,
-      "artifacts": [],
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/675_branch_topology_documentation_parity/reports/01_branch-topology-doc-parity.md",
+          "type": "report",
+          "summary": "Classifies the five dispatch-named edit targets against the implemented integration-branch contract (verified against live scripts): ref-plumbing-landing.md and repo-level-declarations.md are already current; git-workflow-narrative.md's Branch Strategy section and rules/git-workflow.md need a rewrite/addition; index-entries.json counts are mechanical and deferred to edit time. Sweep confirms shared-worktree-discipline.md's opening sentence is stale and conclusion-stage.md (outside file_scope) needs the same fix per the implementing task's own follow-up note; git-staging-scope.md is checked and found not stale."
+        }
+      ],
       "description": "Rewrite the branch-strategy documentation to state the implemented integration-branch contract\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nSCOPE RE-POINTED BY OPERATOR DIRECTION, 2026-11-23. Worktree isolation is deferred and its tasks are on hold. This task documents the contract that is ACTUALLY IMPLEMENTED when it runs -- integration-branch admission, per-task landing on that branch, and review handoff, all in one primary tree -- not the batch-worktree contract the amending record describes in full. The worktree half is documented as declared-but-unimplemented, naming the held tasks, so a reader can tell a deferred design from a live one. It is a documentation-parity task: it states what the scripts do, and it is wrong if it describes machinery that does not exist.\n\nRULING THIS DOCUMENTS: specs/decisions/branch-topology-and-landing-strategy.md and specs/decisions/batch-worktree-isolation-and-task-squash-landing.md, PLUS the decision record the landing task is required to write ruling the isolation-off landing mechanism. That third record is load-bearing here: it settles what a reviewable unit is, and this task cannot state the contract before it exists. Read all three.\n\n1. BRANCH STRATEGY section of context/standards/git-workflow-narrative.md: replace the account of which branch work lands on. State that the primary tree stays on the declared integration branch, that admission refuses an invocation started elsewhere or on a dirty state territory, and what happens when `integration_branch` is undeclared. Do not describe a batch branch or a worktree as live.\n2. context/patterns/ref-plumbing-landing.md: reconcile with the landing mechanism as ruled. The page currently documents the commit-tree/update-ref idiom as serving milestone-ref-land.sh; if that script is retired as a landing mechanism, the page must say what now uses the idiom, or be retired with it. Its concurrency-safety argument is the durable content and should survive in whatever page remains.\n3. rules/git-workflow.md: state the branch rule at the point of use -- which branch a commit lands on, and that no script creates or switches branches during dispatch work.\n4. context/standards/repo-level-declarations.md: the prose around both declaration rows, matching the schema the admission task writes, including which values are live.\n5. index-entries.json line counts for every file this task edits.\n6. SWEEP for the same staleness elsewhere rather than fixing only the files listed: context/standards/git-staging-scope.md and context/standards/shared-worktree-discipline.md both make claims about branch and tree topology. shared-worktree-discipline.md's opening sentence calls per-agent worktree isolation \"a settled non-goal\", which the amending record re-opened at batch granularity -- it is now neither settled-removed nor implemented, and the page must say which. Report what the sweep found.\n\nVERIFICATION CRITERIA THIS TASK OWNS:\n- The rules, the narrative and the scripts state the same contract, checked by reading the scripts rather than the records.\n- No page describes worktree isolation or a batch branch as live machinery; every mention names it as declared-but-unimplemented and points at the held work.\n- A reader following the documentation can tell which branch their work lands on and what refuses them if they start elsewhere.",
       "audit_verdict": {
         "proposal": {
