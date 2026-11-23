@@ -846,7 +846,7 @@ rsp_cut_print() {
 # <end_commit>, or removed when absent there. Builds the tree in a private temporary index
 # (GIT_INDEX_FILE); never touches the shared working tree, the shared index, or HEAD.
 rsp_overlay_tree() {
-  local base_tree="$1" end_commit="$2" paths="$3" tmp_index p line mode sha tree
+  local base_tree="$1" end_commit="$2" paths_nl="$3" tmp_index p line mode sha tree
   tmp_index="$(mktemp)"
   rm -f "$tmp_index"
   GIT_INDEX_FILE="$tmp_index" git read-tree "$base_tree" || { rm -f "$tmp_index"; return 1; }
@@ -863,7 +863,7 @@ rsp_overlay_tree() {
         return 1
       }
     fi
-  done <<< "$paths"
+  done <<< "$paths_nl"
   tree="$(GIT_INDEX_FILE="$tmp_index" git write-tree)"
   rm -f "$tmp_index"
   printf '%s' "$tree"
@@ -907,7 +907,7 @@ rsp_unit_title() {
 #     (parent and, when one exists in this same cut, child), Changed files, and the
 #     attributed-without-a-proof / co-landed-lines notices where they apply.
 rsp_write_body() {
-  local path="$1" title="$2" tasks_csv="$3" parent="$4" child="$5" paths="$6" noproof="$7" colanded="$8"
+  local path="$1" title="$2" tasks_csv="$3" parent="$4" child="$5" paths_nl="$6" noproof="$7" colanded="$8"
   {
     printf '# %s\n\n' "$title"
     echo "## Summary"
@@ -925,7 +925,7 @@ rsp_write_body() {
     echo ""
     echo "## Changed files"
     echo ""
-    printf '%s\n' "$paths" | sed -E 's/^(.+)$/- `\1`/'
+    printf '%s\n' "$paths_nl" | sed -E 's/^(.+)$/- `\1`/'
     if [ "$noproof" = "true" ]; then
       echo ""
       echo 'ATTRIBUTED WITHOUT A PROOF: this unit was attributed by the "task N:" commit-subject'
