@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Record the closure in git-staging-scope.md",
+  "started_at": "2026-11-23T04:15:00Z",
+  "last_updated": "2026-11-23T04:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read lines 477-502 before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Revise 'third asymmetry' paragraph to record Site 3 closure", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Preserve proposed_file_scope_lookup half unchanged in substance", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 4, "description": "Rewrite follow-on paragraph to name only the lookup as unmirrored", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 5, "description": "Check lines ~624 and ~391 for cross-references to this residual", "status": "done", "files_touched": [], "note": "No cross-reference to this specific residual found in either section; no update made"},
+    {"id": 6, "description": "Do not add the mechanism x site x status summary table", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "grep_site_2_only": "Both surviving hits of 'site-2-only'/'unstripped'/'deployed-tree strip' are about proposed_file_scope_lookup only, per Phase 3's own verification criterion",
+    "verify_touched_phase3": "2 passed, 0 failed (test-git-commit-phase.sh, test-todo-move-pair-staging.sh)"
+  }
+}

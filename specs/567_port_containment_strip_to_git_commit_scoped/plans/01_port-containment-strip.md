@@ -225,30 +225,30 @@ rather than editing Case 20 to accommodate it.
 
 ---
 
-### Phase 3: Record the closure in git-staging-scope.md [NOT STARTED]
+### Phase 3: Record the closure in git-staging-scope.md [COMPLETED]
 
 **Goal**: The standards doc stops describing the deployed-tree strip as a deliberately-open,
 site-2-only residual, while keeping every still-true claim in the same paragraph intact.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` lines 477-502
-      immediately before editing.
-- [ ] Revise the "A third asymmetry, deliberately left open" paragraph in place: retitle it so it
+- [x] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` lines 477-502
+      immediately before editing. *(completed)*
+- [x] Revise the "A third asymmetry, deliberately left open" paragraph in place: retitle it so it
       no longer claims the deployed-tree strip is site-2-only, and state that the strip now runs at
-      Site 3's V10 resolution as well, before that block's own non-emptiness guard.
-- [ ] Preserve, unchanged in substance, the paragraph's second half: the read-only
+      Site 3's V10 resolution as well, before that block's own non-emptiness guard. *(completed)*
+- [x] Preserve, unchanged in substance, the paragraph's second half: the read-only
       `proposed_file_scope_lookup` annotation remains site-2-only, is never unioned into
       `file_scope_arr`, and the admitting-union variant was built and rejected for regressing the
-      idempotence fixture.
-- [ ] Rewrite the follow-on paragraph that currently says "Neither of these two site-2 mechanisms
+      idempotence fixture. *(completed)*
+- [x] Rewrite the follow-on paragraph that currently says "Neither of these two site-2 mechanisms
       is mirrored at site 3" and that a bare `.claude/` entry "is still read unstripped" at site 3,
-      so it names only the lookup as unmirrored and drops the "future task to close" sentence.
-- [ ] Check the "Named residuals, recorded explicitly rather than chased to parity in one pass"
+      so it names only the lookup as unmirrored and drops the "future task to close" sentence. *(completed)*
+- [x] Check the "Named residuals, recorded explicitly rather than chased to parity in one pass"
       section (currently beginning line 624) and the "Three Containment sites, not one" section
       header paragraph (currently line 391) for any remaining cross-reference to this specific
-      residual; update only if one is found.
-- [ ] Do not add the mechanism x site x status summary table the research report floats — that is a
-      recorded follow-up, not part of this task.
+      residual; update only if one is found. *(completed)*
+- [x] Do not add the mechanism x site x status summary table the research report floats — that is a
+      recorded follow-up, not part of this task. *(completed)*
 
 **Timing**: 0.25 hours
 
