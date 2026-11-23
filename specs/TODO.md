@@ -115,7 +115,7 @@ next_project_number: 695
 689 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 691 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-692 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
+692 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
 693 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
@@ -233,11 +233,12 @@ VERIFY BY: the command file's own documented contract being internally consisten
 ---
 
 ### 692. Handoff prints review stack
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [692_handoff_prints_review_stack/reports/01_handoff-prints-review-stack.md]
+- **Plan**: [692_handoff_prints_review_stack/plans/01_handoff-prints-review-stack.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

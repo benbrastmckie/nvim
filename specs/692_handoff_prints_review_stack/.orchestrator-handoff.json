@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "task_number": 692,
+  "phase": "plan",
+  "status": "planned",
+  "dispatch_seq": 5,
+  "session_id": "sess_1795472390_63c292_692",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a three-phase plan for Phase 5 of the parent stack-PR design record, scoped strictly to this record's two declared file_scope paths (milestone-review-handoff.sh and its suite). Phase 1 wires the non-fatal cut/show call plus the refusal arm and rewrites the suite's Case 3, closing green because the default fixtures exercise exactly the refusal arm; Phase 2 installs review-stack-prepare.sh in the sandbox and proves the success arm with a new fixture; Phase 3 redeploys and runs the scoped touched-path check. All three premise lines and both suite baselines (18 and 38 passing) were re-measured against live state and confirmed unchanged.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/692_handoff_prints_review_stack/plans/01_handoff-prints-review-stack.md",
+      "summary": "Three-phase plan: cut/show wiring plus refusal arm, success-arm fixture and case, redeploy and scoped verification."
+    }
+  ],
+  "blockers": [],
+  "notes": "Known out-of-scope breakage carried forward as an owed follow-up, not actioned: test-orchestrate-conclusion-roadmap.sh Case H (assertion near line 507) requires both /please push and a bare /merge in a sandbox that never installs review-stack-prepare.sh, so it goes RED by design once this work lands. Also owed to a separate record: the parent plan's conclusion-stage.md and git-workflow-narrative.md prose updates and the index-entries.json line_count reconciliation they require. Plan-time finding beyond the research report: review-stack-prepare.sh's show subcommand runs the full resolver chain before rsp_show_stack, so it carries its own refusal surface (10-13, 20, 30-32) on top of manifest_missing (50); the plan checks show's exit status separately."
+}
