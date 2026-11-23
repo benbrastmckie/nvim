@@ -109,7 +109,7 @@ next_project_number: 687
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
 666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
-669 [NOT STARTED] — Add integration-branch admission and the isolation declaration
+669 [RESEARCHED] — Add integration-branch admission and the isolation declaration
   └─ 670 [HOLD] — Build the two-root contract in the dispatch composer and the...
     └─ 672 [HOLD] — Classify every remaining project-root consumer as code-root,...
   └─ 671 [HOLD] — Make the write-time and git-guard hooks two-root aware
@@ -565,10 +565,11 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 ---
 
 ### 669. Add integration-branch admission and the isolation declaration
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 517, Task 541, Task 667, Task 668
+- **Research**: [669_integration_branch_admission_and_batch_worktree/reports/01_integration-branch-admission.md]
 
 **Description**: Add integration-branch admission and the isolation declaration
 
