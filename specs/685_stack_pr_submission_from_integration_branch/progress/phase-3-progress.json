@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Cut the stack and write the manifest",
+  "started_at": "2026-11-23T21:30:00Z",
+  "last_updated": "2026-11-23T22:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Overlay per PD6 with a temporary index", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 2, "description": "Move each commit onto a moved review-base tip via git merge-tree", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 3, "description": "Move refs by compare-and-swap; idempotent re-cut; refuse unknown remote-tracking commit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 4, "description": "Commit message/PR title and body file composition", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 5, "description": "Write the manifest per PD4; record-request fills request field", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 6, "description": "show prints the stack with literal commands; show --json emits manifest", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 7, "description": "Document the manifest/body-file class in orchestrator-runtime-files.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]},
+    {"id": 8, "description": "Suite cases for cut/show/idempotence/moved-base/refusals", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "note": "All code for this phase was already committed in 275599cff by a prior dispatch_seq-28 attempt that died before writing wrap-up artifacts. This dispatch's work was re-running verification in the foreground (38/0 suite, scoped verify-touched.sh battery) and performing the plan/progress/handoff/commit closure the prior attempts never reached."
+}

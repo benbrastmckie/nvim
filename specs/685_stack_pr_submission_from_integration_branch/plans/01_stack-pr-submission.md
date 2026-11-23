@@ -351,40 +351,43 @@ because neither file exists yet, so the phase's own suite is also run directly.
 
 ---
 
-### Phase 3: Cut the stack and write the manifest [NOT STARTED]
+### Phase 3: Cut the stack and write the manifest [COMPLETED]
 
 **Goal**: `cut` builds the review refs, the manifest and the PR bodies without touching `HEAD`,
 the index or the working tree, and `show` prints the stack.
 
 **Tasks**:
-- [ ] Overlay per PD6 with a temporary index (`GIT_INDEX_FILE`): read the parent tree, set each
+- [x] Overlay per PD6 with a temporary index (`GIT_INDEX_FILE`): read the parent tree, set each
       path of the unit's set to its blob at the unit's end commit (`git update-index --cacheinfo`,
       `--force-remove` for a deleted path), `git write-tree`, `git commit-tree -p <parent>`.
-- [ ] When the review base tip is past the merge base, move each commit onto the tip with
+      *(completed: rsp_overlay_tree)*
+- [x] When the review base tip is past the merge base, move each commit onto the tip with
       `git merge-tree --write-tree --merge-base=<old parent> <new parent> <commit>`; a conflict
-      refuses and names the path.
-- [ ] Move refs with compare-and-swap `git update-ref`. A re-cut with unchanged inputs is a
+      refuses and names the path. *(completed: rsp_move_commit_onto_new_parent)*
+- [x] Move refs with compare-and-swap `git update-ref`. A re-cut with unchanged inputs is a
       no-op. Refuse to move a ref whose remote-tracking ref holds a commit the manifest does not
-      record.
-- [ ] Commit message and PR title: the subject of the task's completion commit with the
+      record. *(completed: rsp_cut_execute, exit 48/49)*
+- [x] Commit message and PR title: the subject of the task's completion commit with the
       task-number prefix removed. Body file: Summary, Relationship to other PRs (parent and child
       branches), Changed files, and the attributed-without-a-proof or co-landed-lines notice
-      where one applies.
-- [ ] Write the manifest per PD4: stack id, remote, integration branch, review base, and per
+      where one applies. *(completed: rsp_unit_title, rsp_write_body)*
+- [x] Write the manifest per PD4: stack id, remote, integration branch, review base, and per
       entry its ordinal, tasks, branch, base, commit, parent commit, title, body path, state, and
       an empty request field. `record-request NN URL` fills the request field.
-- [ ] `show` prints, per entry in order: branch, base, title, body path, then
+      *(completed: rsp_cut_execute manifest write, rsp_record_request)*
+- [x] `show` prints, per entry in order: branch, base, title, body path, then
       `/please push <remote> <branch>`; after the last entry, `/merge --stack <stack id>` and one
       line stating that N entries need N typed grants and that this script runs none of them.
-      `show --json` emits the manifest.
-- [ ] Document the manifest and body files as a class in
+      `show --json` emits the manifest. *(completed: rsp_show_stack)*
+- [x] Document the manifest and body files as a class in
       `context/standards/orchestrator-runtime-files.md`: location, machine-local, gitignored,
-      written only by this script.
-- [ ] Suite cases: three branches, one commit each, each parented on the one below; each
+      written only by this script. *(completed)*
+- [x] Suite cases: three branches, one commit each, each parented on the one below; each
       commit's diff holds only its unit's paths; the top tree differs from the integration tip
       only in paths outside every unit's set; `HEAD`, `.git/index` and `git status` identical
       before and after; idempotent re-cut; the moved-base case keeps a foreign line; the
       unknown-remote-commit refusal; `show` output matches the manifest.
+      *(completed: 38 cases passing in test-review-stack-prepare.sh)*
 
 **Timing**: 2 hours
 
@@ -417,8 +420,19 @@ phase's four paths, which the selector resolves to `test-audit-task-proposals.sh
 
 **Verification**:
 - The suite exits 0, including the byte-identical `HEAD`, index and status assertions.
-- `verify-touched.sh` over the four paths reports green.
-- The script's static assertions from Phase 1 still pass.
+  *(confirmed: 38 passed, 0 failed, dispatch 28)*
+- `verify-touched.sh` over the four paths reports green. *(confirmed: resolved to the OWED
+  fallback battery of 74 suites, which passed except two findings explained below.
+  `test-verify-deploy-context-budget.sh` fails as EXPECTED: it reports deploy/source drift for
+  `review-stack-prepare.sh`, `test-review-stack-prepare.sh` and `orchestrator-runtime-files.md`
+  (including the `index-entries.json` line_count mismatch, 729 vs 730) -- this phase's own
+  "Files to modify" note already states the `index-entries.json` line_count is "reconciled by
+  Phase 7's redeploy", so this drift is expected and owed to Phase 7, not a Phase 3 defect.
+  `test-orchestrate-recover-outcome.sh`'s case 3 failed once under the full 74-suite parallel
+  load, then passed 3/3 in isolated re-runs (7/7 cases each) -- a load-induced timing flake in
+  an mtime-window check unrelated to this phase's files, not a regression this phase caused.)*
+- The script's static assertions from Phase 1 still pass. *(confirmed: no push/checkout/switch/
+  merge/rebase/replay/gh/glab invocation; no literal origin/main/master/upstream)*
 
 ---
 
