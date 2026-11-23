@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Move refs, rewrite the manifest, and redeploy",
+  "started_at": "2026-11-23T23:40:00Z",
+  "last_updated": "2026-11-24T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "rsp_restack_execute: per-branch exit-49 guard, compare-and-swap ref moves, manifest rewrite preserving non-owned fields", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 2, "description": "Extend rsp_show_stack's human-readable output with the state column (D5)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 3, "description": "Reconcile header USAGE/EXIT CODES blocks against the finished implementation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 4, "description": "Confirm no task-number reference / record-versioning phrase in either file", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Suite cases: clean real restack, foreign-line survival, unknown-remote-commit refusal 49, lost-race refusal 48, re-asserted conflict with execute present, show's state column", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

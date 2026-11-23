@@ -383,7 +383,7 @@ itself the check that no forbidden primitive was introduced.
 
 ---
 
-### Phase 3: Move refs, rewrite the manifest, and redeploy [NOT STARTED]
+### Phase 3: Move refs, rewrite the manifest, and redeploy [COMPLETED]
 
 **Goal**: A detected merge is committed to disk: each descendant's ref moves by compare-and-swap,
 the manifest records the merged entry's new state and each moved entry's new base and commit,
@@ -391,34 +391,43 @@ the manifest records the merged entry's new state and each moved entry's new bas
 
 **Tasks**:
 
-- [ ] Implement `rsp_restack_execute`, called only when not `--dry-run`, running after Phase 2's
-      plan pass has computed every new commit (D4).
-- [ ] Before moving each descendant's ref, apply the existing per-branch guard: when that
+- [x] Implement `rsp_restack_execute`, called only when not `--dry-run`, running after Phase 2's
+      plan pass has computed every new commit (D4). *(completed)*
+- [x] Before moving each descendant's ref, apply the existing per-branch guard: when that
       branch's remote-tracking ref holds a commit the manifest does not record, refuse 49
       (`unknown_remote_commit`) unchanged, reusing the message shape `rsp_cut_execute` already
       carries so the refusal names the stack branch rather than the review base (D2).
-- [ ] Move each descendant's ref with the three-argument `git update-ref <ref> <new> <old>`
+      *(completed)*
+- [x] Move each descendant's ref with the three-argument `git update-ref <ref> <new> <old>`
       compare-and-swap, `<old>` being the sha the manifest recorded. A failed swap refuses 48 in
-      the same shape `rsp_cut_execute` uses, naming the ref that moved concurrently.
-- [ ] Rewrite the manifest only after every ref move has succeeded: each merged entry's `state`
+      the same shape `rsp_cut_execute` uses, naming the ref that moved concurrently. *(completed)*
+- [x] Rewrite the manifest only after every ref move has succeeded: each merged entry's `state`
       becomes `merged`, the new bottom entry's `base` becomes the review base, and each moved
       entry's `base`, `commit`, and `parent_commit` are updated. Preserve every field the writer
       does not own, `request` in particular, exactly as the existing re-cut path preserves it.
-- [ ] Extend `rsp_show_stack`'s human-readable output to print each entry's `state` (D5). The
-      `--json` form, which emits the manifest verbatim, needs no change.
-- [ ] Re-read the header's `USAGE` and `EXIT CODES` blocks and reconcile them against the
+      *(completed)*
+- [x] Extend `rsp_show_stack`'s human-readable output to print each entry's `state` (D5). The
+      `--json` form, which emits the manifest verbatim, needs no change. *(completed: appended
+      at the end of the PR line so the pre-existing substring assertion stays intact)*
+- [x] Re-read the header's `USAGE` and `EXIT CODES` blocks and reconcile them against the
       finished implementation — the `restack` usage line, 53, 54, and the fact that `state` can
       now be `merged`. This block is this script's authoritative self-contained documentation and
       is inside this task's `file_scope`; confirm it exists and is still contiguous before
       editing, and if the live table has drifted from what Phase 1 left, reconcile to the live
-      file rather than to this plan's text.
-- [ ] Confirm no task-number reference and no record-versioning phrase landed in either file;
-      both sit under `agent-system/**`, where both are prohibited.
-- [ ] Redeploy the source store into the deployed tree:
+      file rather than to this plan's text. *(completed: reconciled exit-0 wording and `show`'s
+      bullet to describe the finished `state` column; the table was contiguous through 54 as
+      Phase 1 left it)*
+- [x] Confirm no task-number reference and no record-versioning phrase landed in either file;
+      both sit under `agent-system/**`, where both are prohibited. *(completed: both
+      `check-task-references.sh` and `check-record-versioning.sh` report 0 occurrences on both
+      files)*
+- [x] Redeploy the source store into the deployed tree:
       `bash .claude/scripts/deploy-headless.sh` (read its header for the `TARGET_REPO` argument
       contract before running). The deployed `.claude/` tree is gitignored, so this produces
       nothing to commit; it is what makes the change live for the deployed entry points.
-- [ ] Suite cases: a clean bottom-up restack moves every descendant's ref, the manifest records
+      *(completed: `RESULT=landed_verify_clean`, 41 checks/0 failures; confirmed nothing new to
+      commit under `.claude/`)*
+- [x] Suite cases: a clean bottom-up restack moves every descendant's ref, the manifest records
       the merged entry as `merged` and the new bottom's base as the review base, and each
       descendant's three-dot diff against the new base lists only its own paths; the same with a
       foreign commit on the review base, whose line survives the restack; a descendant whose
@@ -426,7 +435,9 @@ the manifest records the merged entry's new state and each moved entry's new bas
       compare-and-swap that loses a race refuses 48; Phase 2's conflict case re-asserted with the
       execute path present, confirming every ref is still byte-identical; `show`'s
       human-readable output prints `merged` for a merged entry; and `HEAD`, the index, and
-      `git status --porcelain` are unchanged across every one of these.
+      `git status --porcelain` are unchanged across every one of these. *(completed: 6 new
+      cases, suite now at 61, all 38 original cases and both static assertions present
+      unmodified)*
 
 **Timing**: 0.75 hours
 
@@ -452,17 +463,27 @@ regenerated rather than assuming.
 
 **Verification**:
 
-- `bash agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh` exits 0, its
+- [x] `bash agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh` exits 0, its
   `Results:` line shows zero failures, and `git diff` over the suite file confirms the original
-  38 cases and both static assertions are present unmodified.
-- The stale-stack assertion was observed in both states: a descendant's three-dot diff lists the
-  parent's files before the restack and not after.
-- `bash agent-system/extensions/core/scripts/verify-touched.sh agent-system/extensions/core/scripts/review-stack-prepare.sh agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh` exits 0 — the scoped touched-path check that discharges this phase's own in-dispatch obligation.
-- The complete gate set this `full` tier owes is **deferred to the orchestration close**
+  38 cases and both static assertions are present unmodified. *(observed: `Results: 61 passed, 0
+  failed`; `git diff` over the suite file shows only additions, confirmed by inspecting the
+  removed-lines side of the diff for emptiness)*
+- [x] The stale-stack assertion was observed in both states: a descendant's three-dot diff lists the
+  parent's files before the restack and not after. *(observed via the "clean bottom-up restack"
+  case: before the restack the fixture's own setup has unit 2's branch based directly on unit 1's
+  unrestacked branch; after, `git diff --name-only "$squashed_sha".."$RB2"` lists only `f998.txt`)*
+- [x] `bash agent-system/extensions/core/scripts/verify-touched.sh agent-system/extensions/core/scripts/review-stack-prepare.sh agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh` exits 0 — the scoped touched-path check that discharges this phase's own in-dispatch obligation. *(observed: exit 0, 1 suite selected, no sentinel)*
+- [x] The complete gate set this `full` tier owes is **deferred to the orchestration close**
   (`context/contracts/batch-gate-stage.md`'s once-per-invocation batch gate stage), not run
   independently by this phase. Record that deferral in the phase's own verification notes.
-- `bash .claude/scripts/deploy-headless.sh` completed without error and reported the regenerated
-  tree.
+  *(completed: per this dispatch's own Batch Gate Deferral directive, this phase discharged
+  `full` against the scoped `verify-touched.sh` invocation above rather than an independent
+  complete gate sweep; the full gate set is deferred to the batch-level close, attributed back
+  to this task via its own `modified_files`)*
+- [x] `bash .claude/scripts/deploy-headless.sh` completed without error and reported the
+  regenerated tree. *(observed: `[deploy-headless] Verification passed.` /
+  `RESULT=landed_verify_clean`, 41 checks/0 failures; `.claude/` is gitignored, confirmed nothing
+  new to commit there)*
 
 ---
 

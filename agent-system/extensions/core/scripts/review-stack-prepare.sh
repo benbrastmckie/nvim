@@ -60,8 +60,10 @@
 #                                            selected *tasks* into one review *unit* before any
 #                                            entry exists.
 #   show              Print a stack's manifest with its literal commands (`--stack-id NAME`
-#                     required to read one; `--json` emits the manifest verbatim). With no
-#                     `--stack-id`, resolves and stops (unchanged from earlier phases).
+#                     required to read one; `--json` emits the manifest verbatim). The
+#                     human-readable form prints each entry's `state` (D5), which `restack` can
+#                     now set to "merged" alongside the default "prepared". With no
+#                     `--stack-id`, resolves and stops.
 #   record-request    `record-request NN URL --stack-id NAME` fills entry NN's request field
 #                     with URL in that stack's manifest.
 #
@@ -109,7 +111,7 @@
 #
 # EXIT CODES
 # ----------
-#   0   resolved (and, once a later phase fills restack/show/record-request, that body's result)
+#   0   success (resolved, and -- for cut/restack/record-request -- that body's own result)
 #   2   usage error
 #  10   review_base_undeclared
 #  11   review_base_invalid
@@ -1083,11 +1085,14 @@ rsp_cut_execute() {
 }
 
 # rsp_show_stack <json_flag> -- reads stack_id's manifest and either emits it verbatim
-# (<json_flag>=true) or prints, per entry in order: branch, base, title, body path, then the
-# literal /please push command; after the last entry, the literal /merge --stack command and
-# one line stating the typed-grant count. Refuses (50) when the manifest does not exist.
+# (<json_flag>=true) or prints, per entry in order: branch, base, title, body path, and state
+# (D5 -- restack's first writer of a non-"prepared" state; appended last so the pre-restack
+# "branch=... base=... title=... body_path=..." substring an existing suite assertion checks
+# stays intact), then the literal /please push command; after the last entry, the literal
+# /merge --stack command and one line stating the typed-grant count. Refuses (50) when the
+# manifest does not exist.
 rsp_show_stack() {
-  local json_flag="$1" manifest_path n i branch base title body_path
+  local json_flag="$1" manifest_path n i branch base title body_path state
   manifest_path="${SPECS_DIR}/.orchestration/reviews/${stack_id}/manifest.json"
   if [ ! -f "$manifest_path" ]; then
     rsp_refuse 50 manifest_missing "no manifest exists for stack '${stack_id}' at ${manifest_path}; run 'cut' first"
@@ -1102,7 +1107,8 @@ rsp_show_stack() {
     base="$(jq -r ".entries[$i].base" "$manifest_path")"
     title="$(jq -r ".entries[$i].title" "$manifest_path")"
     body_path="$(jq -r ".entries[$i].body_path" "$manifest_path")"
-    printf 'PR %s: branch=%s base=%s title=%s body_path=%s\n' "$((i + 1))" "$branch" "$base" "$title" "$body_path"
+    state="$(jq -r ".entries[$i].state" "$manifest_path")"
+    printf 'PR %s: branch=%s base=%s title=%s body_path=%s state=%s\n' "$((i + 1))" "$branch" "$base" "$title" "$body_path" "$state"
     printf '  /please push %s %s\n' "$remote" "$branch"
   done
   printf '/merge --stack %s\n' "$stack_id"
@@ -1366,6 +1372,80 @@ rsp_restack_print() {
   echo "NOTE: review-stack-prepare.sh: restacked stack '${stack_id}' onto review base '${review_base}'s current remote-tracking tip." >&2
 }
 
+# rsp_restack_execute <remote_sha> -- the real (non-dry-run) body of `restack`, run only after
+# Phase 2's plan pass (rsp_restack_compute_disposition + rsp_restack_recompute) has already
+# computed every new commit off-tree (D4's two-pass ordering: nothing here can conflict, since
+# every conflict was already refused before this function is ever called). For each RST_CHANGED,
+# non-merged entry: applies the existing per-branch guard (D2's first reason, reused unchanged
+# from rsp_cut_execute's own shape) refusing 49 when that branch's remote-tracking ref holds a
+# commit the manifest does not record; moves its ref by the same three-argument compare-and-swap
+# `rsp_cut_execute` uses, refusing 48 naming the ref on a lost race. Only once every ref move has
+# succeeded does it rewrite the manifest: a merged entry's `state` becomes `merged`; the
+# promoted new-bottom entry's `base` becomes the review base; every changed, non-merged entry's
+# `commit`/`parent_commit` update to the values rsp_restack_recompute already computed. Every
+# field this pass does not own (`ordinal`, `tasks`, `title`, `body_path`, `request`, and an
+# untouched entry's `state`/`base`/`commit`/`parent_commit`) is preserved exactly.
+rsp_restack_execute() {
+  local remote_sha="$1" i k ref remote_tracking remote_sha_branch moved_count=0
+  local ord tasks branch base commit parent title body state request manifest_entries=()
+
+  for ((i = 0; i < RST_N; i++)); do
+    [ "${RST_CHANGED[$i]}" = "true" ] || continue
+    [ "${RST_NEW_STATE[$i]}" = "merged" ] && continue
+    ref="refs/heads/${RST_BRANCH[$i]}"
+    remote_tracking="refs/remotes/${remote}/${RST_BRANCH[$i]}"
+    remote_sha_branch="$(git rev-parse -q --verify "$remote_tracking" 2>/dev/null || true)"
+    if [ -n "$remote_sha_branch" ] \
+       && [ "$remote_sha_branch" != "${RST_COMMIT[$i]}" ] \
+       && [ "$remote_sha_branch" != "${RST_NEW_COMMIT[$i]}" ]; then
+      rsp_refuse 49 unknown_remote_commit "the remote-tracking ref '${remote_tracking}' holds commit ${remote_sha_branch:0:12}, which stack '${stack_id}'s manifest does not record for branch '${RST_BRANCH[$i]}'; fetch and reconcile, or start a new stack id"
+    fi
+    if ! git update-ref "$ref" "${RST_NEW_COMMIT[$i]}" "${RST_COMMIT[$i]}"; then
+      rsp_refuse 48 ref_conflict "could not move ref '${ref}' to ${RST_NEW_COMMIT[$i]:0:12} by compare-and-swap against '${RST_COMMIT[$i]:0:12}'; it moved concurrently -- re-run restack"
+    fi
+    moved_count=$((moved_count + 1))
+  done
+
+  for ((i = 0; i < RST_N; i++)); do
+    ord="${RST_ORD[$i]}"
+    tasks="${RST_TASKS_JSON[$i]}"
+    branch="${RST_BRANCH[$i]}"
+    base="${RST_NEW_BASE[$i]}"
+    title="${RST_TITLE[$i]}"
+    body="${RST_BODY[$i]}"
+    state="${RST_NEW_STATE[$i]}"
+    request="${RST_REQUEST[$i]}"
+    if [ "${RST_CHANGED[$i]}" = "true" ] && [ "${RST_NEW_STATE[$i]}" != "merged" ]; then
+      commit="${RST_NEW_COMMIT[$i]}"
+      if [ "$base" = "$review_base" ]; then
+        parent="$remote_sha"
+      else
+        parent=""
+        for ((k = 0; k < RST_N; k++)); do
+          [ "${RST_BRANCH[$k]}" = "$base" ] || continue
+          parent="${RST_NEW_COMMIT[$k]}"
+          break
+        done
+      fi
+    else
+      commit="${RST_COMMIT[$i]}"
+      parent="${RST_PARENT[$i]}"
+    fi
+    manifest_entries+=("$(jq -n \
+      --argjson ordinal "$ord" --argjson tasks "$tasks" \
+      --arg branch "$branch" --arg base "$base" --arg commit "$commit" \
+      --arg parent "$parent" --arg title "$title" --arg body_path "$body" \
+      --arg state "$state" --arg request "$request" \
+      '{ordinal: $ordinal, tasks: $tasks, branch: $branch, base: $base, commit: $commit, parent_commit: $parent, title: $title, body_path: $body_path, state: $state, request: $request}')")
+  done
+
+  printf '%s\n' "${manifest_entries[@]}" | jq -s \
+    --arg stack_id "$stack_id" --arg remote "$remote" --arg integration_branch "$integration_branch" --arg review_base "$review_base" \
+    '{stack_id: $stack_id, remote: $remote, integration_branch: $integration_branch, review_base: $review_base, entries: .}' \
+    > "$RST_MANIFEST_PATH"
+  echo "NOTE: review-stack-prepare.sh: restack moved ${moved_count} ref(s) and rewrote ${RST_MANIFEST_PATH} for stack '${stack_id}'." >&2
+}
+
 [ "$#" -ge 1 ] || rsp_usage
 subcommand="$1"
 shift
@@ -1474,6 +1554,7 @@ if [ "$subcommand" = "cut" ]; then
 elif [ "$subcommand" = "restack" ] && [ -n "$stack_id" ]; then
   rsp_restack_plan "$stack_id"
   rsp_restack_print
+  [ "$dry_run" = "true" ] || rsp_restack_execute "$RSP_RESTACK_REMOTE_SHA"
 elif [ "$subcommand" = "restack" ]; then
   # D6: reuse 41 (stack_id_required) for restack given no --stack-id, rather than a fourth
   # near-duplicate reason string for the same situation cut and record-request already refuse.

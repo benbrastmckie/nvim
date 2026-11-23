@@ -945,6 +945,156 @@ rm -rf "$repo"
 # task-ref-ok:end
 
 # =====================================================================
+# Phase 4 (restack), concluded: rsp_restack_execute moves refs by compare-and-swap, rewrites the
+# manifest, and show reports the merged state -- the real (non-dry-run) counterpart to the
+# detection/recompute cases above.
+# =====================================================================
+
+# task-ref-ok:begin ad hoc fixture task numbers 997-999, same convention as 990/994-996 above
+# --- a clean bottom-up restack moves every descendant's ref, the manifest records the merged
+#     entry as "merged" and the new bottom's base as the review base, each descendant's diff
+#     against its new base lists only its own paths, and show prints "merged" for that entry --
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackP4A 997 998 999
+restack_set_remote_tracking "$repo"
+squashed_sha="$(git -C "$repo" commit-tree "$(git -C "$repo" rev-parse "${RB1}^{tree}")" -p "$(git -C "$repo" rev-parse review-main)" <<< "a squash-merged PR, built by plumbing only, never a push, fetch, or git merge")"
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/review-main" "$squashed_sha"
+before_head="$(git -C "$repo" rev-parse HEAD)"
+before_status="$(git -C "$repo" status --porcelain)"
+run_rsp "$repo" restack --stack-id stackP4A
+after_head="$(git -C "$repo" rev-parse HEAD)"
+after_status="$(git -C "$repo" status --porcelain)"
+if [ "$LAST_CODE" -eq 0 ] \
+   && [ "$(manifest_entry_field "$repo" stackP4A 1 state)" = "merged" ] \
+   && [ "$(manifest_entry_field "$repo" stackP4A 2 base)" = "review-main" ] \
+   && [ "$(git -C "$repo" rev-parse "${RB2}^1")" = "$squashed_sha" ] \
+   && [ "$(git -C "$repo" diff --name-only "$squashed_sha".."$RB2")" = "f998.txt" ] \
+   && [ "$(git -C "$repo" diff --name-only "$RB2".."$RB3")" = "f999.txt" ] \
+   && [ "$before_head" = "$after_head" ] && [ "$before_status" = "$after_status" ]; then
+  common_test_pass "restack: a clean bottom-up restack moves every descendant's ref, records the merged entry's state and the new bottom's base, and each descendant's diff lists only its own paths"
+else
+  common_test_fail "restack: clean real restack" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+run_rsp "$repo" show --stack-id stackP4A
+if [ "$LAST_CODE" -eq 0 ] && printf '%s' "$LAST_OUT" | grep -qF "state=merged" \
+   && printf '%s' "$LAST_OUT" | grep -qF "state=prepared"; then
+  common_test_pass "restack: show's human-readable output prints merged for the merged entry and prepared for the rest"
+else
+  common_test_fail "restack: show state column" "out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- a foreign commit already on the review base (unrelated to any unit) survives the
+#     restack -----------------------------------------------------------------------------
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackP4B 997 998 999
+restack_set_remote_tracking "$repo"
+tmp_index="$(mktemp)"
+rm -f "$tmp_index"
+GIT_INDEX_FILE="$tmp_index" git -C "$repo" read-tree "$(git -C "$repo" rev-parse "${RB1}^{tree}")"
+foreign_blob="$(echo "foreign content, unrelated to any unit" | git -C "$repo" hash-object -w --stdin)"
+GIT_INDEX_FILE="$tmp_index" git -C "$repo" update-index --add --cacheinfo "100644,${foreign_blob},foreign.txt"
+foreign_tree="$(GIT_INDEX_FILE="$tmp_index" git -C "$repo" write-tree)"
+rm -f "$tmp_index"
+squashed_with_foreign="$(git -C "$repo" commit-tree "$foreign_tree" -p "$(git -C "$repo" rev-parse review-main)" <<< "squash merge of unit 1 plus a foreign commit, unrelated to any unit, built by plumbing only")"
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/review-main" "$squashed_with_foreign"
+run_rsp "$repo" restack --stack-id stackP4B
+if [ "$LAST_CODE" -eq 0 ] && git -C "$repo" ls-tree -r "$RB3" --name-only | grep -qx "foreign.txt"; then
+  common_test_pass "restack: a foreign commit already on the review base survives the restack"
+else
+  common_test_fail "restack: foreign line" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- a descendant whose remote-tracking ref holds a commit the manifest does not record
+#     refuses with unknown_remote_commit, exit 49, naming that branch, and moves nothing -----
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackP4C 997 998 999
+restack_set_remote_tracking "$repo"
+squashed_sha="$(git -C "$repo" commit-tree "$(git -C "$repo" rev-parse "${RB1}^{tree}")" -p "$(git -C "$repo" rev-parse review-main)" <<< "squash merge of unit 1, built by plumbing only")"
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/review-main" "$squashed_sha"
+foreign_branch_sha="$(git -C "$repo" commit-tree "$(git -C "$repo" rev-parse "${RB2}^{tree}")" -p "$(git -C "$repo" rev-parse "$RB2")" <<< "an independent push to unit 2's branch, not recorded by the manifest, built by plumbing only")"
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/${RB2}" "$foreign_branch_sha"
+before_head="$(git -C "$repo" rev-parse HEAD)"
+before_status="$(git -C "$repo" status --porcelain)"
+before_refs="$(git -C "$repo" for-each-ref refs/heads | LC_ALL=C sort)"
+run_rsp "$repo" restack --stack-id stackP4C
+after_head="$(git -C "$repo" rev-parse HEAD)"
+after_status="$(git -C "$repo" status --porcelain)"
+after_refs="$(git -C "$repo" for-each-ref refs/heads | LC_ALL=C sort)"
+if [ "$LAST_CODE" -eq 49 ] && printf '%s' "$LAST_OUT" | grep -qF "REFUSED: review-stack-prepare.sh: unknown_remote_commit:" \
+   && printf '%s' "$LAST_OUT" | grep -qF "$RB2" \
+   && [ "$before_head" = "$after_head" ] && [ "$before_status" = "$after_status" ] && [ "$before_refs" = "$after_refs" ]; then
+  common_test_pass "restack: a descendant whose remote-tracking ref holds an unrecorded commit refuses with unknown_remote_commit, exit 49, naming that branch, and moves nothing"
+else
+  common_test_fail "restack: unknown remote commit" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- a compare-and-swap that loses a race refuses with ref_conflict, exit 48, naming the ref,
+#     and moves nothing -----------------------------------------------------------------------
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackP4D 997 998 999
+restack_set_remote_tracking "$repo"
+squashed_sha="$(git -C "$repo" commit-tree "$(git -C "$repo" rev-parse "${RB1}^{tree}")" -p "$(git -C "$repo" rev-parse review-main)" <<< "squash merge of unit 1, built by plumbing only")"
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/review-main" "$squashed_sha"
+# Simulate a lost race: move unit 2's local ref directly (plumbing only, no push/fetch/merge) to
+# a different commit than the manifest recorded, between this stack's plan pass and its execute
+# pass -- exactly what the compare-and-swap exists to catch.
+raced_sha="$(git -C "$repo" commit-tree "$(git -C "$repo" rev-parse "${RB2}^{tree}")" -p "$(git -C "$repo" rev-parse "${RB2}^1")" <<< "a concurrent re-cut that moved this ref first, built by plumbing only")"
+git -C "$repo" update-ref "refs/heads/${RB2}" "$raced_sha" "$(git -C "$repo" rev-parse "$RB2")"
+before_head="$(git -C "$repo" rev-parse HEAD)"
+before_status="$(git -C "$repo" status --porcelain)"
+before_refs="$(git -C "$repo" for-each-ref refs/heads | LC_ALL=C sort)"
+run_rsp "$repo" restack --stack-id stackP4D
+after_head="$(git -C "$repo" rev-parse HEAD)"
+after_status="$(git -C "$repo" status --porcelain)"
+after_refs="$(git -C "$repo" for-each-ref refs/heads | LC_ALL=C sort)"
+if [ "$LAST_CODE" -eq 48 ] && printf '%s' "$LAST_OUT" | grep -qF "REFUSED: review-stack-prepare.sh: ref_conflict:" \
+   && printf '%s' "$LAST_OUT" | grep -qF "$RB2" \
+   && [ "$before_head" = "$after_head" ] && [ "$before_status" = "$after_status" ] && [ "$before_refs" = "$after_refs" ]; then
+  common_test_pass "restack: a compare-and-swap that loses a race refuses with ref_conflict, exit 48, naming the ref, and moves nothing"
+else
+  common_test_fail "restack: lost race" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- Phase 2's conflict case re-asserted with the execute path present (no --dry-run);
+#     every ref and the manifest are still byte-identical --------------------------------------
+repo="$(restack_fixture_repo)"
+restack_build_chain "$repo" stackP4E 997 998 999
+restack_set_remote_tracking "$repo"
+old_tip="$(git -C "$repo" rev-parse review-main)"
+tmp_index="$(mktemp)"
+rm -f "$tmp_index"
+GIT_INDEX_FILE="$tmp_index" git -C "$repo" read-tree "$(git -C "$repo" rev-parse "${RB1}^{tree}")"
+conflict_blob="$(echo "a conflicting edit to the same path unit 2 touches" | git -C "$repo" hash-object -w --stdin)"
+GIT_INDEX_FILE="$tmp_index" git -C "$repo" update-index --add --cacheinfo "100644,${conflict_blob},f998.txt"
+conflict_tree="$(GIT_INDEX_FILE="$tmp_index" git -C "$repo" write-tree)"
+rm -f "$tmp_index"
+conflict_remote="$(git -C "$repo" commit-tree "$conflict_tree" -p "$old_tip" <<< "squash merge of unit 1 plus a conflicting edit to f998.txt, built by plumbing only")"
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/review-main" "$conflict_remote"
+before_head="$(git -C "$repo" rev-parse HEAD)"
+before_status="$(git -C "$repo" status --porcelain)"
+before_refs="$(git -C "$repo" for-each-ref | LC_ALL=C sort)"
+before_manifest="$(cat "$repo/specs/.orchestration/reviews/stackP4E/manifest.json")"
+run_rsp "$repo" restack --stack-id stackP4E
+after_head="$(git -C "$repo" rev-parse HEAD)"
+after_status="$(git -C "$repo" status --porcelain)"
+after_refs="$(git -C "$repo" for-each-ref | LC_ALL=C sort)"
+after_manifest="$(cat "$repo/specs/.orchestration/reviews/stackP4E/manifest.json")"
+if [ "$LAST_CODE" -eq 48 ] && printf '%s' "$LAST_OUT" | grep -q "REFUSED: review-stack-prepare.sh: ref_conflict:" \
+   && printf '%s' "$LAST_OUT" | grep -q "f998.txt" \
+   && [ "$before_head" = "$after_head" ] && [ "$before_status" = "$after_status" ] \
+   && [ "$before_refs" = "$after_refs" ] && [ "$before_manifest" = "$after_manifest" ]; then
+  common_test_pass "restack: Phase 2's conflict case re-asserted with the execute path present (no --dry-run); every ref and the manifest are still byte-identical"
+else
+  common_test_fail "restack: re-asserted conflict with execute present" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+# task-ref-ok:end
+
+# =====================================================================
 # Writes-nothing check: a refusing invocation leaves the fixture's git state byte-identical.
 # =====================================================================
 repo="$(make_fixture_repo)"
