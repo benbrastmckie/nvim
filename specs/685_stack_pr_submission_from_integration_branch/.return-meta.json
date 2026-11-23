@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md",
-      "summary": "Seven sequential phases: a review_base declaration with refusals, unit selection and dependency ordering, a plumbing-only stack cut with a machine-local manifest, restack on a merged parent, handoff output, a user-invoked /merge stack mode, and a redeploy with a second-repository demonstration."
-    }
-  ],
-  "next_steps": "Run /orchestrate 685 to execute the plan",
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795425897_6a25f2_685",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 10.5,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6], [7]]
+    "session_id": "sess_1795451386_ec8465",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 8
+  "dispatch_seq": 22
 }

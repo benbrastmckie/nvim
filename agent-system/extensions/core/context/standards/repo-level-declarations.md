@@ -12,9 +12,11 @@ advisory plan-authoring completeness check described below; `verification_scope`
 repo-declared touched-path-verification topology (tree roots, project-owned suite roots, and a
 declarable resolver backend) described below; `integration_branch`, the name of the branch the
 repository treats as its long-lived integration branch, whose declaration arms the
-orchestration admission gate; and `worktree_isolation`, the per-repository isolation mode that
-same gate reads. The last two are read by `scripts/lib/batch-admission-lib.sh` and described in
-their own sections below.
+orchestration admission gate; `worktree_isolation`, the per-repository isolation mode that same
+gate reads; and `review_base`, the branch or commit a stack of review branches is bottomed on,
+read by `scripts/review-stack-prepare.sh`. `integration_branch` and `worktree_isolation` are read
+by `scripts/lib/batch-admission-lib.sh` and described in their own sections below;
+`review_base` is described in its own section immediately after them.
 
 ## Why `.claude-extensions.json` Survives a Hand-Authored Sibling Key
 
@@ -325,6 +327,43 @@ Absence stays fail-open; only a declared value the system cannot honour refuses.
 | Key present, `"off"` | `off` |
 | Key present, `"batch"` | refused, `isolation_unimplemented` |
 | Key present, any other value or type | refused, `isolation_unimplemented` |
+
+## The `review_base` Declaration
+
+```json
+{
+  "review_base": "<branch or commit>"
+}
+```
+
+A top-level string key, beside `integration_branch`, naming the ref every bottom-of-stack review
+branch is based on when `scripts/review-stack-prepare.sh` cuts a stack of review branches from
+landed work. The key name and shape follow the relayed user decision recorded in the
+implementation plan for the review-stack-preparation work (`PD1`): the bottom PR of a stack
+merges into a declared review base distinct from the integration branch, never into the
+integration branch itself. A `--review-base` flag on the script overrides this declaration for
+one invocation.
+
+**Not live for orchestration admission.** Unlike `integration_branch` and `worktree_isolation`,
+this key is read only by `review-stack-prepare.sh` itself, on demand; it has no admission-gate
+effect and no batch-record field.
+
+**Refused, not silently substituted, when unusable.** `review-stack-prepare.sh` refuses to cut a
+stack — writing no ref, no manifest and no file — whenever the resolved value (declared or
+`--review-base`) is any of:
+
+| Condition | Refusal reason | Exit code |
+|-----------|----------------|-----------|
+| No `review_base` key, and no `--review-base` flag | `review_base_undeclared` | 10 |
+| The key or flag resolves to a non-string, or an empty string | `review_base_invalid` | 11 |
+| The resolved value does not resolve to a commit | `review_base_unresolvable` | 12 |
+| The resolved value names the same branch as the resolved integration branch | `review_base_is_integration_branch` | 13 |
+
+**Fail-open-on-absence guarantee (narrower than `integration_branch`'s):** an undeclared
+`review_base` does not silently fall back to any other branch, because there is no safe default
+for "what a stack's bottom PR merges into" — it refuses the cut outright (`review_base_undeclared`
+above) rather than guessing. A repository that declares nothing simply cannot cut a review
+stack; nothing else about it changes, and every other mechanism in this document is unaffected.
 
 ## Fail-Open-on-Absence Guarantee
 

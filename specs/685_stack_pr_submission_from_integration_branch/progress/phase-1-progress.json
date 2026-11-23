@@ -1,0 +1,23 @@
+{
+  "phase": 1,
+  "phase_name": "Review-base declaration, resolution and refusals",
+  "started_at": "2026-11-23T17:45:00Z",
+  "last_updated": "2026-11-23T18:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read ref-plumbing-landing.md and task-landing-verify.sh conventions", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Create review-stack-prepare.sh with cut/restack/show/record-request, --dry-run, header convention", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 3, "description": "Resolve integration branch (batch record, then declared, then HEAD)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 4, "description": "Resolve review base per PD1 with five refusals", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 5, "description": "Resolve remote (--remote, branch config, only remote, refusal)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 6, "description": "Detect platform from remote URL, PD9 refusals", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 7, "description": "Add review_base section to repo-level-declarations.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/repo-level-declarations.md"]},
+    {"id": 8, "description": "Create test-review-stack-prepare.sh in deployed-shape sandbox convention", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"]},
+    {"id": 9, "description": "Suite cases: PD1/PD9 refusals, remote-resolution branches, two static assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"]},
+    {"id": 10, "description": "Register script and suite: sync-manifest-scripts.sh --write, suite-classification.data row", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json", "agent-system/extensions/core/scripts/tests/suite-classification.data"]}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [
+    {"approach": "capture refusal exit code via $(...) command substitution in resolver functions", "result": "failed", "reason": "exit inside a command-substitution subshell only terminates the subshell, not the script; refactored resolvers to set global variables and call exit directly as plain statements"}
+  ],
+  "handoff_count": 0
+}

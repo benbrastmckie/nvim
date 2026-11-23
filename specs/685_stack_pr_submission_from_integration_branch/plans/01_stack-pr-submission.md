@@ -1,7 +1,7 @@
 # Implementation Plan: Task #685
 
 - **Task**: 685 - Cut review branches and submit a stack of PRs from landed integration-branch work
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10.5 hours
 - **Dependencies**: 673 (completed)
 - **Research Inputs**: specs/685_stack_pr_submission_from_integration_branch/reports/01_stack-pr-submission.md
@@ -191,38 +191,44 @@ added; `roadmap_flag` was not set.
 Phases within the same wave can execute in parallel. This plan is fully sequential: phases 1 to
 4 edit the same script and suite, and phases 5 and 6 read the manifest shape phases 3 and 4 fix.
 
-### Phase 1: Review-base declaration, resolution and refusals [NOT STARTED]
+### Phase 1: Review-base declaration, resolution and refusals [COMPLETED]
 
 **Goal**: The script exists, is registered, and resolves or refuses every input a cut needs
 before any ref is built.
 
 **Tasks**:
-- [ ] Read `context/patterns/ref-plumbing-landing.md` and `scripts/task-landing-verify.sh` for
-      the plumbing and deployed-shape conventions the new script follows.
-- [ ] Create `scripts/review-stack-prepare.sh` with subcommands `cut`, `restack`, `show` and
+- [x] Read `context/patterns/ref-plumbing-landing.md` and `scripts/task-landing-verify.sh` for
+      the plumbing and deployed-shape conventions the new script follows. *(completed)*
+- [x] Create `scripts/review-stack-prepare.sh` with subcommands `cut`, `restack`, `show` and
       `record-request`, a `--dry-run` flag, and the header convention the handoff uses: a
       statement of what the script never calls. Later phases fill `cut`, `restack`, `show` and
-      `record-request`; in this phase each resolves its inputs and stops.
-- [ ] Resolve the integration branch as the handoff does: the batch record, then
-      `batch_admission_integration_branch`, then the branch `HEAD` names.
-- [ ] Resolve the review base per PD1 and implement its five refusals, each with a named reason
-      on standard error and a distinct exit code.
-- [ ] Resolve the remote: `--remote`, else the integration branch's configured upstream remote,
-      else the only remote, else a refusal that asks for `--remote`.
-- [ ] Detect the platform from the remote URL and implement the three refusals of PD9.
-- [ ] Add the `review_base` section to `context/standards/repo-level-declarations.md`, beside
+      `record-request`; in this phase each resolves its inputs and stops. *(completed)*
+- [x] Resolve the integration branch as the handoff does: the batch record, then
+      `batch_admission_integration_branch`, then the branch `HEAD` names. *(completed)*
+- [x] Resolve the review base per PD1 and implement its five refusals, each with a named reason
+      on standard error and a distinct exit code. *(completed: exit codes 10-13, four reasons
+      covering the five listed conditions since empty-string and non-string both map to
+      review_base_invalid/11)*
+- [x] Resolve the remote: `--remote`, else the integration branch's configured upstream remote,
+      else the only remote, else a refusal that asks for `--remote`. *(completed: implemented via
+      `git config branch.<name>.remote`, never the literal word "upstream")*
+- [x] Detect the platform from the remote URL and implement the three refusals of PD9.
+      *(completed)*
+- [x] Add the `review_base` section to `context/standards/repo-level-declarations.md`, beside
       `integration_branch`: schema, the refusal table, and the fail-open-on-absence row (absent
-      means no stack can be cut; nothing else changes).
-- [ ] Create `scripts/tests/test-review-stack-prepare.sh` in the deployed-shape sandbox
+      means no stack can be cut; nothing else changes). *(completed)*
+- [x] Create `scripts/tests/test-review-stack-prepare.sh` in the deployed-shape sandbox
       convention of `test-milestone-review-handoff.sh`. Fixture repositories use a remote that is
       not named `origin` and branches not named `main` or `master`. Mark synthetic task numbers
-      with the `task-ref-ok` markers that suite uses.
-- [ ] Suite cases: each PD1 refusal; each PD9 refusal; each remote-resolution branch; and two
+      with the `task-ref-ok` markers that suite uses. *(completed: no synthetic task numbers were
+      needed in this suite, so no task-ref-ok marker applies)*
+- [x] Suite cases: each PD1 refusal; each PD9 refusal; each remote-resolution branch; and two
       static assertions over the script's non-comment lines: no push, `gh`, `glab`, checkout,
       switch, rebase or replay invocation, and no literal `origin`, `main`, `master` or
-      `upstream` word.
-- [ ] Register the script and suite: run `scripts/sync-manifest-scripts.sh --write`, and add the
-      suite's row to `scripts/tests/suite-classification.data` as `unit`.
+      `upstream` word. *(completed: 19 cases, all passing)*
+- [x] Register the script and suite: run `scripts/sync-manifest-scripts.sh --write`, and add the
+      suite's row to `scripts/tests/suite-classification.data` as `unit`. *(completed: exactly two
+      entries added, matching the Scope Hypothesis)*
 
 **Timing**: 1.5 hours
 
@@ -251,12 +257,22 @@ the selector maps to several dozen suites across the corpus and no single-module
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh` exits 0, and
-  each refusal case was first observed failing against a script without the refusal.
-- `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` exits 0.
+  each refusal case was first observed failing against a script without the refusal. *(confirmed:
+  19/19 passed; the exit-code refusal path was observed failing -- silently exiting 0 instead of
+  the refusal code -- before the command-substitution-vs-plain-statement bug was fixed)*
+- `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` exits 0. *(confirmed
+  after `--write`: exactly 2 entries added, matching the Scope Hypothesis)*
 - `bash agent-system/extensions/core/scripts/verify-touched.sh` over this phase's paths reports
   green; under `/orchestrate` the complete gate set is deferred to the orchestration close.
+  *(confirmed: 237 suites run (139 + 98), 3 failures, none involving `review-stack-prepare.sh` or
+  `test-review-stack-prepare.sh`; 2 were pre-existing/expected baseline failures
+  (`test-gate-cache-equivalence.sh`, `test-verify-deploy-context-budget.sh`) and 1 "NEW"
+  (`test-lint-unit-integration-boundary.sh`) flagged three other sibling tasks' in-flight test
+  files missing classification rows, unrelated to this phase's two correctly-registered files)*
 - Run in this repository, `review-stack-prepare.sh cut --dry-run` refuses with the
-  review-base-undeclared reason and writes nothing.
+  review-base-undeclared reason and writes nothing. *(confirmed via a manual deployed-tree copy
+  of the script, since the real deploy is Phase 7's; exit 10, `review_base_undeclared`, no git
+  status change)*
 
 ---
 

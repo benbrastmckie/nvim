@@ -194,6 +194,7 @@ test-redeploy-checkpoint-promotion.sh	unit	-
 test-redeploy-remedy-lib.sh	integration	invokes:deploy-headless.sh
 test-resume-scan-nonconformance.sh	unit	-
 test-return-meta-status-vocabulary.sh	unit	-
+test-review-stack-prepare.sh	unit	-
 test-roadmap-command-registration.sh	unit	-
 test-roadmap-entries-lib.sh	unit	-
 test-roadmap-generation.sh	unit	-
