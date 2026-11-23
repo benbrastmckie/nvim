@@ -6,7 +6,7 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M5: Integration-branch landing and the PR stack](#milestone-m5) | active | 0/4 | none |
+| [M5: Integration-branch landing and the PR stack](#milestone-m5) | active | 2/4 | none |
 | [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 8/21 | none |
 | [M3: Batch worktree isolation and generated-path collapse](#milestone-m3) | planned | 0/1 | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
@@ -19,18 +19,18 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Make a completed task land as one reviewable commit on an admitted integration branch, verified before its status write, then cut review branches so that landed work reaches review as a stack of pull requests the branch-strategy docs describe.
 
-- **Progress**: active -- 0/1 batches, 0/4 tasks done -- Ready to dispatch; the worktree-isolation half is held by operator direction and sited in no batch.
+- **Progress**: active -- 0/1 batches, 2/4 tasks done -- Ready to dispatch; the worktree-isolation half is held by operator direction and sited in no batch.
 - **Review**: none
 - **Gate**: Integration-branch admission and the isolation declaration are in place; every completed task leaves one reviewable commit on the integration branch, verified before the status write; a stack of pull requests is cut from that landed work; and the branch-strategy documentation states the contract as implemented.
 
-**Batch 1** -- Admit the integration branch, land one reviewable commit per task, then stack the PRs
+**Batch 1** -- Admit the integration branch, land one reviewable commit per task, then stack the PRs (2/4 done)
 
 ```
-/orchestrate 669, 673, 685, 675 --hard
-673 blocked:669     Land one reviewable commit per completed task on the integration branch and v...
-675 blocked:673     Rewrite the branch-strategy documentation to state the implemented integratio...
-685 blocked:673     Cut review branches and submit a stack of PRs from landed integration-branch ...
-669 ready           Add integration-branch admission and the isolation declaration
+/orchestrate 685, 675 --hard
+675 ready           Rewrite the branch-strategy documentation to state the implemented integratio...
+685 ready           Cut review branches and submit a stack of PRs from landed integration-branch ...
+669 done            Add integration-branch admission and the isolation declaration
+673 done            Land one reviewable commit per completed task on the integration branch and v...
 ```
 
 <a id="milestone-m4"></a>
