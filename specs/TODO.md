@@ -13,9 +13,9 @@ next_project_number: 685
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,477,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,535,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,679,680,684 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,535,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,679,680,684 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,474,479,481,509,523,533,540,541,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,511,519,535,539,542,563,577,586,599,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,472,480,484,492,513,561,588,594,669 | 439,477,479,491,509,541,552,556,570,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 3 | 454,472,480,484,492,513,561,588,594,669 | 439,479,491,509,541,552,556,570,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 473,486,518,581,595,641,671 | 454,472,484,492,539,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 501,508,571,596,642 | 472,486,518,595,641 | file-scope-lifecycle, agent-system |
 | 6 | 524 | 501 | core-agent-system |
@@ -110,7 +110,6 @@ next_project_number: 685
 
 ### Orchestrator
 
-477 [IMPLEMENTING] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
 666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
@@ -8028,7 +8027,7 @@ An edge on validate_carried_unverified_names_a_source is declared because that t
 
 ### 477. Normalize issue-log class vocabulary and reject the aggregate's malformed repeated-flag call
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
