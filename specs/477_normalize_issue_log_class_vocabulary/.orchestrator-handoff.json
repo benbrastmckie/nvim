@@ -1,19 +1,20 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 477,
-  "phase": "plan",
-  "session_id": "sess_1795400947_bb64cf_477",
-  "dispatch_seq": 4,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1795400947_bb64cf",
+  "dispatch_seq": 6,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase, 7-hour plan covering both consolidated defects. Phase 1 promotes `scope excursion` into the seed enum and reconciles the count across 10 files (the research report said 8; live grep found 13 occurrences in 10, corrected here). Phases 2-3 add grouping-time case/separator folding plus an empty-but-documented alias table to the aggregator's jq pipeline and replace the silent last-wins repeated `--tasks` handling with a usage rejection. Phase 4 gives `class` a written shape convention and append-time warnings; Phase 5 adds the five dispatch-required regression cases plus two more; Phase 6 redeploys and re-verifies against the deployed copies. Two premise corrections are recorded in the plan: the file count above, and that the research report's 6-token 1d threshold catches only 1 of the dispatch's 3 named free-text examples, so 1d's catch is re-based on the outside-the-seed-enum warning that provably fires on all three.",
+  "summary": "Implemented all 6 plan phases: scope excursion promoted into an 18-class issue-log seed enum across 10 files, grouping-time case/separator folding plus an empty alias-table mechanism added to orchestrate-conclusion-aggregate.sh with class_variants/variants auditability, a repeated --tasks (and mode) flag rejected with a usage error, class gained a shape convention and append-time warnings in issue-record.sh, and 10 new regression cases were added and each proven non-vacuous. deploy-headless.sh reported RESULT=landed_verify_clean and both regression suites are green against the deployed copies (21/21, 27/27).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/477_normalize_issue_log_class_vocabulary/plans/01_class-vocabulary-normalization.md",
-      "summary": "6-phase plan: seed-enum promotion and 10-file count sweep, grouping-time normalization with an empty alias table, repeated-`--tasks` rejection plus flag audit, `class` shape convention and append-time warnings, 10 regression cases, redeploy and close."
+      "type": "summary",
+      "path": "specs/477_normalize_issue_log_class_vocabulary/summaries/01_class-vocabulary-normalization-summary.md",
+      "summary": "Six-phase implementation summary covering the seed-enum promotion, grouping-time normalization and alias-table mechanism, the --tasks/mode-flag rejection, the class shape convention and warnings, 10 new regression cases, and the redeploy/close verification."
     }
   ],
-  "next_steps": "Run /orchestrate 477 to execute the plan"
+  "plan_markers_verified": true,
+  "next_steps": "Task complete. All phases [COMPLETED]; no further implementation work pending."
 }
