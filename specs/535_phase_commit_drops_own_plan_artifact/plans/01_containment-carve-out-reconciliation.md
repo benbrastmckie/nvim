@@ -294,23 +294,26 @@ achieved, reconciled with the correct sentence immediately preceding it.
 
 ---
 
-### Phase 3: Deploy and verify [NOT STARTED]
+### Phase 3: Deploy and verify [COMPLETED]
 
 **Goal**: Land both source-store edits into the deployed tree and confirm the deploy reports a
 clean verification.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` and confirm it reports
-      `RESULT=landed_verify_clean`.
-- [ ] Confirm the deployed mirrors match the source store for both edited files:
+- [x] Run `bash .claude/scripts/deploy-headless.sh` and confirm it reports
+      `RESULT=landed_verify_clean`. *(completed)*
+- [x] Confirm the deployed mirrors match the source store for both edited files:
       `diff -q .claude/scripts/tests/test-git-commit-phase.sh agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`
-      and the `context/standards/git-staging-scope.md` counterpart.
-- [ ] Re-run `bash .claude/scripts/tests/test-git-commit-phase.sh` against the deployed copy and
-      confirm it is green there too.
-- [ ] Run the scoped touched-path check over this task's touched paths:
+      and the `context/standards/git-staging-scope.md` counterpart. *(completed: both IDENTICAL)*
+- [x] Re-run `bash .claude/scripts/tests/test-git-commit-phase.sh` against the deployed copy and
+      confirm it is green there too. *(completed: 104 passed, 0 failed)*
+- [x] Run the scoped touched-path check over this task's touched paths:
       `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh agent-system/extensions/core/context/standards/git-staging-scope.md`.
-- [ ] Defer the complete gate set to the orchestration close (Move 4) rather than invoking the
-      full battery independently here.
+      *(completed: 5 selected suites, 5 passed, 0 failed)*
+- [x] Defer the complete gate set to the orchestration close (Move 4) rather than invoking the
+      full battery independently here. *(completed: this phase's Batch Gate Deferral directive
+      discharged via the scoped touched-path check above, per the dispatch file's directive; the
+      complete gate set runs once at the batch's orchestration close)*
 
 **Timing**: 0.5 hours
 
@@ -333,20 +336,22 @@ clean verification.
 
 ## Testing & Validation
 
-- [ ] The full `test-git-commit-phase.sh` suite is green, with every pre-existing assertion still
-      passing alongside the additions.
-- [ ] A dotfile at the task-directory root (`.return-meta.json`, `.orchestrator-handoff.json`)
+- [x] The full `test-git-commit-phase.sh` suite is green, with every pre-existing assertion still
+      passing alongside the additions. *(completed: 104 passed, 0 failed)*
+- [x] A dotfile at the task-directory root (`.return-meta.json`, `.orchestrator-handoff.json`)
       self-reported in `files_touched` lands with no drop warning and no `scope excursion` row.
-- [ ] The post-commit completeness check demonstrably RUNS in the single-plan-file case —
+      *(completed: Case 40)*
+- [x] The post-commit completeness check demonstrably RUNS in the single-plan-file case —
       `exit 6` is reachable with a planted hook, and the unhooked run returns `rc=0` with none of
-      the four skip-family warnings.
-- [ ] Each new assertion was observed to fail against a deliberately-reverted copy of the
-      carve-out before passing against the real one.
-- [ ] A genuine out-of-territory path is still dropped, still warned, and still recorded (Case 16
+      the four skip-family warnings. *(completed: Case 41 + sibling)*
+- [x] Each new assertion was observed to fail against a deliberately-reverted copy of the
+      carve-out before passing against the real one. *(completed: scratch probe)*
+- [x] A genuine out-of-territory path is still dropped, still warned, and still recorded (Case 16
       and Case 36 remain green), and fail-open on missing / empty / malformed `file_scope` is
-      unchanged (Cases 17a/b/c and 22 remain green).
-- [ ] `grep` finds no surviving occurrence of either false-mechanism phrase in the standard.
-- [ ] `deploy-headless.sh` reports `RESULT=landed_verify_clean`.
+      unchanged (Cases 17a/b/c and 22 remain green). *(completed)*
+- [x] `grep` finds no surviving occurrence of either false-mechanism phrase in the standard.
+      *(completed)*
+- [x] `deploy-headless.sh` reports `RESULT=landed_verify_clean`. *(completed)*
 
 ## Artifacts & Outputs
 
