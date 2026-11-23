@@ -75,6 +75,8 @@ HANDOFF_SRC="$(resolve "milestone-review-handoff.sh" "milestone-review-handoff.s
 common_test_declare_subject "$HANDOFF_SRC"
 STATEWRITE_SRC="$(resolve "state-write.sh" "state-write.sh")" || exit 2
 common_test_declare_subject "$STATEWRITE_SRC"
+BATCH_ADMISSION_SRC="$(resolve "lib/batch-admission-lib.sh" "lib/batch-admission-lib.sh")" || exit 2
+common_test_declare_subject "$BATCH_ADMISSION_SRC"
 PNUMINUSE_SRC="$(resolve "lib/project-number-inuse.sh" "lib/project-number-inuse.sh")" || exit 2
 common_test_declare_subject "$PNUMINUSE_SRC"
 TASKLOCK_SRC="$(resolve "task-lock.sh" "task-lock.sh")" || exit 2
@@ -121,6 +123,7 @@ build_sandbox() {
   cp "$ISSUE_SRC" "$scratch/.claude/scripts/issue-record.sh"
   cp "$COMMIT_SRC" "$scratch/.claude/scripts/git-commit-scoped.sh"
   cp "$HANDOFF_SRC" "$scratch/.claude/scripts/milestone-review-handoff.sh"
+  cp "$BATCH_ADMISSION_SRC" "$scratch/.claude/scripts/lib/batch-admission-lib.sh"
   cp "$STATEWRITE_SRC" "$scratch/.claude/scripts/state-write.sh"
   cp "$PNUMINUSE_SRC" "$scratch/.claude/scripts/lib/project-number-inuse.sh"
   cp "$TASKLOCK_SRC" "$scratch/.claude/scripts/task-lock.sh"
@@ -478,10 +481,10 @@ else
 fi
 
 # =====================================================================================
-# Case H: milestone handoff wiring -- a fully-done milestone with a matching milestone ref
-# produces review.state="prepared", a specs/milestones/<id>-review-handoff.md file, and the
-# literal /please + /merge commands on stderr -- fired from THIS SUT's own non-fatal call site,
-# not a direct call to milestone-review-handoff.sh.
+# Case H: milestone handoff wiring -- a fully-done milestone produces review.state="prepared"
+# with review.ref naming the integration branch, a specs/milestones/<id>-review-handoff.md file,
+# and the literal /please + /merge commands on stderr -- fired from THIS SUT's own non-fatal
+# call site, not a direct call to milestone-review-handoff.sh.
 # =====================================================================================
 common_test_info "Case H: milestone handoff fires from orchestrate-conclusion-roadmap.sh after a successful regenerate"
 SCRATCH_H="$(build_sandbox)"
@@ -492,10 +495,7 @@ jq '.active_projects[0].status = "completed" | .roadmap_milestones = [{"id": "M1
 write_generated_roadmap_stale "$SCRATCH_H"
 git -C "$SCRATCH_H" add specs/ROADMAP.md specs/state.json
 git -C "$SCRATCH_H" commit -q -m "seed"
-caseH_seed_tree="$(git -C "$SCRATCH_H" rev-parse HEAD^'{tree}')"
-caseH_seed_sha="$(git -C "$SCRATCH_H" rev-parse HEAD)"
-caseH_land_sha="$(git -C "$SCRATCH_H" commit-tree "$caseH_seed_tree" -p "$caseH_seed_sha" -m "task 909: fixture task")"
-git -C "$SCRATCH_H" update-ref refs/heads/milestone/M1 "$caseH_land_sha" ""
+caseH_branch="$(git -C "$SCRATCH_H" symbolic-ref --short HEAD)"
 mt_state_write "$MT_STATE" '[909]'
 run_sut "$SCRATCH_H" --session sess_caseH --state-file "$MT_STATE"
 
@@ -509,17 +509,17 @@ if grep -q "MILESTONE REVIEW READY: milestone M1" <<< "$LAST_STDERR"; then
 else
   common_test_fail "Case H: expected a MILESTONE REVIEW READY notice. stderr=$LAST_STDERR"
 fi
-if grep -q "/please push refs/heads/milestone/M1" <<< "$LAST_STDERR" && grep -q "^  /merge" <<< "$LAST_STDERR"; then
+if grep -q "/please push ${caseH_branch}\$" <<< "$LAST_STDERR" && grep -q "^  /merge" <<< "$LAST_STDERR"; then
   common_test_pass "Case H: the literal /please + /merge commands are printed"
 else
   common_test_fail "Case H: expected literal /please and /merge lines. stderr=$LAST_STDERR"
 fi
-if [ -f "$SCRATCH_H/specs/milestones/M1-review-handoff.md" ] && grep -q "task 909: fixture task" "$SCRATCH_H/specs/milestones/M1-review-handoff.md"; then
-  common_test_pass "Case H: specs/milestones/M1-review-handoff.md is written and names the landed commit's subject"
+if [ -f "$SCRATCH_H/specs/milestones/M1-review-handoff.md" ] && grep -q -- "^- task 909" "$SCRATCH_H/specs/milestones/M1-review-handoff.md"; then
+  common_test_pass "Case H: specs/milestones/M1-review-handoff.md is written and lists the milestone's task"
 else
-  common_test_fail "Case H: expected specs/milestones/M1-review-handoff.md naming the landed commit"
+  common_test_fail "Case H: expected specs/milestones/M1-review-handoff.md listing the milestone's task"
 fi
-if jq -e '.roadmap_milestones[0].review.state == "prepared" and .roadmap_milestones[0].review.ref == "refs/heads/milestone/M1"' "$SCRATCH_H/specs/state.json" >/dev/null 2>&1; then
+if jq -e --arg ref "refs/heads/${caseH_branch}" '.roadmap_milestones[0].review.state == "prepared" and .roadmap_milestones[0].review.ref == $ref' "$SCRATCH_H/specs/state.json" >/dev/null 2>&1; then
   common_test_pass "Case H: state.json's review.state is 'prepared' with review.ref set"
 else
   common_test_fail "Case H: expected review.state=prepared and review.ref set in state.json: $(cat "$SCRATCH_H/specs/state.json")"
