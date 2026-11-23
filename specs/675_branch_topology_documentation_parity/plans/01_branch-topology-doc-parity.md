@@ -275,7 +275,7 @@ statement.
 
 ---
 
-### Phase 3: Act on the sweep — fix the two confirmed-stale pages [NOT STARTED]
+### Phase 3: Act on the sweep — fix the two confirmed-stale pages [COMPLETED]
 
 **Goal**: the two pages the sweep confirmed stale state the implemented contract:
 `conclusion-stage.md` no longer names a retired landing mechanism, and
@@ -283,34 +283,34 @@ statement.
 declared-but-unimplemented batch mode.
 
 **Tasks**:
-- [ ] `context/contracts/conclusion-stage.md`, the milestone push/review handoff paragraph:
+- [x] `context/contracts/conclusion-stage.md`, the milestone push/review handoff paragraph:
       replace the "`refs/heads/milestone/<id>`, landed by `scripts/milestone-ref-land.sh` at each
       task's own completion" clause with what the live script does — `milestone-review-handoff.sh`
       resolves the integration branch, reads each task's landing proof, and records
       `review.ref` as `refs/heads/<integration branch>`. Keep the never-pushes / never-mints-a-grant
       guarantees and the `/please`/`/merge`-printing behavior intact, and keep the cross-reference
       to `../patterns/ref-plumbing-landing.md` pointed at the section that is actually about the
-      landing mechanism.
-- [ ] `context/standards/shared-worktree-discipline.md`, the opening sentence: split the single
+      landing mechanism. *(completed)*
+- [x] `context/standards/shared-worktree-discipline.md`, the opening sentence: split the single
       "per-agent worktree isolation is a settled non-goal, not an open question" claim into two —
       per-dispatch/per-agent isolation remains a settled non-goal (citing the removal
       reaffirmation record, unchanged by either amendment); batch-granularity worktree isolation
       is a separate mode, off unless declared, declared-but-unimplemented, with named held
       successors. Draw the distinction the same way
-      `context/standards/repo-level-declarations.md` already draws it for `worktree_isolation`.
-- [ ] In the same file, re-read the `## Detached worktree` section's appeals to "the settled
+      `context/standards/repo-level-declarations.md` already draws it for `worktree_isolation`. *(completed)*
+- [x] In the same file, re-read the `## Detached worktree` section's appeals to "the settled
       per-dispatch worktree-isolation question above" and make sure they still read correctly
       against the amended opening — that section is about per-dispatch granularity and should stay
-      accurate without widening.
-- [ ] Cite the held successors by slug only, never by number, in both files.
-- [ ] Re-verify the sweep's negative finding rather than assuming it:
+      accurate without widening. *(completed: still reads correctly, no change needed)*
+- [x] Cite the held successors by slug only, never by number, in both files. *(completed)*
+- [x] Re-verify the sweep's negative finding rather than assuming it:
       `grep -nEi "cherry-pick|squash|milestone|landing|integration branch|per-dispatch working-tree isolation" agent-system/extensions/core/context/standards/git-staging-scope.md`
       and read each hit. Expectation: no stale branch/worktree-topology claim, so no edit. If the
       re-verification instead finds a stale claim, record it via `issue-record.sh` and surface it
-      in the handoff rather than editing a file this phase's Scope Hypothesis excludes.
-- [ ] Re-run `grep -rln "milestone-ref-land" --include="*.md" agent-system/extensions/core/` to
-      confirm no fourth stale reference exists beyond the files this plan touches.
-- [ ] Regenerate line counts:
+      in the handoff rather than editing a file this phase's Scope Hypothesis excludes. *(completed: 5 hits, all confirmed non-stale — the contended-path-lease/per-dispatch-working-tree-isolation remedy scoring (line 269), three "landing"/"original landing" mentions about Containment Self-Check path-widening, unrelated to branch topology (lines 446, 468, 479), and "cherry-pick" in the generic in-progress-merge-state detection list for commit-source-store-path.sh (line 667). No edit made.)*
+- [x] Re-run `grep -rln "milestone-ref-land" --include="*.md" agent-system/extensions/core/` to
+      confirm no fourth stale reference exists beyond the files this plan touches. *(completed: two hits remain, both non-live — ref-plumbing-landing.md and git-workflow-narrative.md — conclusion-stage.md no longer matches)*
+- [x] Regenerate line counts: *(completed: conclusion-stage.md 540 -> 542, shared-worktree-discipline.md 61 -> 67)*
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
 
 **Timing**: 1 hour

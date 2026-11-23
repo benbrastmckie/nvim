@@ -2601,7 +2601,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism; the executable stage body",
-      "line_count": 540,
+      "line_count": 542,
       "keywords": [
         "conclusion-stage",
         "move-5",
@@ -3879,7 +3879,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Point-of-use shared-worktree discipline: read history with git show/git diff, copy to scratchpad for mutable experiments, never git stash/checkout -- <path>/restore <path> on a shared tree; detached worktree mentioned only as a labelled read-only inspection technique. Registered against all 15 in-scope implementation agents (not a single one) so the index itself does not reproduce the discoverability gap this page closes.",
-      "line_count": 61,
+      "line_count": 67,
       "keywords": [
         "shared-worktree",
         "git-show",

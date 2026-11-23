@@ -410,14 +410,16 @@ successful regenerate (never on the degrade arm, never under `--dry-run`), the s
 surfaced output, swallowing any failure (`|| true`) — a handoff failure must never fail this
 step, since the regenerate it follows has already succeeded. The handoff script itself only
 PREPARES: for each milestone whose derived batch-done count reaches its batch count on the
-`none -> prepared` `review.state` transition, it confirms the milestone's review ref
-(`refs/heads/milestone/<id>`, landed by `scripts/milestone-ref-land.sh` at each task's own
-completion — see `../patterns/ref-plumbing-landing.md`) carries the expected commit count,
-drafts `specs/milestones/<id>-review-handoff.md`, records `review.state: "prepared"` plus
-`review.ref` via `state-write.sh`, and prints the literal `/please`/`/merge` commands for the
-user to run themselves. It never pushes, never opens a PR/MR, and never mints a push grant —
-see `specs/decisions/branch-topology-and-landing-strategy.md`, ruling R8, for the full ruling
-this honors.
+`none -> prepared` `review.state` transition, it resolves the integration branch (from the
+newest batch record listing one of the milestone's tasks, else the declared `integration_branch`,
+else the branch `HEAD` names), lists each done task by its own landing proof's attributed commit
+count and end commit — see `../patterns/ref-plumbing-landing.md`'s "The Landing Mechanism"
+section for how that proof is built and verified — drafts
+`specs/milestones/<id>-review-handoff.md`, records `review.state: "prepared"` plus `review.ref`
+as `refs/heads/<integration branch>` via `state-write.sh`, and prints the literal `/please`/
+`/merge` commands for the user to run themselves. It never pushes, never opens a PR/MR, and
+never mints a push grant — see `specs/decisions/branch-topology-and-landing-strategy.md`, ruling
+R8, for the full ruling this honors.
 
 The script's own stdout outcome block (the verdict, the `OUTCOME:` line verbatim when the
 regenerate branch ran, the commit sha or `none`, the advisory lint's findings, and the

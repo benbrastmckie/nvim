@@ -1,8 +1,14 @@
 # Shared-Worktree History-Read Discipline
 
-Parallel dispatches share one working tree by design (per-agent worktree isolation is a settled
-non-goal, not an open question — see `specs/decisions/worktree-isolation-removal-reaffirmation.md`).
-A tree-wide or path-reverting git operation therefore reverts work a sibling dispatch or the user
+Parallel dispatches share one working tree by design. Per-agent, per-dispatch worktree isolation
+is a settled non-goal, not an open question — see
+`specs/decisions/worktree-isolation-removal-reaffirmation.md` — unaffected by either later
+decision that revisits worktrees at a different granularity. A separate, batch-granularity mode
+is declared but not yet built: `worktree_isolation` is `off` unless declared `batch` in
+`.claude-extensions.json`, and nothing builds `batch` yet, so every dispatch today still runs in
+the single shared tree this page describes. The held tasks carrying that unbuilt design are
+named by slug in `context/standards/git-workflow-narrative.md`'s Branch Strategy section. A
+tree-wide or path-reverting git operation therefore reverts work a sibling dispatch or the user
 has not committed yet, with no reliable per-session recovery. When the actual need is to inspect
 historical file state, reach for a read-only technique instead.
 
