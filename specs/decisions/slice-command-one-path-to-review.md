@@ -226,7 +226,7 @@ and three index files that only list the others (`index-entries.json`, `manifest
 
 | # | Path | Found by | What it does today |
 |---|---|---|---|
-| 1 | `scripts/milestone-ref-land.sh` (244 lines) | search 2 | No lifecycle caller: `grep -rl` finds the script, two suites, `manifest.json`, `suite-classification.data` and two context documents |
+| 1 | `scripts/milestone-ref-land.sh` (244 lines; suite `scripts/tests/test-milestone-ref-land.sh` 368) | search 2 | No lifecycle caller: `grep -rl` finds the script, two suites, `manifest.json`, `suite-classification.data` and two context documents |
 | 2 | `scripts/review-stack-prepare.sh` | search 2 | E1; no caller |
 | 3 | `scripts/milestone-review-handoff.sh` (299 lines) | both | Live: called from `scripts/orchestrate-conclusion-roadmap.sh` (line 254). Writes `review.state` and `review.ref`, drafts a summary, prints `/please push <integration branch>` then `/merge` (272 to 273, 294 to 295) |
 | 4 | `commands/merge.md` (485 lines), with its mention in `skills/skill-git-workflow/SKILL.md` | search 1 | E7 |
@@ -253,3 +253,402 @@ and moves nothing.
 | "this repository ... has no merged pull requests" | research report | It has 12 merged, 11 of them on `master` (E5) |
 | 29 files mention `/merge` | research report | 27 by the search stated in E7 |
 | RP3 median 1,258 over 18 merged | task description | 1,173 over 19 today; the population has moved since that record was written |
+
+## The command surface
+
+`/slice [description]`. User-invoked only, in the same class as `/tag`: no agent, skill or
+lifecycle script invokes it. The description is optional and is never required.
+
+Vocabulary used below. The **work ref** is where content is read from. The **target** is the
+remote branch slices are based on and pull requests are opened against. A **series** is one
+work ref cut into slices for one target.
+
+What a user who types `/slice` with no argument and no prior setup sees, in order. The screens
+below show the layout. Line 1 of prompt 1 and the bar line carry measured figures (E5, E6);
+every other number in them is illustrative.
+
+**1. Resolution. Printed, no question.**
+
+```
+work ref   <checked-out branch> at <short sha>
+remote     <remote>            (the branch's configured remote; else the only remote)
+fetched    <remote> just now   (or: fetch failed, figures are against the last fetch)
+tree       3 uncommitted paths are not sliced   (only when the tree is dirty)
+```
+
+The remote is asked for only when the branch has none configured and the repository has more
+than one. A repository with no remote stops here with one line saying there is nothing to open
+a pull request against.
+
+**2. Prompt 1: the target.** One question, with each candidate's measured difference from the
+work ref beside it:
+
+```
+Slice <work ref> for review against which branch?
+
+  1. <remote>/<default branch>     344 commits ahead, 937 files, 79,638 added lines
+  2. <remote>/<other base>         base of your open pull request #NN; 12 commits ahead, 40 files
+  3. <remote>/<stale base>         needs a merge-up first: 57 commits on it are not in the work ref
+  4. another branch                (type its name)
+```
+
+The candidate set is read from three places and from no declaration:
+
+- an in-flight series file for this work ref, shown first as `continue <series>: 3 of 7 merged`;
+- the remote's default branch;
+- the bases of the user's own open pull requests on that remote, where they differ;
+- free entry, always last.
+
+A candidate that is not an ancestor of the work ref is shown and cannot be chosen. `/slice`
+never merges; it says which merge is needed. A candidate whose difference from the work ref is
+empty is shown as `nothing to slice`. The target may have the same name as the work branch
+(line 1 above is this repository's own case, E6); what makes a target unusable is an empty
+difference, never an equal name.
+
+The measured difference is on every line because choosing the wrong base is an observed
+failure: the operator's open 1,619-file pull request in sf1-engine was opened against a base
+that is an ancestor of the intended one (E4).
+
+**3. The bar. Printed, no question.**
+
+```
+bar        1,915 added lines / 14 files   measured: 75th percentile of 19 merged on <target>
+```
+
+or `declared in .claude-extensions.json`, or `default, unmeasured`. See "The size bar".
+
+**4. Prompt 2: the proposal. This prompt is the product.**
+
+```
+ id  title                          files   lines / bar     depends on   opens against
+ a   <title>                           9     1,204 / 1,915   -            <target>
+ b   <title>                          12     1,610 / 1,915   a            <target>, after a merges
+ c   <title>                           1     3,300 / 1,915   -            <target>   OVER: one unsplittable file
+ d   <title>                          31       840 / 1,915   -            <target>   OVER, NO REASON: will not build
+
+ assigned     53 of 53 changed paths      unassigned 0   in two slices 0
+ not landing  826 paths under <glob>, 2 others (listed on request)
+ generated    none declared; every path counts toward the bar
+ cost         4 slices: 4 typed pushes, one at a time, then 1 /slice to open them
+
+ approve / revise (say what to change) / cancel
+```
+
+The four fixed lines under the table are always printed, with zeros shown as zeros. "Revise"
+takes free text ("split d by directory", "move the hook files into a", "bar 1,500 / 30",
+"nothing under specs/ lands") and re-proposes. The bar itself is revisable here; see below.
+Nothing is written before "approve".
+
+**5. On approval.** The series file is written. Every slice that can be built is built, by
+plumbing, without touching `HEAD`, the index or the working tree. The union is verified: the
+target's tree overlaid with every slice equals the work ref's tree on every assigned path. Then,
+per built slice, the one line the user types:
+
+```
+a  built  <short sha>   /please push <remote> slice/<series>/a
+b  waits on a
+c  built  <short sha>   /please push <remote> slice/<series>/c
+d  not built: over the bar with no reason
+then: /slice
+```
+
+**6. A later `/slice` while a series is in flight.** Prompt 1 offers `continue` first. Choosing
+it prints one state line per slice and one question listing only what is due:
+
+- for each slice whose remote branch equals its built commit and has no pull request: the pull
+  request to open, shown as base, head and title, opened on "yes" and its URL recorded;
+- for each slice whose paths at the target's tip now equal the slice's own content: marked
+  merged (a content test, so a squash merge is recognised);
+- for each unmerged slice whose base has moved, once the work ref contains the target again:
+  rebuilt from its declaration, with the push line printed again (a plain push if it was never
+  pushed; `--force-with-lease` if it was);
+- if the target is not an ancestor of the work ref: one line naming the merge-up needed, and
+  nothing else.
+
+**With a description.** `/slice "the hook changes, to the release line"` steers both prompts. A
+description that names exactly one candidate target answers prompt 1, which is then printed
+instead of asked. A description never answers prompt 2: the proposal is always shown and always
+needs "approve".
+
+**One invocation, one target.** "Or branches as appropriate" is met in two ways and no third. A
+dependent slice's pull request may be opened against its parent slice's branch (see "The
+mechanism", visible stack). Work bound for a second target is a second series, started by a
+second `/slice`. One series never spans two targets, because the bar, the ancestry test and the
+exhaustiveness check are all facts about one target.
+
+## The mechanism
+
+One script, one series file, one command file.
+
+**The series file** is `specs/.orchestration/slices/<series id>.json`, and it is the single
+home of slice state:
+
+- `target` (remote and branch), `work_ref`, and the commits of each at the last build;
+- `bar`: lines, files, and source (`declared`, `measured` with n, `default`, or `chosen at
+  prompt`);
+- `not_landing`: path globs that are in the difference and deliberately in no slice;
+- per slice: `id`, `title`, `paths` (globs), `depends_on`, `over_bar_reason`, `state`
+  (`proposed`, `built`, `pushed`, `open`, `merged`), `ref`, `commit`, `base_commit`,
+  `request_url`. The pull-request body is a file beside it,
+  `specs/.orchestration/slices/<series id>/<slice id>.md`, drafted at approval and editable
+  until the request is opened.
+
+**The script** has three subcommands and no other entry point.
+
+- `check`: target is an ancestor of the work ref; every path in `git diff --name-only <target>
+  <work ref>` is in exactly one slice or on `not_landing`; no glob matches nothing; every
+  `depends_on` names a slice and the edges have no cycle; every slice is at or under the bar or
+  carries a reason. It prints the counts prompt 2 shows.
+- `build`: for each slice with at most one unmerged dependency, read the base tree into a
+  private index, set each of the slice's paths to its blob at the work ref (or remove it, for a
+  path the work ref deletes), `write-tree`, `commit-tree`, and move
+  `refs/heads/slice/<series>/<id>` by compare-and-swap. The base is the target's tip overlaid
+  with the slices in the dependency closure; the parent commit is the target's tip, or the one
+  unmerged dependency's commit. A slice with two or more unmerged dependencies waits until all
+  but one have merged, so no slice commit ever has two parents. `build` refuses any slice
+  `check` refuses.
+- `status`: per slice, local ref against recorded commit, remote ref against recorded commit,
+  and the merged test of step 6.
+
+This is the one primitive all three existing builders arrived at independently (E1, E2, E3):
+private index, base tree, overlay, `write-tree`, `commit-tree`, ref move. Nothing else in any
+of them is needed.
+
+**The command file** owns everything a script must not: the two prompts, the proposal, the
+pull-request bodies, and the forge call. The proposal (which paths go together, in what order,
+with what titles) is made by the command's model from the diff, the directory structure and,
+as a hint only, completed tasks' `modified_files`. The script validates and builds what was
+approved. **No inference code is written**: no union-find, no topological sort, no overlap
+analysis. A bad proposal is caught by the counts in prompt 2 and by the person reading it.
+
+**Order of opening.** The default is that a dependent slice is built and opened only after its
+dependencies have merged. Under the default every slice is one commit on the target's tip, is
+pushed once, and is never force-pushed. A **visible stack** (opening a dependent slice early,
+against its one unmerged parent's branch) is allowed when the user asks for it in "revise". Its
+cost is stated in the cost line before approval: after each parent merges, every
+already-pushed dependent is rebuilt on the new base and needs one further typed
+`--force-with-lease` push.
+
+**Re-derive, never rebase.** A slice is always rebuilt from its declaration against the current
+base. There is no restack operation, no three-way merge of slice commits and no conflict
+resolution inside `/slice`. Conflicts are resolved once, by the ordinary merge of the target
+into the work branch, which `/slice` waits for and does not perform.
+
+## Basis
+
+**Neither existing builder is promoted, and no existing code is the basis.** The task
+description's hypothesis, "promote B upstream and delete A", is half right.
+
+- **Builder A is deleted.** It has no caller (E1), its required declaration exists nowhere (E6),
+  no stack it cut exists anywhere (E6), and 61 passing cases test machinery (union-find,
+  components, topological order, moved-base `merge-tree`, restack) whose only purpose is to
+  recover review units from history that did not record them. A declared path set needs none of
+  it. Its overlay function is 35 lines; that is the part worth having, and it is cheaper to
+  write again inside a 400 to 600 line script (an estimate, not a measurement) than to carve
+  out of 1,572.
+- **Builder B is not promoted.** The evidence that was to justify promoting it does not exist:
+  it has opened no pull request (E4, E9). As code, 993 of its 2,187 lines are one repository's
+  diagnostics gate and report template, its base is a literal, its configuration is read out of
+  prose by `grep`, and it changed four times on the day it was read (E2).
+- **Builder C is not promoted.** It refuses to write a branch, so nothing it cuts can be pushed
+  as a pull-request head (E3), and its manifest pins every file to a blob at a named commit by
+  hand.
+
+What is carried upstream from B is design, not code:
+
+1. A slice is a **path set cut from the work-ref tip**. A file is in exactly one slice.
+2. **Exhaustiveness**: every changed path is in exactly one slice or on a not-landing list.
+3. **A size check that can refuse.**
+4. **The ancestry refusal**: no build unless the target is an ancestor of the work ref.
+5. **Re-derive, never rebase.**
+6. **Dependency-scoped bases**: an independent slice is based on the target alone, so
+   independent slices can be opened and merged in any order.
+
+Carried from A: compare-and-swap ref moves, and the static rule its suite enforces that the
+script contains no push, checkout, merge or forge invocation. Carried from C: nothing as
+mechanism; its `verify` idea (a slice should stand alone) is named under "Risks" as unbuilt.
+
+The consumer-repository builders are not deleted by this repository. Each consumer retires its
+own once `/slice` is deployed there. sf1-engine's check 4 is a per-repository gate, and what it
+needs from upstream is at most a declared per-slice self-check command, which is named as a
+possible later successor and is not part of this ruling.
+
+## Review base
+
+**There is no review base.** Two roles exist, the work ref and the target, and no third branch
+stands between them.
+
+The slices record's S3 and the sf1-engine record's RP1 were framed as contradicting each
+other. They contradict less than that, and each is partly wrong.
+
+- RP1 rejects "a review base cut from `main`": an intermediate branch between the work branch
+  and the branch the owner merges into (E2). That rejection stands. Such a branch costs a
+  second merge only the remote owner can perform and protects nothing, since the target
+  already contains everything a slice is based on.
+- S3 defines `review_base` as "the branch slices target". In RP1's own repository that is
+  `main`, which RP1 uses. So S3's *role* exists in both records; what S3 adds is a required
+  **declaration** and a **refusal**, and both are wrong.
+- The declaration is wrong because nobody has made it (E6), it has no safe default, and the
+  right value is not a per-repository fact: sapience-app's pull requests use six different
+  bases (E4). A user with no prior setup must see a prompt, not exit 10.
+- The refusal is wrong because it compares names (E1, lines 243 to 245). This repository works
+  on `master` and is 344 commits ahead of `origin/master` (E6). S3 says such a repository "is
+  refused and gets no slices". It should get slices. The condition S3 was reaching for is an
+  empty difference between work ref and target, and that is what `/slice` tests.
+- RP1 is wrong where it makes the target a literal (E2, line 169). The target is a
+  per-invocation fact, and choosing it badly is an observed failure (E4).
+
+Therefore: the `review_base` key, `--review-base`, the four `review_base_*` refusals (exits 10
+to 13) and the documentation section that defines the key are removed. `integration_branch`
+keeps the meaning the landing record gives it, the branch orchestrated work is committed on,
+and `/slice` does not read it: the work ref is whatever is checked out.
+
+## The size bar
+
+**The bar is approved, then enforced.**
+
+- **It is a refusal.** `build` does not build a slice over the bar unless its row carries a
+  reason. Two reasons are accepted and both are recorded in the series file and printed in the
+  pull-request body: a single file that cannot be divided, and a declared generated or
+  mechanical tree landing alone. An advisory would not do: size is the one failure the evidence
+  shows (E4), and an advisory is what the builders that produced no merged work already have
+  (E3, `size_report`).
+- **Where the number comes from, in order.** (1) A declared `slice_bar` object, `{lines,
+  files}`, in `.claude-extensions.json`. (2) Otherwise the 75th percentile, nearest-rank, of
+  added lines and of changed files over merged pull requests on the chosen target, when there
+  are at least five. (3) Otherwise a shipped default of 1,500 lines and 30 files, printed as
+  `default, unmeasured`.
+- **The user approves it.** The bar and its source are printed before the proposal, and
+  "revise" can replace it; a replaced bar is recorded as `chosen at prompt`. This is required
+  by E5, not a convenience. A measured bar is only as good as its population: in this
+  repository the measurement is 52 lines and 1 file, drawn from small outside contributions,
+  and would refuse every slice of the operator's own work. In sf1-engine it is drawn almost
+  entirely from the owner's self-merged work. The measurement is the best available opening
+  offer; it is not a fact about what a reviewer will read.
+- **What is counted.** Added lines over the slice's paths (`git diff --numstat <target> <work
+  ref> -- <paths>`, first column), and the number of paths. Paths declared generated are
+  excluded from the line count and still listed. The declaration of generated paths is owned
+  by `branch_aware_orchestration_and_squash_landing` (655); until it exists every path counts
+  and prompt 2 says so.
+
+**Portability.** The method is portable. The numbers are not. The same measurement gives 1,915
+lines and 14 files in sf1-engine, 763 and 7 in sapience-app, and 52 and 1 here (E5). A bar
+copied from one repository into another is wrong in both directions, which is why the shipped
+default is labelled unmeasured wherever it is used and why no number appears in any deliverable
+as a property of the system.
+
+**Rejected: the median.** It is the more cautious number and it is the wrong one: by
+construction it refuses half of what has already merged on that target.
+
+**Not verified.** No proposed cut of any repository's real difference has been run against a
+bar by `/slice`, because `/slice` does not exist. sf1-engine's own table passes its own
+1,500-line ceiling by its own check 3 (CARRIED-UNVERIFIED from that record, line 173; not
+re-run here). Whether the 75th percentile is the right opening offer is a preference the
+operator can change at no cost before the successor that builds the measurement runs.
+
+## One survivor, and what is deleted
+
+Paths are relative to `agent-system/extensions/core/` unless stated.
+
+| # | Path | Disposition |
+|---|---|---|
+| new | `commands/slice.md`, one script with `check`, `build`, `status`, and its suite | **The one survivor.** Built by the first successor |
+| 1 | `scripts/milestone-ref-land.sh` | **Deleted.** Already owned by `milestone_ref_land_recreates_retired_ref` (690) |
+| 1 | `scripts/tests/test-milestone-ref-land.sh`, with its `suite-classification.data` and `manifest.json` rows | **Deleted**, by the same record |
+| 2 | `scripts/review-stack-prepare.sh` | **Deleted**, all four subcommands |
+| 2 | `scripts/tests/test-review-stack-prepare.sh`, with its `suite-classification.data` and `manifest.json` rows | **Deleted** |
+| 2 | `context/standards/repo-level-declarations.md`, the section "The `review_base` Declaration" | **Deleted** (the section, not the file) |
+| 2 | `context/standards/orchestrator-runtime-files.md`, its row for the review-stack manifest (line 69) | **Deleted** (the row, not the file) |
+| 3 | `scripts/milestone-review-handoff.sh` | **Kept, narrowed.** It still detects a finished milestone once and drafts the summary. It prints one line, `/slice`, and no push or merge line. It stops writing `review.ref`; `review.state` stays as its own fired-once marker and means nothing about slices |
+| 4 | `commands/merge.md` | **Deleted.** See below |
+| 4 | `skills/skill-git-workflow/SKILL.md`, its `/merge` mention; the `/merge` minting branch of `hooks/please-grant.sh`; `/merge` named in `rules/pr-prohibition.md`, `rules/state-management.md`, `merge-sources/claudemd.md`, `templates/claudemd-header.md` and the other files of E7's 27 | **Rewritten** to name `/slice`, by the `/merge` removal successor |
+| 4 | `/merge --stack` (planned by `merge_command_stack_mode`, 693) | **Never built** |
+| 5 | `extensions/cslib/commands/pr.md` | **Outside this ruling; not changed.** It is another extension's command for one upstream project: it starts new work on a branch cut from that upstream and runs that project's CI. It does not move a work branch's changes into slices. It is named here so that it is known to exist; whether it should sit on `/slice`'s `build` is a question for that extension |
+| 6 | sf1-engine `integration/tools/build-pr-slices.sh` | **Not this repository's to delete.** Retired by its own repository after `/slice` is deployed there |
+| 7 | sapience-app `scripts/stack_cut.py` | **Not this repository's to delete.** Same |
+
+**Files deleted from the source store**, as a list: `scripts/review-stack-prepare.sh`;
+`scripts/tests/test-review-stack-prepare.sh`; `scripts/milestone-ref-land.sh`;
+`scripts/tests/test-milestone-ref-land.sh`; `commands/merge.md`. Sections deleted: "The
+`review_base` Declaration" in `context/standards/repo-level-declarations.md` (lines 331 to
+367), and the review-stack manifest row of `context/standards/orchestrator-runtime-files.md`.
+The five files are 3,805 lines (1,572 + 1,136 + 244 + 368 + 485; `wc -l`).
+
+**`/merge` is removed, not fixed.** Its defects are that it acts on the checked-out branch,
+refuses on the default branch, and hardcodes the remote (E7). Fixing all three means giving it
+an explicit head, an explicit base and a resolved remote, and a command with those three is
+`/slice`'s open step. Two commands that open pull requests are two methods, and every record
+that has routed around `/merge` (the handoff suppressing its printed line, the sf1-engine
+record's "`/merge` is not used for a slice") is evidence of what a second method costs. The
+single-branch case is `/slice` with a one-slice proposal: one prompt more than `/merge` asks
+today, and a size figure `/merge` never showed. `/merge` is removed after `/slice` has opened
+one real pull request, not before.
+
+## Grants
+
+Stated, not designed around.
+
+- **The cost today.** N slices cost N typed `/please push <remote> slice/<series>/<id>` lines,
+  then one `/slice` to open them. Only one grant is live at a time (E7), so the pushes are
+  typed and performed one at a time, never queued. Under the default order of opening a
+  dependent slice costs its push later, after its parent merges; a visible stack costs one
+  further typed `--force-with-lease` push per pushed dependent per parent merge.
+- **The window.** Each grant lives 600 seconds and is matched against `HEAD` at the moment of
+  the push (E7).
+- **Two consequences of the `HEAD` binding for a ref built by plumbing.** `HEAD` is not the
+  commit being pushed. So (a) any commit by any session inside the window kills the grant
+  although the slice is untouched, which in a repository with live orchestration will happen
+  routinely; and (b) the grant does not pin what is pushed, because the slice ref can be
+  rebuilt between the typed line and the push without the match noticing.
+
+Three pieces of separate work would lower this cost. **This design assumes none of them** and
+is complete without them.
+
+1. Bind a grant for a ref other than the checked-out branch to that ref's commit instead of to
+   `HEAD`. This removes both consequences above and is the one recommended first.
+2. Let a typed `/slice push <id>` mint for exactly that slice ref, as a typed `/merge` mints
+   today (E7). Still N typed lines; no separate `/please`.
+3. A batch grant: one typed approval for N refs. This changes the consent model and is not
+   recommended ahead of the other two.
+
+## Constraints held
+
+- **`rules/pr-prohibition.md` binds unamended in substance.** No agent-reachable path pushes or
+  opens a pull request. Every push is behind a typed grant. The forge call is in a user-invoked
+  command file and nowhere else; the script contains no push and no forge invocation and its
+  suite asserts that statically. The rule's text names `/merge`; the removal successor changes
+  that name to `/slice` and changes nothing else in it.
+- **Repo-agnostic.** No branch name, remote name or consumer path appears in any deliverable
+  under `agent-system/**`. The target, the remote and the bar are resolved or chosen at run
+  time. Consumer repositories appear in this record as evidence only.
+- **The commit-containment cluster is not edited and is not depended on.** A slice is read from
+  the work ref's committed tree, not from any task's commits, so it is correct whether or not
+  commits were scoped correctly. The one edge is soft: `modified_files` is a grouping hint for
+  the proposal, and a wrong hint gives a worse proposal that prompt 2 shows, never a wrong tree.
+
+## Rejected alternatives
+
+- **Promote the sf1-engine builder.** It would bring a table grammar parsed out of markdown, a
+  literal base and a thousand lines of one repository's gate into a repo-agnostic system, on
+  the strength of production evidence that turned out to belong to someone else's hand-made
+  branches.
+- **Finish the inference route.** Inference recovers review units from history that did not
+  record them. Its floor is structural: where two writers touched one path the units cannot be
+  separated, and a person must decide anyway. Asking that person first is cheaper and needs no
+  code.
+- **Fix `/merge`.** See above: the fixed command is `/slice`'s open step.
+- **A declared `review_base`.** A declaration is right for a fact that is stable per
+  repository. The target is not one, and a required key with no default turns first use into a
+  refusal.
+- **Slices as task records.** A slice's content already exists on the work ref. Researching,
+  planning and implementing a subset of paths that are already written is a lifecycle with no
+  work in it, costs a dispatch per slice, and makes a slice's commit a working-tree commit,
+  which needs either a branch switch in the primary tree or a second working tree. Both are
+  ruled out by records that stand.
+- **A fixed portable bar.** One number for every repository is wrong by more than thirtyfold
+  across the three measured here (E5).
+- **Hunk-level cutting.** A file that must be divided between two slices cannot be. It lands
+  whole in the earlier slice. No builder has it, no case has been met, and it is not built
+  until one is.
+- **Asking nothing and using the default branch.** It is what `/merge` does and what produced
+  a 1,619-file pull request against the wrong base.

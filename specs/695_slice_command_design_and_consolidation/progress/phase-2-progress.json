@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Write the ruling",
+  "started_at": "2026-11-24T00:50:00Z",
+  "last_updated": "2026-11-24T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write command surface, mechanism, basis, review base, size bar, survivor table, grants, constraints, rejected alternatives",
+      "status": "done",
+      "files_touched": [
+        "specs/decisions/slice-command-one-path-to-review.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "note": "Prose tier: all nine sections present; survivor table names one survivor; deletion list is a path list; size-bar ruling extended beyond the research report (bar approved at the prompt) on the E5 finding for this repository."
+}

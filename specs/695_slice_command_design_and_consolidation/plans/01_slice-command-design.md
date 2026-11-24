@@ -205,13 +205,13 @@ the difference. B's line count is already known to differ (2,187 live against 2,
 
 ---
 
-### Phase 2: Write the ruling [NOT STARTED]
+### Phase 2: Write the ruling [COMPLETED]
 
 **Goal**: Add the ruling proper: command surface, mechanism, review base, size bar, survivor and
 deletions, and the grant cost, each resting only on Phase 1 evidence.
 
 **Tasks**:
-- [ ] `## The command surface`: `/slice [description]`, user-only. State in order what a user
+- [x] `## The command surface`: `/slice [description]`, user-only. State in order what a user
       with no argument and no prior setup sees: the printed resolution (work ref, remote, dirty
       tree line); prompt 1, the target, with where the candidate set is read from (an in-flight
       series, the remote's default branch, bases of the user's open pull requests, free entry)
@@ -219,38 +219,38 @@ deletions, and the grant cost, each resting only on Phase 1 evidence.
       unselectable; the printed bar and its source; prompt 2, the proposal table and its four
       fixed lines; the approve / revise / cancel options; what happens on approval; and what a
       later invocation on an in-flight series does. Rule "one invocation, one target" and how
-      "or branches as appropriate" is satisfied by a dependent slice opening against its parent.
-- [ ] `## The mechanism`: one script with `check`, `build`, `status`; one series file and its
+      "or branches as appropriate" is satisfied by a dependent slice opening against its parent. *(completed)*
+- [x] `## The mechanism`: one script with `check`, `build`, `status`; one series file and its
       fields; the forge call lives in the command file only; proposals are made by the command's
       model and validated mechanically; no inference code. State the default of opening a
       dependent slice after its dependencies merge, and the cost of opening a visible stack
-      earlier.
-- [ ] `## Basis`: neither existing builder is promoted, with reasons from Phase 1. List the
+      earlier. *(completed)*
+- [x] `## Basis`: neither existing builder is promoted, with reasons from Phase 1. List the
       design properties carried from the sf1-engine builder (path sets from the work tip,
       exhaustiveness, size check, ancestry refusal, re-derive never rebase, dependency-scoped
-      bases). State that consumer-repository builders are retired by their own repositories.
-- [ ] `## Review base`: two roles only, work ref and target; no third branch; the `review_base`
+      bases). State that consumer-repository builders are retired by their own repositories. *(completed)*
+- [x] `## Review base`: two roles only, work ref and target; no third branch; the `review_base`
       key and the equal-name refusal are removed; the correct emptiness test is an empty diff.
-      State where each of the two prior records was right and where wrong.
-- [ ] `## The size bar`: a refusal with a recorded-reason escape; source order (declared
+      State where each of the two prior records was right and where wrong. *(completed)*
+- [x] `## The size bar`: a refusal with a recorded-reason escape; source order (declared
       `slice_bar`, else the 75th percentile of merged pull requests on the target when at least
       five exist, else a shipped default printed as unmeasured); lines counted as added lines
       over hand-written paths; the method is portable and the numbers are not, with the Phase 1
       measurements as the ground. State the median as a rejected alternative. Carry the
-      research report's CORPUS-UNVERIFIED mark for this repository unless Phase 1 closed it.
-- [ ] `## One survivor, and what is deleted`: a table with one row per Phase 1 inventory row
+      research report's CORPUS-UNVERIFIED mark for this repository unless Phase 1 closed it. *(completed)*
+- [x] `## One survivor, and what is deleted`: a table with one row per Phase 1 inventory row
       and a disposition, such that the deletion list is readable as a list of file paths.
       Include the `review_base` section of `context/standards/repo-level-declarations.md`, the
       suite and its classification and manifest rows, `/merge` and the planned stack mode. Rule
-      `/merge` removed, not fixed, with the reason.
-- [ ] `## Grants`: state the N-push cost, the 600-second window, the `HEAD` binding and its two
+      `/merge` removed, not fixed, with the reason. *(completed)*
+- [x] `## Grants`: state the N-push cost, the 600-second window, the `HEAD` binding and its two
       consequences for a plumbing-built ref; name the three pieces of separate work and say the
-      design assumes none of them.
-- [ ] `## Constraints held`: `rules/pr-prohibition.md` unamended; repo-agnostic deliverables;
-      the commit-containment cluster named as an edge and not edited.
-- [ ] `## Rejected alternatives`: promote the sf1-engine builder; finish the inference route;
+      design assumes none of them. *(completed)*
+- [x] `## Constraints held`: `rules/pr-prohibition.md` unamended; repo-agnostic deliverables;
+      the commit-containment cluster named as an edge and not edited. *(completed)*
+- [x] `## Rejected alternatives`: promote the sf1-engine builder; finish the inference route;
       fix `/merge`; a declared `review_base`; slices as tasks; a portable fixed bar. Each stated
-      on its own merits.
+      on its own merits. *(completed)*
 
 **Timing**: 2 hours
 
