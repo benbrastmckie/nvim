@@ -1,17 +1,17 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a five-phase, 6.5-hour plan that produces one new decision record ruling the /slice design and adds dated amendment notes to two existing records; it edits nothing under agent-system and changes no other task's state. Plan-time checks found the sf1-engine builder has moved (2,187 lines live against 2,165 carried), so Phase 1 re-derives every line citation. Two issue-log entries were recorded: that drift, and verify-touched classifying specs/decisions paths as owed rather than narrowed.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "summary": "All five phases completed: wrote specs/decisions/slice-command-one-path-to-review.md ruling /slice as the one path to review (declared path-set slices built by plumbing, no review base, an approved-then-enforced size bar, /merge and review-stack-prepare.sh removed) with a verdict for every listed record, and added dated amendment notes to two existing records. Evidence was re-derived live and corrects several carried claims, chiefly that the sf1-engine builder has opened no pull request. Nothing under agent-system was changed; verdicts are an operator worklist and were not executed. One issue-log entry recorded (stale carried figures).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/695_slice_command_design_and_consolidation/plans/01_slice-command-design.md",
-      "summary": "Five sequential phases: re-derive evidence, write the ruling, verdicts and successors, amend overturned records, acceptance read-through."
+      "type": "summary",
+      "path": "specs/695_slice_command_design_and_consolidation/summaries/01_slice-command-design-summary.md",
+      "summary": "Implementation summary for the /slice ruling."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
-  "next_action_hint": "Dispatch implement. Verdicts on other records are ruled with an operator worklist, not executed; records 692 and 693 are being planned concurrently against the ruling this record overturns.",
-  "dispatch_seq": 2
+  "next_action_hint": "Postflight to completed. Operator: records 692 and 693 are planned against the overturned ruling and must not be implemented as written; apply the decision record's Operator worklist."
 }

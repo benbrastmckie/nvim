@@ -1,11 +1,117 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/695_slice_command_design_and_consolidation/summaries/01_slice-command-design-summary.md",
+      "summary": "Implementation summary: the /slice ruling, corrections to carried claims, verdicts, and scoped verification."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wrote specs/decisions/slice-command-one-path-to-review.md, ruling /slice as the one path from a work branch to review: a declared path-set slice built by plumbing, no review base, an approved-then-enforced size bar, /merge and review-stack-prepare.sh removed, and a verdict for each listed open record. Added dated amendment notes to the slices record and the landing record; nothing under agent-system was changed and no other task record was edited."
+  },
+  "modified_files": [
+    "specs/decisions/slice-command-one-path-to-review.md",
+    "specs/decisions/review-slices-are-declared-tasks.md",
+    "specs/decisions/isolation-off-landing-verification-and-review-time-squash.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a task description cites production evidence for a tool (pull requests opened or merged), verify it by matching the forge's head-ref names against the refs the tool actually writes, not by counting the repository's pull requests. A repository's whole pull-request population is easily misattributed to one tool; `gh pr list --json headRefName,author,mergedBy` plus `git for-each-ref` settles it in two commands.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/695_slice_command_design_and_consolidation/summaries/01_slice-command-design-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "evidence",
+        "pull requests",
+        "headRefName",
+        "attribution",
+        "premise re-validation"
+      ]
+    },
+    {
+      "content": "A percentile over merged pull requests is method-sensitive at small n: nearest-rank and linear interpolation gave 1,915 vs 1,899.5 lines and 14 vs 13 files over n=19, and a 'median' over n=14 was reported as 239, 178 or 117 depending on convention. State the method (nearest-rank names a real merged pull request) whenever a measured bar is recorded.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/695_slice_command_design_and_consolidation/summaries/01_slice-command-design-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "percentile",
+        "nearest-rank",
+        "size bar",
+        "measurement",
+        "median"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "/slice command design ruling",
+      "value": "Ruled 2026-11-24: /slice is the single path from a work branch to review pull requests. A slice is a declared path set cut from the work-ref tip and built by a private-index overlay (read-tree, set blobs, write-tree, commit-tree, compare-and-swap update-ref). It is not a task record and no unit-inference code is written. review-stack-prepare.sh, its suite, the review_base declaration and /merge are to be deleted by successors.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "specs/decisions/slice-command-one-path-to-review.md"
+    },
+    {
+      "subject": "sf1-engine build-pr-slices.sh production evidence",
+      "value": "The sf1-engine slice builder has opened zero pull requests. Of 24 pull requests in that repository (19 merged, 5 open, read 2026-11-24), none has a pr/* head; 18 of 19 merged were written and self-merged by the remote owner on hand-made branches. A description crediting the builder with 22 opened and 18 merged attributed the repository's whole population to it.",
+      "predicate": "correction is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "specs/decisions/slice-command-one-path-to-review.md (E4, E9)"
+    },
+    {
+      "subject": "review base versus target branch",
+      "value": "There is no review base: only a work ref and a target, with the target chosen per invocation at a prompt showing each candidate's measured difference. A declared review_base key with a refusal when its name equals the integration branch is wrong on two counts: no repository declared it, and name equality is not emptiness (a default-branch repository can be hundreds of commits ahead of its same-named remote ref). The correct unusable-target test is an empty diff.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/slice-command-one-path-to-review.md (Review base)"
+    },
+    {
+      "subject": "measured pull-request size bar portability",
+      "value": "The nearest-rank 75th percentile of merged pull requests on the default branch was 1,915 added lines / 14 files in sf1-engine (n=19), 763 / 7 in sapience-app (n=14), and 52 / 1 in the nvim config repository (n=11, small outside contributions). The method is portable and the numbers are not, and the measured population can be the wrong one, so a measured bar must be shown with its source and approved before it is enforced.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/slice-command-one-path-to-review.md (E5, The size bar)"
+    },
+    {
+      "subject": "push grant binding for plumbing-built refs",
+      "value": "A push grant is matched against git rev-parse HEAD at consume time within a 600-second default window, and only one grant is live at a time (each mint revokes the previous). For a ref built by plumbing, HEAD is not the commit pushed: any commit by any session in the window kills the grant, and the grant does not pin what is pushed. N slices therefore cost N typed pushes performed one at a time.",
+      "predicate": "constraint is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/lib/push-grant-lib.sh:453-464; hooks/please-grant.sh:231-232"
+    },
+    {
+      "subject": "worktree isolation and review slicing",
+      "value": "Worktree isolation is irrelevant to review slicing. The batch-isolation record states that an isolation-off repository loses 'the per-task squash. Nothing else.' A path set cut from the work-ref tip reads no commit range and needs no per-task commit, and a slice is built without any working tree, so the five held worktree and two-root records were ruled abandonable; any future case for isolation must rest on dispatch concurrency alone.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.8,
+      "source_loc": "specs/decisions/slice-command-one-path-to-review.md (The five held records)"
+    },
+    {
+      "subject": "sapience-app scripts/stack_cut.py",
+      "value": "stack_cut.py cuts whole-file blobs pinned to named commits (one variant reverse-applies named whole commits to a blob); it is not a hunk-level cutter. It uses a two-argument update-ref, not compare-and-swap, and refuses to write under refs/heads, so nothing it cuts can be a pull-request head as written.",
+      "predicate": "correction is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/slice-command-one-path-to-review.md (E3)"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795478339_253676",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

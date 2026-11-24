@@ -387,24 +387,24 @@ exactly the two existing files reported "0 suite(s) selected, 2 owed".
 
 ---
 
-### Phase 5: Acceptance read-through [NOT STARTED]
+### Phase 5: Acceptance read-through [COMPLETED]
 
 **Goal**: Check the finished record against the task's own acceptance criteria and fix what
 fails.
 
 **Tasks**:
-- [ ] Read the new record start to finish as a reader with no other context, and answer from it
+- [x] Read the new record start to finish as a reader with no other context, and answer from it
       alone: which single mechanism survives; which files are deleted; whether a review base
       exists; what the size bar is and whether it is portable; the disposition of every listed
-      record. Fix any answer the record does not give.
-- [ ] Confirm every implementation claim carries a line-numbered citation, a command with
-      output, or a CARRIED-UNVERIFIED mark, and that no ruling section contradicts Evidence.
-- [ ] Confirm the task description's premise corrections (pull-request counts, the third
-      builder, the cslib command, the `--target` override) are each stated in the record.
-- [ ] Confirm no file under `agent-system/**` or `.claude/**`, and neither `specs/state.json`
-      nor `specs/TODO.md`, was changed by any phase of this plan.
-- [ ] Run the scoped touched-path check over the three files this plan touched and record its
-      verdict line verbatim.
+      record. Fix any answer the record does not give. *(completed)*
+- [x] Confirm every implementation claim carries a line-numbered citation, a command with
+      output, or a CARRIED-UNVERIFIED mark, and that no ruling section contradicts Evidence. *(completed)*
+- [x] Confirm the task description's premise corrections (pull-request counts, the third
+      builder, the cslib command, the `--target` override) are each stated in the record. *(completed)*
+- [x] Confirm no file under `agent-system/**` or `.claude/**`, and neither `specs/state.json`
+      nor `specs/TODO.md`, was changed by any phase of this plan. *(completed)*
+- [x] Run the scoped touched-path check over the three files this plan touched and record its
+      verdict line verbatim. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -429,16 +429,16 @@ fails.
 
 ## Testing & Validation
 
-- [ ] The new record exists and contains: Evidence, command surface, mechanism, basis, review
+- [x] The new record exists and contains: Evidence, command surface, mechanism, basis, review
       base, size bar, survivor and deletion table, grants, verdict table, successors, operator
-      worklist, what is discarded, assertions amended.
-- [ ] Every claim about either implementation is line-cited against a stated commit.
-- [ ] Exactly one survivor is named; the deletion list is a list of paths.
-- [ ] Every record in the task description's verdict list has one disposition.
-- [ ] At least one built or planned thing is named as discarded.
-- [ ] The two existing records carry dated amendment notes and no in-place ruling changes.
-- [ ] No change under `agent-system/**`, `.claude/**`, `specs/state.json` or `specs/TODO.md`.
-- [ ] `bash .claude/scripts/validate-artifact.sh` passes for this plan.
+      worklist, what is discarded, assertions amended. *(completed)*
+- [x] Every claim about either implementation is line-cited against a stated commit. *(completed)*
+- [x] Exactly one survivor is named; the deletion list is a list of paths. *(completed)*
+- [x] Every record in the task description's verdict list has one disposition. *(completed)*
+- [x] At least one built or planned thing is named as discarded. *(completed)*
+- [x] The two existing records carry dated amendment notes and no in-place ruling changes. *(completed)*
+- [x] No change under `agent-system/**`, `.claude/**`, `specs/state.json` or `specs/TODO.md`. *(completed: no edit by this plan; the only state.json/TODO.md change in the range is the lifecycle's own status write for this task)*
+- [x] `bash .claude/scripts/validate-artifact.sh` passes for this plan. *(completed)*
 
 ## Artifacts & Outputs
 

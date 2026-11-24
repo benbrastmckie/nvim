@@ -1,0 +1,3 @@
+{"path":"specs/decisions/slice-command-one-path-to-review.md","reason":"no map row and no class row; ran the --cost-class free fallback set","session_id":"","dispatch_seq":null,"recorded_ts":"2026-11-24T00:26:09Z","discharged_ts":null}
+{"path":"specs/decisions/review-slices-are-declared-tasks.md","reason":"no map row and no class row; ran the --cost-class free fallback set","session_id":"","dispatch_seq":null,"recorded_ts":"2026-11-24T00:26:09Z","discharged_ts":null}
+{"path":"specs/decisions/isolation-off-landing-verification-and-review-time-squash.md","reason":"no map row and no class row; ran the --cost-class free fallback set","session_id":"","dispatch_seq":null,"recorded_ts":"2026-11-24T00:26:09Z","discharged_ts":null}
