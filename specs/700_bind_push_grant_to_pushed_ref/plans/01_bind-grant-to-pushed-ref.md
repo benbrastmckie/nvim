@@ -366,26 +366,35 @@ section. No task in this phase requires editing the excluded file.
 
 ---
 
-### Phase 4: Redeploy and verify [NOT STARTED]
+### Phase 4: Redeploy and verify [COMPLETED]
 
 **Goal**: The source-store change is live in the deployed tree and the deploy reports a clean
 verify.
 
 **Tasks**:
-- [ ] Confirm Phases 1-3 are committed and the working tree holds no partial hunk of this task's
-      own work.
-- [ ] Run the redeploy with the bounded-wait idiom — `timeout 540 bash
+- [x] Confirm Phases 1-3 are committed and the working tree holds no partial hunk of this task's
+      own work. *(completed)*
+- [x] Run the redeploy with the bounded-wait idiom — `timeout 540 bash
       .claude/scripts/deploy-headless.sh`, Bash tool timeout `600000`
       (`context/patterns/external-process-wait.md` Rule 1). Never an unbounded wait, and never a
       `git-snapshot.sh` call in its reverting default mode (a sibling is live on this tree).
-- [ ] Read the deploy's verify output and confirm it reports clean; if a gate fails, fix forward
+      *(completed)*
+- [x] Read the deploy's verify output and confirm it reports clean; if a gate fails, fix forward
       in the source store and redeploy rather than reverting (`rules/error-handling.md`).
-- [ ] Confirm the deployed `.claude/hooks/please-grant.sh` and
+      *(completed: first redeploy attempt failed gate 22 (shellcheck SC1083) on an unquoted
+      `HEAD^{tree}` in Phase 2's `make_plumbing_branch` helper; fixed forward in a scoped commit
+      and redeployed. Gate 3/4 (the Phase 3 collision) resolved automatically as expected.
+      Second redeploy: PASS -- 41 checks, 0 failures)*
+- [x] Confirm the deployed `.claude/hooks/please-grant.sh` and
       `.claude/scripts/lib/push-grant-lib.sh` carry the Phase 1 hunks, so the live hook path — not
-      only the source store — has the fix.
-- [ ] Run the scoped touched-path check over this task's own touched paths, and record in the
+      only the source store — has the fix. *(completed: byte-identical diff confirmed for both
+      files, plus the two test files and git-safety.md)*
+- [x] Run the scoped touched-path check over this task's own touched paths, and record in the
       phase notes that the complete gate set is deferred to the orchestration close rather than
-      independently run here.
+      independently run here. *(completed: `verify-touched.sh` over all five touched paths ->
+      98/98 passed, 0 failed, 7 suites selected + 1 OWED-fallback full free-cost-class battery
+      for the prose touched path. The complete `verify-deploy.sh` gate set is deferred to this
+      multi-task batch's orchestration close per the dispatch's Batch Gate Deferral directive)*
 
 **Timing**: 0.5 hours
 
