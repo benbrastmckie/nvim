@@ -1,0 +1,55 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/695_slice_command_design_and_consolidation/reports/01_slice-command-design.md",
+      "summary": "Rules the /slice design: neither existing builder is promoted, review-stack-prepare.sh and /merge are removed, review_base is dropped for a prompted target, and the size bar is measured per target; corrects the description's premise that the sf1-engine builder has opened pull requests."
+    }
+  ],
+  "next_steps": "Run /orchestrate 695 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1795478339_253676_695",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
+  },
+  "memory_candidates": [
+    {
+      "content": "A repository's merged-pull-request count is not evidence that a local slice-building tool works. Before crediting a builder with production use, check that its own ref namespace exists on the remote (git for-each-ref refs/remotes) and who authored the merged pull requests (gh pr list --json author,headRefName,mergedBy). In sf1-engine the 19 merged pull requests were 18 by the remote owner from hand-made branches; the builder had pushed nothing.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/695_slice_command_design_and_consolidation/reports/01_slice-command-design.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["production evidence", "pull requests", "slice builder", "premise check", "gh pr list"]
+    },
+    {
+      "content": "Push grants are matched against git rev-parse HEAD at consume time (push-grant-lib.sh), not against the commit of the ref being pushed. For a ref built by plumbing and never checked out, any commit by any session inside the 600-second window invalidates the grant, and the grant does not pin the pushed content.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/695_slice_command_design_and_consolidation/reports/01_slice-command-design.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["push grant", "please", "HEAD binding", "plumbing ref", "guard-git-push"]
+    }
+  ],
+  "modified_files": [
+    "specs/695_slice_command_design_and_consolidation/reports/01_slice-command-design.md"
+  ],
+  "proposed_file_scope": [
+    "specs/decisions/review-slices-are-declared-tasks.md"
+  ],
+  "claim_invalidations": [
+    {
+      "declaration_names": ["build-pr-slices.sh production evidence"],
+      "kind": "refutation",
+      "claim": "The sf1-engine builder has opened 22 pull requests, of which 18 merged.",
+      "evidence_path": "specs/695_slice_command_design_and_consolidation/reports/01_slice-command-design.md"
+    },
+    {
+      "declaration_names": ["review-slices-are-declared-tasks.md: Why not abandon the inference route entirely"],
+      "kind": "refutation",
+      "claim": "A stack already cut by review-stack-prepare.sh cut exists and its manifest is on disk.",
+      "evidence_path": "specs/695_slice_command_design_and_consolidation/reports/01_slice-command-design.md"
+    }
+  ]
+}

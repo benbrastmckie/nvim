@@ -6,7 +6,7 @@ next_project_number: 696
 
 ## Task Order
 
-*Updated 2026-11-23. Generated from state.json dependency graph.*
+*Updated 2026-11-24. Generated from state.json dependency graph.*
 
 **Goal**: Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.
 
@@ -112,7 +112,7 @@ next_project_number: 696
 674 [HOLD] — Build batch worktree cleanup, retention on partial batches,...
 686 [HOLD] — Create the per-batch worktree and batch branch when isolation...
 689 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-695 [NOT STARTED] — Design the /slice command: one clean path from work branch to...
+695 [RESEARCHED] — Design the /slice command: one clean path from work branch to...
   └─ 692 [PLANNED] — RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE...
     └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 693 [PLANNED] — RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE...
@@ -182,10 +182,11 @@ next_project_number: 696
 ## Tasks
 
 ### 695. Design the /slice command: one clean path from work branch to a stack of review pull requests
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [695_slice_command_design_and_consolidation/reports/01_slice-command-design.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
