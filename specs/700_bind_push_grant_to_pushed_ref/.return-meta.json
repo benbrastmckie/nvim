@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/700_bind_push_grant_to_pushed_ref/plans/01_bind-grant-to-pushed-ref.md",
-      "summary": "Four-phase plan binding a push_branch grant to refs/heads/<ref> at both the mint and match sites, with suite cases for the three acceptance behaviours, one clarifying doc sentence, and a redeploy."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When a plan phase must declare a Verification Tier below `full`, the honest Tier Justification is produced by running suite_selection_select ONCE over that phase's whole Files-to-modify set and naming what it returns -- and the selector's answer can be strictly larger than intuition suggests. For a two-file edit to a consent-grant hook plus its library, the selector returned seven suites (including the destructive-guard and deploy-propagation suites), not the two obviously-named ones; that larger set is itself the argument for `interface` over `local`, because it enumerates the real one-hop dependent set. A markdown-only standards file in the same source store returned __FULL_SWEEP__ (no covering suite), which routes to the verify-deploy.sh --only-gate 3,4 subset with the SOURCE-STORE REPOSITORY ROOT as TARGET -- never the source_dir itself, which has no .claude/ subtree and fails gate0 before gate selection runs.",
-      "category": "PATTERN",
-      "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/plans/01_bind-grant-to-pushed-ref.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["verification tier", "suite selection", "tier justification", "FULL_SWEEP", "plan authoring"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 5,
   "metadata": {
-    "session_id": "sess_1795525113_9bbf2b_700",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 2.75,
-    "dependency_waves": 3
-  },
-  "dispatch_seq": 4,
-  "next_steps": "Run /orchestrate 700 to execute the plan"
+    "session_id": "sess_1795543276_2f1165",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

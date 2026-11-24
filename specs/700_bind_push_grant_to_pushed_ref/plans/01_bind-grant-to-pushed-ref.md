@@ -1,7 +1,7 @@
 # Implementation Plan: Task #700
 
 - **Task**: 700 - Bind a push grant to the pushed ref
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: None (independent successor; shares `hooks/please-grant.sh` with the
   `/merge`-removal successor, which is ordered after this record and must not be anticipated here)
@@ -153,34 +153,38 @@ gain nothing but a second place to drift.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Resolve the pushed ref at both binding sites [NOT STARTED]
+### Phase 1: Resolve the pushed ref at both binding sites [COMPLETED]
 
 **Goal**: A `push_branch` grant is bound at mint time, and matched at consume time, against the
 commit of the ref it names; every other action class still uses `HEAD`.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/hooks/please-grant.sh` lines 205-215 immediately
+- [x] Re-read `agent-system/extensions/core/hooks/please-grant.sh` lines 205-215 immediately
       before editing (a sibling is live on this tree this cycle), confirming the single
       `HEAD_SHA="$(git rev-parse HEAD 2>/dev/null)"` assignment is still at line 211 and still
-      sits after the `[ -n "$MINT_SOURCE" ] && ...` completeness guard.
-- [ ] Replace that one assignment with a two-branch form: for `ACTION_CLASS = push_branch`,
+      sits after the `[ -n "$MINT_SOURCE" ] && ...` completeness guard. *(completed: confirmed
+      unchanged at line 211)*
+- [x] Replace that one assignment with a two-branch form: for `ACTION_CLASS = push_branch`,
       `git rev-parse --verify --quiet "refs/heads/${REF}"`, refusing via the existing `exit_ok`
       when it does not resolve; for every other class, the existing `git rev-parse HEAD` path
       unchanged. Keep the variable name `HEAD_SHA` (D2) so `pg_grant_mint`'s argument list and
-      the echoed `SHORT_SHA` need no change.
-- [ ] Add one comment line at that site stating that the value is the named ref's own commit for
+      the echoed `SHORT_SHA` need no change. *(completed)*
+- [x] Add one comment line at that site stating that the value is the named ref's own commit for
       `push_branch` and `HEAD` for every other class, and that `REF` is a bare branch name (not a
-      full ref path) for every grammar form that can reach this branch.
-- [ ] Do not touch the `/merge` minting branch of this hook, nor any other mint-source branch.
-- [ ] Re-read `agent-system/extensions/core/scripts/lib/push-grant-lib.sh` lines 447-470, then
+      full ref path) for every grammar form that can reach this branch. *(completed)*
+- [x] Do not touch the `/merge` minting branch of this hook, nor any other mint-source branch.
+      *(completed: confirmed untouched by re-reading lines 60-135)*
+- [x] Re-read `agent-system/extensions/core/scripts/lib/push-grant-lib.sh` lines 447-470, then
       replace the single `head_sha="$(git rev-parse HEAD 2>/dev/null)" || return 1` assignment in
       `pg_grant_find_match()` with the same two-branch form, gated on the already-in-scope
       `action_class` local and using the already-in-scope `ref` local. Keep the existing
       `[ -n "$head_sha" ] || return 1` fail-closed guard covering both branches, and leave the
-      comparison at line 464 and the whole candidate loop untouched.
-- [ ] Add the same one-line clarification to the grant-file-format header comment near line 29 of
-      the lib, where the `HEAD_SHA` field is described.
-- [ ] Confirm by reading that no other line in either file reads `HEAD` for a grant SHA.
+      comparison at line 464 and the whole candidate loop untouched. *(completed)*
+- [x] Add the same one-line clarification to the grant-file-format header comment near line 29 of
+      the lib, where the `HEAD_SHA` field is described. *(completed)*
+- [x] Confirm by reading that no other line in either file reads `HEAD` for a grant SHA.
+      *(completed: grep of rev-parse/HEAD across both files confirms only the two edited sites
+      and the unrelated /merge|/pr REF derivation at line 86/181, which never reads a grant SHA)*
 
 **Timing**: 0.75 hours
 

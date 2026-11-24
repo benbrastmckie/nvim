@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Resolve the pushed ref at both binding sites",
+  "started_at": "2026-11-24T18:04:00Z",
+  "last_updated": "2026-11-24T18:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read please-grant.sh lines 205-215 before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace HEAD_SHA assignment with push_branch-gated refs/heads/${REF} resolution in please-grant.sh", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/please-grant.sh"]},
+    {"id": 3, "description": "Add clarifying comment at please-grant.sh binding site", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/please-grant.sh"]},
+    {"id": 4, "description": "Leave /merge minting branch and other mint-source branches untouched", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-read push-grant-lib.sh lines 447-470, replace head_sha assignment in pg_grant_find_match() with same two-branch form", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 6, "description": "Add same clarification to grant-file-format header comment near line 29 of the lib", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 7, "description": "Confirm by reading that no other line in either file reads HEAD for a grant SHA", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

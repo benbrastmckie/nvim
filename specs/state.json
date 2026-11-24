@@ -1017,7 +1017,7 @@
     {
       "project_number": 700,
       "project_name": "bind_push_grant_to_pushed_ref",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.\n\nRULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.\n\n=== WHAT THIS RECORD OWNS: BIND A PUSH GRANT TO THE PUSHED REF ===\n\n\"Grants\", numbered item 1, and \"Successors\", row 6. Today a grant is matched against `git rev-parse HEAD` at consume time (scripts/lib/push-grant-lib.sh, near line 453; hooks/please-grant.sh records HEAD near line 211) and lives PG_EXPIRY_WINDOW seconds, default 600. For a ref built by plumbing, HEAD is not the commit being pushed. Two consequences the ruling states: (a) any commit by any session inside the window kills the grant although the pushed ref is untouched, which is routine in a repository with live orchestration; (b) the grant does not pin what is pushed, because the ref can be rebuilt between the typed line and the push without the match noticing.\n\nTHE CHANGE. A grant for a ref other than the checked-out branch binds to that ref's commit at mint time and is matched against that ref's commit at consume time, instead of HEAD. A grant for the checked-out branch keeps its present behaviour. `/please push <remote> <branch>` already names any branch, checked out or not (hooks/please-grant.sh); this record changes what such a grant is bound to, not who can mint one. One grant at a time, the expiry window and the default-branch force bar are unchanged.\n\nNOT THIS RECORD'S. Items 2 and 3 of \"Grants\" (a typed `/slice push <id>` minting for a slice ref; a batch grant) are not built here and the ruling does not recommend the third. The `/merge` minting branch of hooks/please-grant.sh is removed by remove_merge_command, which is ordered after this record because both edit that hook; do not touch that branch here.\n\n=== TERRITORY ===\n\nhooks/please-grant.sh; hooks/guard-git-push.sh; scripts/lib/push-grant-lib.sh; scripts/tests/test-please-grant.sh; scripts/tests/test-guard-git-push.sh. Research confirms whether scripts/git-push-granted.sh or any document stating the HEAD binding needs the same change, and extends file_scope if so. Ordered after nothing and independent of /slice; it lowers the cost of slice_command_build's acceptance step in a repository with live orchestration, so it is worth dispatching alongside it.\n\n=== VERIFY BY ===\n\nSuite cases for: a grant for a non-checked-out ref survives an unrelated commit on HEAD inside the window; the same grant is refused once the granted ref itself moves; a grant for the checked-out branch behaves as before; deploy-headless.sh reporting a clean verify. No push is performed by an agent (rules/pr-prohibition.md); every case runs against fixture repositories.",
       "topic": "core-agent-system",
@@ -1031,7 +1031,7 @@
         "agent-system/extensions/core/scripts/tests/test-please-grant.sh"
       ],
       "created": "2026-11-24T12:45:07Z",
-      "last_updated": "2026-11-24T13:21:10Z",
+      "last_updated": "2026-11-24T18:01:25Z",
       "audit_verdict": {
         "proposal": {
           "id": "bind_push_grant_to_pushed_ref",
@@ -1251,7 +1251,7 @@
         },
         "degradations_count": 46
       },
-      "session_id": "sess_1795525113_9bbf2b",
+      "session_id": "sess_1795543276_2f1165",
       "artifacts": [
         {
           "path": "specs/700_bind_push_grant_to_pushed_ref/reports/01_bind-grant-to-pushed-ref.md",
