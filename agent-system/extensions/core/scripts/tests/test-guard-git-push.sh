@@ -107,7 +107,7 @@ mint_grant_in() {
 make_plumbing_branch() {
   local repo="$1" name="$2" tree parent commit
   parent="$(git -C "$repo" rev-parse HEAD)"
-  tree="$(git -C "$repo" rev-parse HEAD^{tree})"
+  tree="$(git -C "$repo" rev-parse "HEAD^{tree}")"
   commit="$(GIT_AUTHOR_NAME="Test Suite" GIT_AUTHOR_EMAIL="test@example.com" \
             GIT_COMMITTER_NAME="Test Suite" GIT_COMMITTER_EMAIL="test@example.com" \
             git -C "$repo" commit-tree "$tree" -p "$parent" -m "plumbing: create $name")"
