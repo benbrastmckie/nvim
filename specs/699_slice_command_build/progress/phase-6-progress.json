@@ -8,7 +8,7 @@
       "id": 1,
       "description": "Redeploy with the bounded-wait idiom; treat exit 3/4 as distinct from exit 0",
       "status": "done",
-      "files_touched": []
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-slice-series.sh"]
     },
     {
       "id": 2,

@@ -19,16 +19,15 @@ source "$SCRIPT_DIR/../lib/common.sh"
 
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 EXT_ROOT="$(common_test_ext_root "$REPO_ROOT")" || EXT_ROOT="$REPO_ROOT/agent-system/extensions"
-SS="$(common_test_resolve_candidate "slice-series.sh" \
+SS="$(common_test_resolve_subject "slice-series.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/slice-series.sh" \
-  "$EXT_ROOT/core/scripts/slice-series.sh" \
-  "$SCRIPT_DIR/../slice-series.sh")" || exit 2
-GUARD="$(common_test_resolve_candidate "deploy-root-guard.sh" \
+  "$EXT_ROOT/core/scripts/slice-series.sh")" || exit 2
+GUARD="$(common_test_resolve_subject "deploy-root-guard.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh" \
-  "$EXT_ROOT/core/scripts/deploy-root-guard.sh" \
-  "$SCRIPT_DIR/../deploy-root-guard.sh")" || exit 2
+  "$EXT_ROOT/core/scripts/deploy-root-guard.sh")" || exit 2
 LIBDIR="$(dirname "$GUARD")/lib"
 common_test_declare_subject "$SS"
+common_test_declare_subject "$GUARD"
 
 PASSED=0
 FAILED=0
