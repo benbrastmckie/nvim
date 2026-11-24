@@ -226,29 +226,42 @@ editing, and reconcile against the live file if the count or locations differ.
 
 ---
 
-### Phase 2: Redeploy the tree and close out verification [NOT STARTED]
+### Phase 2: Redeploy the tree and close out verification [COMPLETED]
 
 **Goal**: The source-store change is mirrored into the deployed `.claude/` tree by the sanctioned
 deploy engine, and the deploy's own verify reports clean.
 
 **Tasks**:
-- [ ] Run the redeploy from the repository root using the bounded-wait idiom:
+- [x] Run the redeploy from the repository root using the bounded-wait idiom:
       `timeout 540 bash agent-system/extensions/core/scripts/deploy-headless.sh` with the Bash
       tool timeout set to 600000. Resolve to `bash .claude/scripts/deploy-headless.sh` instead if
       the source-store path does not exist in the repository the dispatch is running in.
-- [ ] Confirm the deploy reports a clean verify and exits 0. If it does not, fix forward from the
+      *(completed: ran, RESULT=landed_verify_clean, exit 0)*
+- [x] Confirm the deploy reports a clean verify and exits 0. If it does not, fix forward from the
       reported failure — never discard uncommitted changes to reach a passing deploy.
-- [ ] Confirm the deployed copy of the suite carries the retargeted assertion, so the deploy
-      actually mirrored this change rather than reporting clean on a stale tree.
-- [ ] Re-run `bash .claude/scripts/tests/test-orchestrate-conclusion-roadmap.sh` from the
+      *(completed: 41 checks, 0 failures)*
+- [x] Confirm the deployed copy of the suite carries the retargeted assertion, so the deploy
+      actually mirrored this change rather than reporting clean on a stale tree. *(completed:
+      `.claude/scripts/tests/test-orchestrate-conclusion-roadmap.sh` carries the
+      `^REFUSED: review-stack-prepare\.sh: ` positive check and the old "/please + /merge" pass
+      message is absent)*
+- [x] Re-run `bash .claude/scripts/tests/test-orchestrate-conclusion-roadmap.sh` from the
       deployed tree and confirm green, closing the loop that the change survives deployment.
-- [ ] Discharge this phase's own in-dispatch gate obligation with the scoped touched-path check
+      *(completed: 35 passed, 0 failed; test-milestone-review-handoff.sh also re-run from the
+      deployed tree: 19 passed, 0 failed)*
+- [x] Discharge this phase's own in-dispatch gate obligation with the scoped touched-path check
       (`bash agent-system/extensions/core/scripts/verify-touched.sh` over this task's touched
       paths, or the `.claude/scripts/` form, whichever resolves), and record that the complete
       gate set is deferred to the orchestration close rather than independently run here.
-- [ ] Commit this phase's own hunks only, by explicit file list. The deployed `.claude/` tree is
+      *(completed: ran via a bounded detached waiter; exited 1 with 0 NEW failures -- the sole
+      failure was the pre-existing documented known-failure `test-gate-cache-equivalence.sh`
+      (known-failures.txt line 33, load-sensitive, unrelated to this edit); this task's own
+      targeted suites both passed in the same run. Logged via issue-record.sh. Full gate set
+      deferred to the orchestration close, as directed by this dispatch's Batch Gate Deferral
+      section.)*
+- [x] Commit this phase's own hunks only, by explicit file list. The deployed `.claude/` tree is
       gitignored, so expect no `.claude/**` paths to stage; a non-failure skip for ignored
-      members is expected, not a gap.
+      members is expected, not a gap. *(completed)*
 
 **Timing**: 0.5 hours
 
