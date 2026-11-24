@@ -2,15 +2,15 @@
 # Roadmap
 
 - `/orchestrate` is the only lifecycle entry point, and it is token-cheap by construction: delegate, read back compact verdicts, ask the user only when a decision is genuinely the user's. `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`.
-- Counts and rosters are generated (`generate-task-order.sh --print`, `roadmap-integration.sh --regenerate`, `orchestrate-suggest-next-batch.sh --next-batch`). Never transcribe one here. As of 2026-11-11: **137 open (2 held), 5 awaiting `/todo` archival**.
+- Counts and rosters are generated (`generate-task-order.sh --print`, `roadmap-integration.sh --regenerate`, `orchestrate-suggest-next-batch.sh --next-batch`). Never transcribe one here. As of 2026-11-24: **117 open (7 held), 28 awaiting `/todo` archival**.
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
 | [M5: /slice: the one path from a work branch to a stack of review pull requests](#milestone-m5) | active | 5/7 | prepared |
-| [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 9/21 | none |
-| [M3: Batch worktree isolation off a per-batch branch](#milestone-m3) | planned | - | none |
+| [M4: Close the commit-layer and detector chain the slice size bar waits on](#milestone-m4) | planned | 9/21 | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
 | [M1: Current work](#milestone-m1) | active | 17/106 | none |
+| [M3: Batch worktree isolation off a per-batch branch](#milestone-m3) | planned | - | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
 
@@ -19,13 +19,13 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Make /slice the single user-invoked path from a work-branch tip to a reviewable stack of pull requests on a chosen target, refuse a slice too large to review, and delete every other route to review.
 
-- **Progress**: active -- 2/4 batches, 5/7 tasks done -- Landing half landed and ruled; the /slice build, size bar, deletions and grant-binding successors are not task records yet.
+- **Progress**: active -- 2/4 batches, 5/7 tasks done -- Ruled, not built: slice.md absent, the inference route and /merge still present, and five of the six successors have no task record.
 - **Review**: prepared on `refs/heads/master` (updated 2026-11-24)
 - **Gate**: /slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.
 
 **Batch 1** (done) -- Landed: integration-branch admission, one reviewable commit per task, and the branch docs
 
-**Batch 2** (done) -- Retire the old review exits: the handoff prints /slice, and the retired ref-land script goes
+**Batch 2** (done) -- Closed: the retired ref-land script's deletion, and the handoff task that closed unrevised
 
 **Batch 3** -- Declare generated paths, so a slice diff reads and its size bar counts hand-written lines
 
@@ -38,17 +38,17 @@ Make /slice the single user-invoked path from a work-branch tip to a reviewable 
 
 ```
 /orchestrate 694
-694 ready           stack_pr_redeploy_and_second_repo_demo   <- revise first: its edges onto the handoff and the /merge record belong on the /slice build record
+694 EXT-BLOCKED     stack_pr_redeploy_and_second_repo_demo   <- blocked on a record that does not exist: the /slice build; re-edge onto it and revise before dispatch
 ```
 
 <a id="milestone-m4"></a>
-## M4: Clear the path to isolated batch landing: measurement, commit layer, detectors
+## M4: Close the commit-layer and detector chain the slice size bar waits on
 
-Close everything standing in front of the batch-worktree landing work: measure the harness against an external worktree, settle which paths a commit drops and from which root, and land the phase-commit boundary detector whose expected ref the two-root contract makes per tree.
+Settle which paths a phase commit may drop and from which root, and land the phase-commit boundary detector, so the generated-path declaration that the slice size bar counts through has no open predecessor left.
 
-- **Progress**: planned -- 3/6 batches, 9/21 tasks done -- Not the landing work itself -- only the measurement and the commit-layer and detector fixes it waits on.
+- **Progress**: planned -- 3/6 batches, 9/21 tasks done -- The chain's open end is 553 and 513, the two open predecessors of the generated-path declaration under the slice size bar.
 - **Review**: none
-- **Gate**: The four harness behaviours are measured and recorded, or R2's worktree siting is amended by what they show; the containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and integration-branch admission and the two-root tasks have no open dependency left.
+- **Gate**: The containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and the generated-path declaration behind the slice size bar has no open dependency left.
 
 **Batch 1** (done) -- Measure the harness against an external worktree before any of the topology is built
 
@@ -56,7 +56,7 @@ Close everything standing in front of the batch-worktree landing work: measure t
 
 **Batch 3** (done) -- Settle which paths a phase commit may drop, and how one drop event is recorded
 
-**Batch 4** -- Make every containment and commit site agree before the two-root split lands on them
+**Batch 4** -- Make every containment and commit site agree on which paths a commit may drop
 
 ```
 /orchestrate 556, 519, 570, 472, 501, 524, 536
@@ -85,15 +85,6 @@ Close everything standing in front of the batch-worktree landing work: measure t
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 438 ready           Dependency edges conflate semantic and serialization rationale, and a semanti...
 ```
-
-<a id="milestone-m3"></a>
-## M3: Batch worktree isolation off a per-batch branch
-
-Run each batch in its own worktree off its own batch branch so concurrent dispatches cannot collide over one working tree.
-
-- **Progress**: planned -- no batches yet -- Every member is held and sited in no batch; the /slice ruling finds isolation irrelevant to review, pending an operator decision.
-- **Review**: none
-- **Gate**: A batch runs in an isolated worktree off its batch branch; a partial batch retains its worktree and /refresh reports it as an orphan; and every remaining project-root consumer is classified code-root, state-root or both, with the write-time and git-guard hooks honouring that split.
 
 <a id="milestone-m2"></a>
 ## M2: Sapience linked projects, capture activation and collaborator access
@@ -389,6 +380,15 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 557 done            Record the half-line test as a lean4 context pattern note
 ```
 
+<a id="milestone-m3"></a>
+## M3: Batch worktree isolation off a per-batch branch
+
+Run each batch in its own worktree off its own batch branch so concurrent dispatches cannot collide over one working tree.
+
+- **Progress**: planned -- no batches yet -- All five members held and sited in no batch; the slice ruling finds isolation irrelevant to review, so abandon-or-hold is the operator's.
+- **Review**: none
+- **Gate**: A batch runs in an isolated worktree off its batch branch; a partial batch retains its worktree and /refresh reports it as an orphan; and every remaining project-root consumer is classified code-root, state-root or both, with the write-time and git-guard hooks honouring that split.
+
 <a id="roadmap-context"></a>
 ## Rules, conventions and repo context
 
@@ -396,6 +396,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 
 - **Agent-system defects get filed here.** A fix in a consuming repo's `.claude/` is wiped on reload.
 - **`.claude/**` is a deploy artifact.** Edit `agent-system/extensions/**`, then resync. `settings.json` and `settings.local.json` are **install-once** — copied only when absent; put hook registrations in a fragment surface (decision 18).
+- **`/slice` is the one path to review.** A slice is a declared path set cut from the work-branch tip; the target is chosen at the prompt, never declared. There is no review base.
 - **`TODO.md` is generated from `state.json`.** Edit `description` via `state-write.sh`, then `generate-todo.sh`. Same for this file's counts and rosters — generate them.
 - **Propose, then apply, across repos.**
 - **Verify by execution, not by reading.** Re-measure before acting. *CARRIED-UNVERIFIED* figures must be re-derived.
@@ -423,7 +424,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 - **Rule before mechanism** for the vimtex hazard.
 - **Skeleton plans terminate through the completion-claim gate.** No `pr_ready` outside `type=pr`.
 - **No third automated deploy-trigger site.** Exactly two: `command-gate-out.sh` + `orchestrate-cycle-plan.sh`, per `test-lint-deploy-caller-wrap.sh`.
-- **One grant mechanism.** A single-use token bound to action, remote, branch and sha, minted only where the harness can prove the user typed it. Nothing the model writes is a grant. PR/MR creation and `/merge` stay user-only.
+- **One grant mechanism.** A single-use token bound to action, remote, branch and sha, minted only where the harness can prove the user typed it. Nothing the model writes is a grant. Opening a pull request stays user-only, through `/slice`.
 - **A grant may authorize a plain push of the default branch.** Every force form on the default branch, bare `--force` anywhere, and all bulk/deletion refspecs stay excluded, checked before any grant lookup.
 - **`known-failures.txt` is the only known-failing list.** Advisory; never changes which suites run. Never keep a prose copy elsewhere. A `needs-owner` row is a known gap owed a follow-up task. **Shell suites only** — plenary Lua specs have no baseline at all.
 

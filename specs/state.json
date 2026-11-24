@@ -694,7 +694,8 @@
         },
         "degradations_count": 47
       },
-      "roadmap_annotation": "revise first: its edges onto the handoff and the /merge record belong on the /slice build record"
+      "roadmap_annotation": "blocked on a record that does not exist: the /slice build; re-edge onto it and revise before dispatch",
+      "roadmap_ext_blocked": true
     },
     {
       "project_number": 692,
@@ -951,7 +952,6 @@
         }
       ],
       "next_artifact_number": 2,
-      "roadmap_annotation": "plan predates the /slice ruling: revise before dispatch, to print /slice and drop the review.ref write",
       "completion_summary": "Wired milestone-review-handoff.sh to call review-stack-prepare.sh cut then show: on success it prints and writes the real per-PR review stack; on refusal (including a missing script) it prints the refusal reason and /please push <branch> alone, with no /merge line, plus a HEAD-binding grant line on both arms. test-milestone-review-handoff.sh covers both arms (18 -> 19 cases); deploy-headless.sh landed clean; the one measured regression (test-orchestrate-conclusion-roadmap.sh Case H) is the predicted, out-of-scope breakage, recorded as an owed follow-up."
     },
     {
@@ -22556,12 +22556,13 @@
   "active_goal": "Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.",
   "primary_goals": [
     "`/orchestrate` is the only lifecycle entry point, and it is token-cheap by construction: delegate, read back compact verdicts, ask the user only when a decision is genuinely the user's. `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`.",
-    "Counts and rosters are generated (`generate-task-order.sh --print`, `roadmap-integration.sh --regenerate`, `orchestrate-suggest-next-batch.sh --next-batch`). Never transcribe one here. As of 2026-11-11: **137 open (2 held), 5 awaiting `/todo` archival**."
+    "Counts and rosters are generated (`generate-task-order.sh --print`, `roadmap-integration.sh --regenerate`, `orchestrate-suggest-next-batch.sh --next-batch`). Never transcribe one here. As of 2026-11-24: **117 open (7 held), 28 awaiting `/todo` archival**."
   ],
   "roadmap_context": {
     "rules": [
       "**Agent-system defects get filed here.** A fix in a consuming repo's `.claude/` is wiped on reload.",
       "**`.claude/**` is a deploy artifact.** Edit `agent-system/extensions/**`, then resync. `settings.json` and `settings.local.json` are **install-once** — copied only when absent; put hook registrations in a fragment surface (decision 18).",
+      "**`/slice` is the one path to review.** A slice is a declared path set cut from the work-branch tip; the target is chosen at the prompt, never declared. There is no review base.",
       "**`TODO.md` is generated from `state.json`.** Edit `description` via `state-write.sh`, then `generate-todo.sh`. Same for this file's counts and rosters — generate them.",
       "**Propose, then apply, across repos.**",
       "**Verify by execution, not by reading.** Re-measure before acting. *CARRIED-UNVERIFIED* figures must be re-derived.",
@@ -22588,7 +22589,7 @@
       "**Rule before mechanism** for the vimtex hazard.",
       "**Skeleton plans terminate through the completion-claim gate.** No `pr_ready` outside `type=pr`.",
       "**No third automated deploy-trigger site.** Exactly two: `command-gate-out.sh` + `orchestrate-cycle-plan.sh`, per `test-lint-deploy-caller-wrap.sh`.",
-      "**One grant mechanism.** A single-use token bound to action, remote, branch and sha, minted only where the harness can prove the user typed it. Nothing the model writes is a grant. PR/MR creation and `/merge` stay user-only.",
+      "**One grant mechanism.** A single-use token bound to action, remote, branch and sha, minted only where the harness can prove the user typed it. Nothing the model writes is a grant. Opening a pull request stays user-only, through `/slice`.",
       "**A grant may authorize a plain push of the default branch.** Every force form on the default branch, bare `--force` anywhere, and all bulk/deletion refspecs stay excluded, checked before any grant lookup.",
       "**`known-failures.txt` is the only known-failing list.** Advisory; never changes which suites run. Never keep a prose copy elsewhere. A `needs-owner` row is a known gap owed a follow-up task. **Shell suites only** — plenary Lua specs have no baseline at all."
     ]
@@ -22601,7 +22602,7 @@
       "gate": "/slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.",
       "progress": {
         "status": "active",
-        "note": "Landing half landed and ruled; the /slice build, size bar, deletions and grant-binding successors are not task records yet."
+        "note": "Ruled, not built: slice.md absent, the inference route and /merge still present, and five of the six successors have no task record."
       },
       "review": {
         "state": "prepared",
@@ -22623,33 +22624,33 @@
             692,
             690
           ],
-          "description": "Retire the old review exits: the handoff prints /slice, and the retired ref-land script goes",
-          "rationale": "The two surviving removals that already exist as records. 692 narrows scripts/milestone-review-handoff.sh to print one line, /slice, and to stop writing review.ref; 690 deletes milestone-ref-land.sh, whose deletion the ruling confirms now that the script has no lifecycle caller. 690 already depends on 692 and the two share the handoff's suite, so the batch resolves to two waves on its own edges.\n\nDispatch hazard, not an ordering one: 692 is planned against the overturned ruling and must be revised before it is implemented as written. Its annotation says so on the member line."
+          "description": "Closed: the retired ref-land script's deletion, and the handoff task that closed unrevised",
+          "rationale": "690's deletion is confirmed by the ruling record: the retired script has no lifecycle caller. 692 closed as written, WITHOUT the revision the ruling requires -- milestone-review-handoff.sh still writes review.ref unconditionally and still prints /please push with no /slice line. Successor 4 (narrow the handoff) therefore has no owner: a terminal task cannot be revised into it, so it needs a NEW task record, ordered after the /slice build so the line it prints names a command that exists."
         },
         {
           "task_ids": [
             655
           ],
           "description": "Declare generated paths, so a slice diff reads and its size bar counts hand-written lines",
-          "rationale": "Raised out of the worktree milestone into this one. The /slice ruling gives the generated-path declaration a second consumer: the size bar's line count is wrong in any repository where generated files ride in a slice, so the declaration is what makes both the diff readable and the bar accurate. Its own predecessors (513 and 553) sit in the commit-layer and detector milestone and are an ordering constraint, not grounds to drop it from this milestone."
+          "rationale": "655 gates only the ACCURACY of the slice size bar, not the build: successor 2 carries a hard edge from the bar's line count onto this declaration, because the count is wrong in any repository where generated files ride in a slice. It does not block successor 1, which is unblocked right now. Its own two open predecessors, 553 and 513, are the open end of M4's chain -- which is why M4 sits directly behind this milestone."
         },
         {
           "task_ids": [
             694
           ],
           "description": "Last: doc parity, redeploy and the operator runbook, once /slice has opened a real stack",
-          "rationale": "The ruling orders this after the build, the handoff narrowing and the /merge removal, and makes its acceptance one real slice pushed and opened by the operator in a second repository. Sited last in the milestone for that reason. It still carries edges onto 692 and the abandoned 693; those are the operator's to replace with one edge onto the /slice build record once that record exists."
+          "rationale": "Last regardless: the ruling orders it after successors 1, 4 and 5. Marked EXT-BLOCKED rather than ready because its real predecessor is a task record that does not exist; the dependency graph cannot express that, and an operator reading 'ready' would dispatch doc parity and a runbook for a command that is not on disk. Its edges onto 691 and 692 are satisfied-but-stale and its edge onto 693 points at an abandoned, archived task; all three are to be replaced by one edge onto the /slice build record once that record exists. No edge can be written for that today."
         }
       ]
     },
     {
       "id": "M4",
-      "title": "Clear the path to isolated batch landing: measurement, commit layer, detectors",
-      "aim": "Close everything standing in front of the batch-worktree landing work: measure the harness against an external worktree, settle which paths a commit drops and from which root, and land the phase-commit boundary detector whose expected ref the two-root contract makes per tree.",
-      "gate": "The four harness behaviours are measured and recorded, or R2's worktree siting is amended by what they show; the containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and integration-branch admission and the two-root tasks have no open dependency left.",
+      "title": "Close the commit-layer and detector chain the slice size bar waits on",
+      "aim": "Settle which paths a phase commit may drop and from which root, and land the phase-commit boundary detector, so the generated-path declaration that the slice size bar counts through has no open predecessor left.",
+      "gate": "The containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and the generated-path declaration behind the slice size bar has no open dependency left.",
       "progress": {
         "status": "planned",
-        "note": "Not the landing work itself -- only the measurement and the commit-layer and detector fixes it waits on."
+        "note": "The chain's open end is 553 and 513, the two open predecessors of the generated-path declaration under the slice size bar."
       },
       "review": {
         "state": "none"
@@ -22692,7 +22693,7 @@
             524,
             536
           ],
-          "description": "Make every containment and commit site agree before the two-root split lands on them",
+          "description": "Make every containment and commit site agree on which paths a commit may drop",
           "rationale": "The chain tail through orchestrate-cycle-postflight.sh and git-commit-scoped.sh, in the order the commit-layer record fixed (570 -> 501 -> 524 -> 536), with the two feeders it needs (519 -> 570, 556 -> 472). Edge added: 472 after 570, which orders 472 against both postflight claimants at once at zero cost to the critical path. 472/486/517 remain unordered on agents/general-implementation-agent.md -- the coarse agent file the commit-layer record excluded from edge justification."
         },
         {
@@ -22713,20 +22714,6 @@
           "rationale": "The second predecessor line of 670: 513 supplies the expected-ref parameter the two-root work makes per tree, and it waits on the landing-target contract (479) and the edge-rationale record (438). Three waves deep and off the critical path, so sited after the commit-script chain."
         }
       ]
-    },
-    {
-      "id": "M3",
-      "title": "Batch worktree isolation off a per-batch branch",
-      "aim": "Run each batch in its own worktree off its own batch branch so concurrent dispatches cannot collide over one working tree.",
-      "gate": "A batch runs in an isolated worktree off its batch branch; a partial batch retains its worktree and /refresh reports it as an orphan; and every remaining project-root consumer is classified code-root, state-root or both, with the write-time and git-guard hooks honouring that split.",
-      "progress": {
-        "status": "planned",
-        "note": "Every member is held and sited in no batch; the /slice ruling finds isolation irrelevant to review, pending an operator decision."
-      },
-      "review": {
-        "state": "none"
-      },
-      "batches": []
     },
     {
       "id": "M2",
@@ -23056,6 +23043,20 @@
           "rationale": "- **The tail is explicitly the tail.** Every member improves a document; none changes what a\n  dispatch does, which is the measure this ordering uses. Stating that plainly is better than\n  promoting them on the grounds that they are cheap.\n\n- `473` (RESEARCHED, edged behind `472` in batch three) strips record-versioning language from the\n  boundary-owned architecture docs. `522` fixes report/summary heading-skeleton conformance across\n  agents. `640` adds a derived-percentage bug class to the census methodology standard. `557`\n  (RESEARCHED) records the half-line test as a Lean context pattern note.\n\n- `557` carries topic `decidability`, which is not declared in `active_topics` and so renders\n  after the curated topics -- a declaration defect worth fixing while the record is open, not a\n  reason to reorder it."
         }
       ]
+    },
+    {
+      "id": "M3",
+      "title": "Batch worktree isolation off a per-batch branch",
+      "aim": "Run each batch in its own worktree off its own batch branch so concurrent dispatches cannot collide over one working tree.",
+      "gate": "A batch runs in an isolated worktree off its batch branch; a partial batch retains its worktree and /refresh reports it as an orphan; and every remaining project-root consumer is classified code-root, state-root or both, with the write-time and git-guard hooks honouring that split.",
+      "progress": {
+        "status": "planned",
+        "note": "All five members held and sited in no batch; the slice ruling finds isolation irrelevant to review, so abandon-or-hold is the operator's."
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": []
     }
   ]
 }
