@@ -664,24 +664,33 @@ open its pull request.
 
 ## Testing & Validation
 
-- [ ] The static assertion: the script's non-comment text contains no `git push`,
+- [x] The static assertion: the script's non-comment text contains no `git push`,
       `git checkout`, `git switch`, `git merge`, `git rebase`, `git replay`, `gh`, or `glab`
-      invocation.
-- [ ] The repo-agnosticism assertion: no literal default remote name and no literal default
-      branch name in the script, and none in `commands/slice.md`.
-- [ ] The no-dependency assertion: the script neither `source`s nor invokes
-      `review-stack-prepare.sh`.
-- [ ] The union check: the target's tree overlaid with every built slice equals the work ref's
-      tree on every assigned path.
-- [ ] Every `check` refusal class has a case pinning its named reason and exit code.
-- [ ] `build` leaves `HEAD`, the shared index, and the working tree unchanged in every case.
-- [ ] A slice with two or more unmerged dependencies waits; no slice commit has two parents.
-- [ ] A compare-and-swap failure refuses rather than overwriting.
-- [ ] `status`'s merged test recognises a squash merge by content.
-- [ ] `deploy-headless.sh` exits 0 (clean deploy and clean inline verify).
-- [ ] The new suite passes from both the source store and the deployed tree.
-- [ ] No file under `agent-system/**` carries a task-number reference or record-versioning
-      language.
+      invocation. *(confirmed: Phase 1 case passing)*
+- [x] The repo-agnosticism assertion: no literal default remote name and no literal default
+      branch name in the script, and none in `commands/slice.md`. *(confirmed: Phase 3 case
+      passing for the script; grep-verified for commands/slice.md at Phase 4)*
+- [x] The no-dependency assertion: the script neither `source`s nor invokes
+      `review-stack-prepare.sh`. *(confirmed: Phase 3 case passing)*
+- [x] The union check: the target's tree overlaid with every built slice equals the work ref's
+      tree on every assigned path. *(confirmed: Phase 3 case passing)*
+- [x] Every `check` refusal class has a case pinning its named reason and exit code. *(confirmed:
+      Phase 1 cases, 10 refusal classes)*
+- [x] `build` leaves `HEAD`, the shared index, and the working tree unchanged in every case.
+      *(confirmed: Phase 2 untouched-state assertion after every build case)*
+- [x] A slice with two or more unmerged dependencies waits; no slice commit has two parents.
+      *(confirmed: Phase 2 case passing)*
+- [x] A compare-and-swap failure refuses rather than overwriting. *(confirmed: Phase 2 case
+      passing, exit 30)*
+- [x] `status`'s merged test recognises a squash merge by content. *(confirmed: Phase 3 case
+      passing, no shared commit history)*
+- [x] `deploy-headless.sh` exits 0 (clean deploy and clean inline verify). *(confirmed: Phase 6,
+      exit 0, landed_verify_clean, after fixing one subject-resolution lint violation forward)*
+- [x] The new suite passes from both the source store and the deployed tree. *(confirmed: Phase
+      6, 45 passed / 0 failed from both)*
+- [x] No file under `agent-system/**` carries a task-number reference or record-versioning
+      language. *(confirmed: grep over all five new/modified files, plus
+      check-task-references.sh --quiet over the deployed tree: 0 occurrences)*
 
 ## Artifacts & Outputs
 
