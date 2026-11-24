@@ -497,6 +497,7 @@ VERIFY BY: scripts/tests/test-review-stack-prepare.sh green with its existing 38
 - **Dependencies**: Task 692
 - **Research**: [690_milestone_ref_land_recreates_retired_ref/reports/01_milestone-ref-land-deletion-scope.md]
 - **Plan**: [690_milestone_ref_land_recreates_retired_ref/plans/01_milestone-ref-land-deletion.md]
+- **Summary**: [690_milestone_ref_land_recreates_retired_ref/summaries/01_milestone-ref-land-deletion-summary.md]
 
 **Description**: === MEASURED 2026-11-23 BY THE OPERATOR SESSION; READ BEFORE RESEARCHING ===
 

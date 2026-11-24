@@ -6,7 +6,7 @@
   "objectives": [
     {"id": 1, "description": "generate-context-line-counts.sh --check / --write / re-check", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
     {"id": 2, "description": "Redeploy via bounded-wait idiom; capture verify report", "status": "done", "files_touched": []},
-    {"id": 3, "description": "Confirm deployed tree carries no trace of the deleted script", "status": "done", "files_touched": [".claude/scripts/milestone-ref-land.sh", ".claude/scripts/tests/test-milestone-review-handoff.sh"]},
+    {"id": 3, "description": "Confirm deployed tree carries no trace of the deleted script", "status": "done", "files_touched": [".claude/scripts/milestone-ref-land.sh", ".claude/scripts/tests/test-milestone-ref-land.sh"]},
     {"id": 4, "description": "Scoped touched-path check over all task-touched paths (full gate deferred to batch close per dispatch's Batch Gate Deferral)", "status": "done", "files_touched": []}
   ],
   "current_objective": 4,

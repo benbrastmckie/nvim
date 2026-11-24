@@ -22646,6 +22646,11 @@
           "path": "specs/690_milestone_ref_land_recreates_retired_ref/plans/01_milestone-ref-land-deletion.md",
           "type": "plan",
           "summary": "3-phase, ~2-hour plan deleting milestone-ref-land.sh and its 8 reference sites, re-pointing the ref-plumbing pattern's implementation citation to review-stack-prepare.sh, and closing with a line-count reconcile plus redeploy."
+        },
+        {
+          "path": "specs/690_milestone_ref_land_recreates_retired_ref/summaries/01_milestone-ref-land-deletion-summary.md",
+          "type": "summary",
+          "summary": "Deleted milestone-ref-land.sh and its test suite, removed all machine-read declarations, re-pointed the ref-plumbing idiom's implementation citation to review-stack-prepare.sh, reconciled index-entries.json, and redeployed to a clean verify."
         }
       ],
       "audit_verdict": {
@@ -22677,7 +22682,8 @@
       },
       "last_updated": "2026-11-24T02:37:48Z",
       "session_id": "sess_1795484837_9a6a6b",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Deleted the orphaned milestone-ref-land.sh utility, its dedicated test suite, and all four machine-read declarations (two manifest rows, one suite-classification row); re-pointed context/patterns/ref-plumbing-landing.md and context/standards/git-workflow-narrative.md to cite review-stack-prepare.sh as the live implementation of the ref-plumbing idiom, keeping every technique section byte-unchanged; reworded test-milestone-review-handoff.sh's header comment to credit no file; reconciled index-entries.json's line_count; and redeployed to a clean verify (RESULT=landed_verify_clean, 41/41 checks passed) after removing two orphaned deployed-tree copies the deploy's own orphan handling left behind."
     }
   ],
   "completed_projects": [],
