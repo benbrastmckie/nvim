@@ -5901,7 +5901,7 @@
     },
     {
       "project_name": "make_issue_record_failures_visible",
-      "status": "researching",
+      "status": "researched",
       "task_type": "general",
       "title": "Make issue-record.sh failures visible instead of silently losing the evidence entry",
       "description": "Observed during task 275's orchestration, session sess_1791884846_4f1288; cited evidence: entry_id iss_1791890048067_odYrN3 in specs/275_refactor_repo_tooling_to_four_layer_architecture/issues.jsonl. MEASURED: scripts/issue-record.sh accepts --session SID (parsing arm at line 139); --session-id falls through to the *) arm at line 141, which prints 'error: unknown argument' and calls usage(), exiting 1 with nothing written. The script's own documented invocation contract (lines 52-55) prescribes 'bash .claude/scripts/issue-record.sh ... >/dev/null 2>&1 || echo \"Note: issue recording failed (non-fatal)\" >&2', and every in-repo call site was verified to follow it (git-commit-phase.sh:268, orchestrate-cycle-plan.sh:1666 and :1691, orchestrate-cycle-postflight.sh:1042, :1278, :1363, :1384, :1445, :1866). The contract is right that recording must never fail a dispatch -- but the prescribed redirection discards the script's own diagnostic, so a mistyped flag is indistinguishable from any other validation failure, and in the hand-typed agent-facing invocation template emitted by orchestrate-build-dispatch.sh:578 it produces no signal at all. The entry is simply lost. This is a silent-data-loss path in the very mechanism /orchestrate's conclusion stage depends on for its entire evidence base: an empty issues.jsonl is indistinguishable from a dispatch that genuinely had nothing to record. THE DEFECT IS THE SILENCE, NOT THE FLAG NAME. Candidate fixes for the implementing task to choose among and justify: accept both flag spellings; separate an argument/usage error from a write error with distinct exit codes and make the former survive output redirection (an unconditional diagnostic on a path the contract does not redirect, or a breadcrumb written beside the task's issues.jsonl); or revise the prescribed invocation form so stderr is no longer swallowed. ACCEPTANCE CRITERIA: (1) a deliberately mistyped flag, invoked in the exact form the documented contract prescribes, produces a diagnostic a reader or agent can attribute to the mistyped flag -- no evidence entry is dropped without signal; (2) a genuine recording failure still never fails the calling dispatch, preserving the non-fatal guarantee at lines 52-53; (3) scripts/tests/test-issue-record.sh gains a regression case covering the mistyped-flag path under output redirection; (4) the invocation-contract comment in issue-record.sh and context/formats/issue-log.md both agree with the implemented behaviour; (5) the full test-issue-record.sh suite passes. EDIT TARGET: the source store at /home/benjamin/.config/nvim/agent-system/extensions/core -- this repo's .claude/ is a gitignored deploy artifact and edits there are wiped by the next regeneration. issue-record.sh is NOT runnable from the source store (deploy-root-guard.sh refuses by design), so deploy into a tree before exercising it.\n\n== MIGRATION PROVENANCE (appended on relocation; everything above is the original record, verbatim) ==\n\nRELOCATED into this repository on 2026-11-16 from the Logos/Verification repository\n(~/Projects/Logos/Verification/specs/), where it was filed as `make_issue_record_failures_visible`. Every edit target it\nnames resolves only under this repository's source store at `agent-system/extensions/**`, and the\noriginating repository carries no `agent-system/` directory at all -- only a deployed `.claude/`\ntree plus a `.claude-extensions.json` whose `source_dir` points here. A dispatch picking this\nrecord up there could read nothing it was meant to edit and commit nothing it managed to write.\nProcedure followed: `context/patterns/cross-repo-task-migration.md`.\n\nCITATION RESOLVABILITY: every `specs/{NNN}_{slug}/issues.jsonl` path and `iss_*` entry_id cited\nabove resolves under the ORIGINATING repository, not this one. Read them repository-qualified --\n`~/Projects/Logos/Verification/specs/<task-dir>/issues.jsonl`. No evidence was copied across; that\nrepository remains the single store of record for those entries.\n\nDEPENDENCY EDGES AT MIGRATION: none survive. This record declared no outgoing edges. The one\nrecord that depended on it, `carve_runtime_files_out_of_containment`, was abandoned in the\noriginating repository at migration time as a duplicate of this repository's own\n`phase_commit_drops_own_plan_artifact`, so that incoming edge is gone rather than remapped.\n\nFILE SCOPE AT MIGRATION: carried across unchanged in membership and rewritten from the\noriginating repository's absolute source-store paths to this repository's relative house style.\nNothing was dropped and nothing was derived.\n\nTERRITORY CONTENTION, measured at migration and recorded rather than serialized: twenty open\nrecords in this repository declare at least one of this record's seven paths -- notably\n`collapse_perpath_scope_excursion_issue_rows_into_one` (four of the seven, including\n`issue-record.sh` and its test suite), `normalize_issue_log_class_vocabulary`\n(`context/formats/issue-log.md`), and `phase_commit_drops_own_plan_artifact` plus\n`snapshot_artifacts_contaminate_phase_commits` (`git-commit-phase.sh`). No dependency edges were\nadded, because the overlapping records themselves carry none against one another in this\nterritory -- observed house practice here is contention without serialization. Re-derive the\noverlap and rule on batching at dispatch time rather than trusting this list.\n",
@@ -5916,11 +5916,17 @@
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
       ],
-      "artifacts": [],
-      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/639_make_issue_record_failures_visible/reports/01_issue-record-failure-visibility.md",
+          "type": "report",
+          "summary": "Confirms the silent-flag-typo defect in issue-record.sh's agent-facing invocation contract, surveys all call sites and the regression-suite gap, and ranks the three candidate fixes (breadcrumb/distinct-exit-code recommended) against the acceptance criteria."
+        }
+      ],
+      "next_artifact_number": 2,
       "parent_task": null,
       "created": "2026-10-13T16:43:04Z",
-      "last_updated": "2026-11-24T04:30:56Z",
+      "last_updated": "2026-11-24T04:40:17Z",
       "effort": "2 hours",
       "migrated_from": {
         "repo": "Logos/Verification",
@@ -5934,7 +5940,7 @@
       },
       "project_number": 639,
       "audit_override": "cross-repo relocation of four already-created agent-system records out of the Logos/Verification repository, whose source-store edit targets exist only on this repository's filesystem; these are not new proposals. Procedure: context/patterns/cross-repo-task-migration.md.",
-      "session_id": "sess_1795494587_0fa3fc_639"
+      "session_id": "sess_1795494587_0fa3fc"
     },
     {
       "project_number": 629,

@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795494587_0fa3fc_639",
+  "dispatch_seq": 10,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/639_make_issue_record_failures_visible/reports/01_issue-record-failure-visibility.md",
+      "summary": "Confirms the silent-flag-typo defect in issue-record.sh's agent-facing invocation contract, surveys all call sites and the regression-suite gap, and ranks the three candidate fixes (breadcrumb/distinct-exit-code recommended) against the acceptance criteria."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "issue-record.sh's manual argument parser has exactly one non-zero exit code (1) shared by every refusal class (missing field, invalid closed-enum value, malformed JSON, unresolvable task, AND an unrecognized/mistyped flag). Combined with every call site's documented non-fatal invocation form (`>/dev/null 2>&1 || echo \"Note: issue recording failed (non-fatal)\" >&2`), a mistyped flag in the hand-typed agent-facing template (orchestrate-build-dispatch.sh's rendered '## Issue Log' section) is silently indistinguishable from any other failure -- the evidence entry is simply dropped with no signal. All ~20 existing *programmatic* call sites build flags from variables so a typo there is a reproducible code bug, not this intermittent class; the real risk surface is specifically the hand-copied template.",
+      "category": "PATTERN",
+      "source_artifact": "specs/639_make_issue_record_failures_visible/reports/01_issue-record-failure-visibility.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["issue-record.sh", "non-fatal invocation", "silent failure", "exit code", "stderr redirection"]
+    },
+    {
+      "content": "A migration-era 'territory contention' list recorded at task-relocation time (naming other open tasks that declare overlapping file_scope) can go stale quickly: checking the 20 tasks named in task 639's migration provenance against the live specs/state.json found every single one already status:completed. Always re-verify a migration-provenance contention list against current state.json rather than trusting it as still-live -- it is a snapshot at migration time, not a durable fact.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/639_make_issue_record_failures_visible/reports/01_issue-record-failure-visibility.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["territory contention", "task migration", "state.json", "stale snapshot"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 639 to create implementation plan"
+}
