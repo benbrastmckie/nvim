@@ -13,8 +13,8 @@ next_project_number: 698
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,640,645,646,663,664,671,674,679,680,684,686,689,693,696,697 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,665,694 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,693,697 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,640,645,646,663,664,671,674,679,680,684,686,689,694,696,697 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,665 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,697 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,571,596,642,688 | 501,518,595,641 | core-agent-system, orchestrator, agent-system |
@@ -110,8 +110,7 @@ next_project_number: 698
 674 [HOLD] — Build batch worktree cleanup, retention on partial batches,...
 686 [HOLD] — Create the per-batch worktree and batch branch when isolation...
 689 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-693 [IMPLEMENTING] — RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE...
-  └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 696 [NOT STARTED] — Narrow the orchestration batch-gate stage's own verify-deploy...
 697 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
@@ -407,34 +406,6 @@ If a future ruling reinstates inference as a primary path, that demonstration be
 === VERIFY BY ===
 
 The three doc surfaces naming stack mode consistently; deploy-headless.sh reporting a clean verify; generate-context-line-counts.sh --check clean; the runbook present in its durable location, naming the slice route and the grant count. No scratch repository is created and no transcript is produced.
-
----
-
-### 693. Merge command stack mode
-- **Status**: [IMPLEMENTING]
-- **Task Type**: meta
-- **Topic**: orchestrator
-- **Dependencies**: Task 695
-- **Research**: [693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md]
-- **Plan**: [693_merge_command_stack_mode/plans/01_merge-stack-mode.md]
-
-**Description**: RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE IMPLEMENTING. specs/decisions/review-slices-are-declared-tasks.md amends the landing record's L3/L4 and its "Interface to review submission": a review slice is declared before the work (S1/S2) and lands by an ordinary scoped commit (S4), rather than being reconstructed from landing proofs by plumbing at review time. This record's own deliverable SURVIVES the amendment intact -- see that record's "What is retained from the inference route" section, which keeps the resolvers, the manifest, show, record-request and restack wired. Do NOT widen scope to implement slices here. The one thing to check at implementation time: any prose this record adds must not assert that a review unit is INFERRED from path overlap or dependency topology, because that is no longer the primary route.
-
-=== ORIGINAL DESCRIPTION BELOW, UNCHANGED ===
-
-SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
-
-ORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.
-
-LANDED AND NOT TO BE REDONE: scripts/review-stack-prepare.sh already carries `cut`, `show`, `record-request` and the shared resolvers for review_base (PD1, exit codes 10-13), remote and platform (PD9, exit codes 30-32), plus selection/attribution/union-find unit merging/topological ordering (exit codes 40-47) and the manifest writer with exit codes 49-52. Its suite scripts/tests/test-review-stack-prepare.sh stands at 38 passing cases. Verify against the live file before writing anything.
-
-THIS RECORD OWNS PHASE 4 ONLY -- "Restack when a parent merges". Deliverable, per that phase section: `restack --stack-id NAME [--merged NN]` reads the manifest and the review base's remote-tracking ref (never fetching -- an absent ref refuses and prints the fetch the operator runs); detects a merged entry per PD7 bottom-up, moving that entry to state `merged` and the next entry's base to the review base; recomputes each descendant with a three-way `merge-tree` onto its new parent, writes it with `git commit-tree`, and moves its ref by compare-and-swap, so a conflict refuses naming the path and moves nothing; and refuses when a local review ref and its remote-tracking ref disagree in a way the manifest does not explain.
-
-THIS RECORD OWNS PHASE 6 ONLY -- "`/merge` stack mode". Deliverable, per that phase section: add `--stack <stack id>`, `--only NN` and `--retarget` (alongside the existing `--draft`) to commands/merge.md, updating the frontmatter argument hint and the options table while leaving the single-branch mode exactly as it is. Stack mode's steps, in order: revoke the prompt-minted grant, since this mode pushes nothing; read the manifest via `review-stack-prepare.sh show --json`; refuse a platform PD9 does not support; show ONE approval prompt listing every PR with its head and base. Then per entry, bottom-up: confirm the remote branch tip equals the manifest commit with `git ls-remote <remote> refs/heads/<branch>`, stopping and naming the `/please push` to type when it does not; look for an open PR on that head; create one with the manifest's head, base, title and body file when there is none; and record the URL.
-
-USER-ONLY, AND THE PROHIBITION STILL BINDS: `/merge` may only be invoked by the user, never by an agent (rules/pr-prohibition.md). This record ADDS A MODE to the command's documented behaviour; implementing it must not cause any agent-reachable path to push or to open a PR. The grant revocation in step one is load-bearing precisely because stack mode pushes nothing.
-
-VERIFY BY: the command file's own documented contract being internally consistent (argument hint, options table and step list agreeing), the single-branch mode's text unchanged, and whatever suite covers commands/merge.md staying green. If skills/skill-git-workflow/SKILL.md carries merge-mode wiring that this mode must reach, declare it before editing it rather than widening scope mid-dispatch.
 
 ---
 
