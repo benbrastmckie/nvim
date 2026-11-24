@@ -21,14 +21,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/697_case_h_assertion_review_stack_refusal_arm/summaries/01_case-h-refusal-arm-fix-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["test assertion", "anchored regex", "negative assertion", "shell suite", "regression guard"]
+      "suggested_keywords": [
+        "test assertion",
+        "anchored regex",
+        "negative assertion",
+        "shell suite",
+        "regression guard"
+      ]
     },
     {
       "content": "verify-touched.sh / run-all.sh's default exit-code semantics are 'exit 1 if any suite failed, EXPECTED or not' (--fail-on-new is required to exit 0 on an all-expected failure set). When a batch-deferred scoped gate discharge exits 1, check the tally's own '(N expected, M NEW)' clause and known-failures.txt before treating it as a regression: an exit 1 with 0 NEW and the sole failure listed in known-failures.txt is a satisfied discharge, not a blocker, and should be recorded via issue-record.sh rather than re-run or escalated.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/697_case_h_assertion_review_stack_refusal_arm/summaries/01_case-h-refusal-arm-fix-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-touched.sh", "run-all.sh", "known-failures", "exit code", "batch gate deferral"]
+      "suggested_keywords": [
+        "verify-touched.sh",
+        "run-all.sh",
+        "known-failures",
+        "exit code",
+        "batch gate deferral"
+      ]
     }
   ],
   "sapience_notes": [
@@ -83,7 +95,11 @@
     "session_id": "sess_1795494587_0fa3fc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 2,
     "phases_total": 2
   }

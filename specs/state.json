@@ -5,12 +5,12 @@
     {
       "project_number": 697,
       "project_name": "case_h_assertion_review_stack_refusal_arm",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.\n\nTHE SUITE IS RED RIGHT NOW, AND THE FAILING ASSERTION IS ALREADY KNOWN EXACTLY. scripts/tests/test-orchestrate-conclusion-roadmap.sh Case H fails as a designed consequence of the review-stack wiring that landed in scripts/milestone-review-handoff.sh. This is a predicted, recorded breakage, not a regression to diagnose from scratch. Do not re-derive it.\n\nTHE FAILING ASSERTION. Case H's third assertion block:\n\n  if grep -q \"/please push ${caseH_branch}\\$\" <<< \"$LAST_STDERR\" && grep -q \"^  /merge\" <<< \"$LAST_STDERR\"; then\n    common_test_pass \"Case H: the literal /please + /merge commands are printed\"\n\nThe first conjunct still holds. The second cannot. The handoff script now calls\nreview-stack-prepare.sh cut --milestone <id> and then show, non-fatally, printing one of two\narms: on success the real per-PR review stack, on refusal the refusal reason plus\n`/please push <branch>` ALONE with no `/merge` line. Suppressing `/merge` on the refusal arm is\nthe deliberate point of that change, not an incidental detail -- `/merge` acts on the\nchecked-out branch, refuses outright on main or master, and hardcodes remote origin and target\nmain, so it could never have worked from that arm. Case H's sandbox does not install\nreview-stack-prepare.sh, so cut refuses and the refusal arm is what runs.\n\nWHAT THIS RECORD OWNS: choose ONE remedy and implement it.\n\n(a) RECOMMENDED. Retarget the assertion to the refusal-arm shape: assert `/please push <branch>`\n    IS printed and `/merge` is NOT. Smallest change, leaves Case H's sandbox untouched, and\n    converts the case into a positive regression guard for the `/merge` suppression -- which is\n    otherwise asserted only in the handoff script's own suite.\n\n(b) Install review-stack-prepare.sh into Case H's sandbox so the success arm runs, and rewrite\n    the assertion to expect the rendered stack. Larger: the fixture must declare a review base\n    and a GitHub-shaped remote. That shape already exists as the success fixture in\n    scripts/tests/test-milestone-review-handoff.sh and can be borrowed rather than reinvented.\n\nState which was chosen and why in the plan. Do not do both.\n\nCHECK, DO NOT ASSUME, ONE ADJACENT ASSERTION. Case H's next block asserts\n.roadmap_milestones[0].review.state == \"prepared\" and .roadmap_milestones[0].review.ref ==\nrefs/heads/<branch>. specs/decisions/slice-command-one-path-to-review.md and\nspecs/decisions/review-slices-are-declared-tasks.md amend how a reviewable unit is produced, and\na review.ref write may or may not survive those rulings. Establish whether that assertion is\nstill correct BEFORE touching the file. If it is now wrong, rule on it here rather than leaving\na second latent red behind the first. If it is still correct, leave it alone and say so.\n\nSHARED TERRITORY, DECLARED AND ORDERED. previous_work_section_in_generated_roadmap (665) also\ndeclares scripts/tests/test-orchestrate-conclusion-roadmap.sh in its file_scope. That record is\na feature; this one is a red-to-green fix, so this one runs FIRST and 665 carries the dependency\nedge onto it. Do not race it.\n\nVERIFY BY: scripts/tests/test-orchestrate-conclusion-roadmap.sh green in full, with Case H\npassing on whichever arm was chosen; scripts/tests/test-milestone-review-handoff.sh still green\n(this work must not regress it); deploy-headless.sh reporting a clean verify.",
       "topic": "orchestrator",
       "created": "2026-11-24T02:27:59Z",
-      "last_updated": "2026-11-24T05:40:52Z",
+      "last_updated": "2026-11-24T06:13:04Z",
       "audit_verdict": {
         "proposal": {
           "id": "case_h_assertion_review_stack_refusal_arm",
@@ -245,9 +245,15 @@
           "path": "specs/697_case_h_assertion_review_stack_refusal_arm/plans/01_case-h-refusal-arm-fix.md",
           "type": "plan",
           "summary": "2-phase plan: retarget Case H's third assertion to the refusal-arm shape (remedy (a)), then redeploy with a clean verify."
+        },
+        {
+          "path": "specs/697_case_h_assertion_review_stack_refusal_arm/summaries/01_case-h-refusal-arm-fix-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the Case H refusal-arm assertion retarget."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Retargeted Case H's third assertion in test-orchestrate-conclusion-roadmap.sh to the refusal-arm shape it actually exercises (REFUSED reason + /please push present, /merge absent), redeployed via deploy-headless.sh with a clean verify, and confirmed both test-orchestrate-conclusion-roadmap.sh (35/0) and test-milestone-review-handoff.sh (19/0) green in the deployed tree."
     },
     {
       "project_number": 696,

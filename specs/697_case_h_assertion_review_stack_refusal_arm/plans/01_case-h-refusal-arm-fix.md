@@ -1,7 +1,7 @@
 # Implementation Plan: Task #697
 
 - **Task**: 697 - Case H assertion, review-stack refusal arm
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.25 hours
 - **Dependencies**: None (task 665 carries the dependency edge onto this one; this one depends on nothing)
 - **Research Inputs**: specs/697_case_h_assertion_review_stack_refusal_arm/reports/01_case-h-refusal-arm-fix.md
