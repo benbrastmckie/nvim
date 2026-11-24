@@ -309,13 +309,13 @@ Confirm with `git diff --stat` and a `jq` comparison of both entries against
 
 ---
 
-### Phase 4: Write the Foreground Creation Runbook and Verify the Set [NOT STARTED]
+### Phase 4: Write the Foreground Creation Runbook and Verify the Set [COMPLETED]
 
 **Goal**: A single ordered command list that turns the packet into six records and fifteen
 edges, and proof that the dispatch itself created nothing.
 
 **Tasks**:
-- [ ] Write `records/01_creation-runbook.md` with: (a) the candidate list in human-readable
+- [x] Write `records/01_creation-runbook.md` with: (a) the candidate list in human-readable
       form (slug, one-line scope, territory, predecessors, audit disposition); (b) the
       confirmation the foreground surface owes the operator before creating; (c) creation in
       `creation_order`, each via `commands/task.md` Create Task Mode with topic
@@ -327,18 +327,18 @@ edges, and proof that the dispatch itself created nothing.
       filter removing 692 and 693, immediately followed by `--depends-on-add` for all six;
       (g) `generate-todo.sh`, `validate-state.sh --deep`, and
       `orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json <eight numbers>`;
-      (h) the note that S1 and `bind_push_grant_to_pushed_ref` are dispatchable together first.
-- [ ] State in the runbook that an agent session may run it only as a foreground surface with
+      (h) the note that S1 and `bind_push_grant_to_pushed_ref` are dispatchable together first. *(deviation: altered — territory is written inside the creation write, since --file-scope-add is refused on a preflight edge_only call; ten edges among the new records and 655, sixteen in all; creation goes through the Step 6 state-write.sh form with the slug fixed to the packet id)*
+- [x] State in the runbook that an agent session may run it only as a foreground surface with
       the operator's confirmation, and that S1's closing step and every push stay the
-      operator's (`rules/pr-prohibition.md`).
-- [ ] Re-check the packet against live state: baseline numbers, statuses of 655 and 694, and
-      that no record with any of the six slugs now exists.
-- [ ] Confirm the dispatch added no `active_projects` entry and changed no `dependencies`
+      operator's (`rules/pr-prohibition.md`). *(completed)*
+- [x] Re-check the packet against live state: baseline numbers, statuses of 655 and 694, and
+      that no record with any of the six slugs now exists. *(completed)*
+- [x] Confirm the dispatch added no `active_projects` entry and changed no `dependencies`
       array: compare `[.active_projects[] | {project_number, dependencies}]` at `HEAD` of the
-      pre-implementation commit against the working tree.
-- [ ] In the implementation summary, render the candidate list again, state that record
+      pre-implementation commit against the working tree. *(completed)*
+- [x] In the implementation summary, render the candidate list again, state that record
       creation and all fifteen edges are owed by a foreground step, and name the runbook path.
-      Set `next_steps` to point at the runbook.
+      Set `next_steps` to point at the runbook. *(completed: summary written at summaries/01_slice-build-task-set-summary.md)*
 
 **Timing**: 1 hour
 
@@ -364,14 +364,14 @@ edges, and proof that the dispatch itself created nothing.
 
 ## Testing & Validation
 
-- [ ] `records/01_task-set-packet.json` parses, holds six proposals, and its slug graph is
+- [x] `records/01_task-set-packet.json` parses, holds six proposals, and its slug graph is
       acyclic.
-- [ ] `records/01_audit-verdicts.ndjson` holds six lines whose `.proposal.id` values are the six
+- [x] `records/01_audit-verdicts.ndjson` holds six lines whose `.proposal.id` values are the six
       slugs.
-- [ ] Seven `follow_up_task` entries exist in `issues.jsonl`.
-- [ ] 694 and 655 carry revised descriptions; their edges, territory and status are unchanged.
-- [ ] `validate-state.sh --deep` shows no new failure.
-- [ ] No new `active_projects` entry is attributable to this task.
+- [x] Seven `follow_up_task` entries exist in `issues.jsonl`.
+- [x] 694 and 655 carry revised descriptions; their edges, territory and status are unchanged.
+- [x] `validate-state.sh --deep` shows no new failure.
+- [x] No new `active_projects` entry is attributable to this task.
 
 ## Artifacts & Outputs
 

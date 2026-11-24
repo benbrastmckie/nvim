@@ -1,17 +1,17 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 2,
-  "summary": "Wrote a four-phase plan (3.75 hours) for the /slice build task set. The plan departs from the task description on one point: an autonomous dispatch may not create task records, so implementation produces a creation-ready proposal packet, audit verdicts, follow-up evidence entries and a foreground runbook, and performs only the two description revisions (694, 655) directly. Creation of the six records and all fifteen edges is owed afterwards by a foreground surface with operator confirmation.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "summary": "All four plan phases closed. A proposal packet, backlog-audit verdicts and a foreground runbook now define six /slice successor records and sixteen edges, and the descriptions of 694 and 655 are revised. The dispatch created no record and wrote no edge: that step is owed by a foreground session with operator confirmation. Scoped verification (verify-touched.sh) passed 98 of 98; the full gate set is deferred to the batch stage.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/698_slice_build_task_set/plans/01_slice-build-task-set.md",
-      "summary": "Four-phase plan: proposal packet, audit and follow-up evidence, two description revisions, foreground creation runbook."
+      "type": "summary",
+      "path": "specs/698_slice_build_task_set/summaries/01_slice-build-task-set-summary.md",
+      "summary": "Proposal packet, audit verdicts and foreground runbook for six /slice successor records and sixteen edges; descriptions of 694 and 655 revised. Record creation is owed by a foreground step."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
-  "next_action_hint": "Dispatch implement. After it closes, the six records and fifteen edges still need a foreground creation step driven by records/01_creation-runbook.md."
+  "next_action_hint": "Not a dispatch: a foreground session runs specs/698_slice_build_task_set/records/01_creation-runbook.md after the operator confirms the candidate set. Seven follow_up_task entries in issues.jsonl carry the same candidates."
 }

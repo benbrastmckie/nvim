@@ -1,13 +1,119 @@
 {
-  "status": "in_progress",
-  "started_at": "2026-11-24T11:50:00Z",
+  "status": "implemented",
+  "started_at": "2026-11-24T11:30:07Z",
+  "completed_at": "2026-11-24T11:48:00Z",
   "dispatch_seq": 3,
-  "artifacts": [],
-  "partial_progress": {"stage": "initializing", "details": "Implementation dispatch started", "phases_completed": 0, "phases_total": 4},
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/698_slice_build_task_set/summaries/01_slice-build-task-set-summary.md",
+      "summary": "Proposal packet, audit verdicts and foreground runbook for six /slice successor records and sixteen edges; descriptions of 694 and 655 revised. Record creation is owed by a foreground step."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wrote a creation-ready proposal packet, backlog-audit verdicts and a foreground runbook for the six /slice successor records and their sixteen edges, and revised the descriptions of 694 and 655 onto the ruling's ground. No record was created and no edge written by the dispatch; that step is owed by a foreground session running records/01_creation-runbook.md."
+  },
+  "next_steps": "From a foreground session, with the operator's confirmation, run specs/698_slice_build_task_set/records/01_creation-runbook.md: create six records, write sixteen edges (694 re-edged in one step), validate, then /roadmap. slice_command_build and bind_push_grant_to_pushed_ref are dispatchable together afterwards.",
+  "modified_files": [
+    "specs/698_slice_build_task_set/records/01_task-set-packet.json",
+    "specs/698_slice_build_task_set/records/01_audit-verdicts.ndjson",
+    "specs/698_slice_build_task_set/records/01_prior-descriptions.json",
+    "specs/698_slice_build_task_set/records/01_creation-runbook.md",
+    "specs/698_slice_build_task_set/issues.jsonl",
+    "specs/698_slice_build_task_set/summaries/01_slice-build-task-set-summary.md",
+    "specs/state.json",
+    "specs/TODO.md",
+    "specs/ROADMAP.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Before handing an operator a runbook of state-mutating commands, prove each command form with the script's own --dry-run against the live state file: state-write.sh --dry-run validates the jq filter, the bindings and the audit-evidence gate (including --allocate-into and --audit-verdict coverage) without acquiring the mutex or writing; update-task-status.sh --dry-run prints the dependency union it would write. Compare an md5 of specs/state.json before and after to confirm nothing was written. This caught a plan step using a flag the script refuses.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/698_slice_build_task_set/summaries/01_slice-build-task-set-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "dry-run",
+        "state-write.sh",
+        "runbook",
+        "audit-evidence gate",
+        "update-task-status.sh"
+      ]
+    },
+    {
+      "content": "To pre-create task records from a proposal packet without per-task prompts: run audit-task-proposals.sh --proposals-file over an array whose id fields are the exact slugs to be written as project_name, keep the NDJSON, and pass it as --audit-verdict to a state-write.sh --allocate-into creation write that fixes project_name to the same slug. file_scope must be included in that creation write; update-task-status.sh --file-scope-add is postflight-only (research, plan, implement) and preflight edge_only requires --depends-on-add.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/698_slice_build_task_set/summaries/01_slice-build-task-set-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "proposal packet",
+        "audit-verdict",
+        "allocate-into",
+        "file_scope",
+        "task creation",
+        "slug"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "/slice build task set ordering",
+      "predicate": "decision is",
+      "value": "The six successors of specs/decisions/slice-command-one-path-to-review.md are sequenced slice_command_build and bind_push_grant_to_pushed_ref first (no predecessors, no shared file), then slice_bar_measurement_and_declaration, narrow_handoff_to_print_slice, delete_review_stack_inference_route, remove_merge_command, with stack_pr_redeploy_and_second_repo_demo last. This overturns the ruling's own claim that deleting the inference route is independent: milestone-review-handoff.sh calls review-stack-prepare.sh since handoff_prints_review_stack closed as written.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "specs/698_slice_build_task_set/records/01_task-set-packet.json"
+    },
+    {
+      "subject": "update-task-status.sh --file-scope-add",
+      "predicate": "has the non-obvious constraint that",
+      "value": "It is refused unless operation is postflight and target_status is research, plan or implement; it cannot declare territory on a not_started task, and preflight edge_only is itself refused without --depends-on-add. A new record's file_scope has to be written in the creation state-write.sh call.",
+      "ko_type": "constraint",
+      "confidence": 0.9,
+      "source_loc": ".claude/scripts/update-task-status.sh:66"
+    },
+    {
+      "subject": "audit-task-proposals.sh semantic pass",
+      "predicate": "measured behavior is",
+      "value": "Six proposals whose descriptions all open with the standard source-store paragraph each drew 200 to 300 non-scope-blind verdicts (608 KB of NDJSON) and none was genuinely-new; top semantic scores of 0.55 to 0.68 went to unrelated closed records. Shared boilerplate swamps the matcher, so dispositions had to be written by hand from the mechanical overlaps.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/698_slice_build_task_set/records/01_audit-verdicts.ndjson"
+    },
+    {
+      "subject": "the 655 edge in the /slice task set",
+      "predicate": "decision is",
+      "value": "branch_aware_orchestration_and_squash_landing depends on slice_bar_measurement_and_declaration, not the reverse. The ruling's 'hard edge from the accuracy of the bar onto 655, not from its existence' means the bar is buildable first with every path counted, and 655 later wires its generated-path declaration into the count.",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/slice-command-one-path-to-review.md"
+    },
+    {
+      "subject": "an operator action as a task precondition",
+      "predicate": "finding is",
+      "value": "A dependency edge is satisfied when its predecessor reaches completed, so it cannot express 'only after the operator has opened one real pull request'. The condition was carried in two descriptions instead: slice_command_build may not close on a green suite and its agent returns with the record open, and remove_merge_command checks the series files for an opened request before any edit and returns blocked without one.",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/698_slice_build_task_set/records/01_creation-runbook.md"
+    },
+    {
+      "subject": "verify-touched.sh run with no arguments",
+      "predicate": "measured behavior is",
+      "value": "It exits 0 and reports its owed-path count, but cannot record the owed paths: unmapped-fallback-lib.sh line 128 appends to /dev/null/no-task-dir/records/full-sweep-owed.jsonl and fails with 'Not a directory' once per owed path. Observed with 17 owed paths out of 43 touched.",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": ".claude/scripts/lib/unmapped-fallback-lib.sh:128"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795519174_6a98f8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
