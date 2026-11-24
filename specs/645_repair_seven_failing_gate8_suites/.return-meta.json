@@ -1,36 +1,33 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/645_repair_seven_failing_gate8_suites/reports/01_mcp-merge-defect-already-fixed.md",
-      "summary": "Traces test-mcp-merge-target.sh Assertions C/E to merge.lua's remove_tracked 'new_object' wholesale-removal bug; confirms the fix already landed via commit 3c7f91a92 before this dispatch, the suite now passes 7/0 deterministically on two direct runs, and no further code change is needed -- remaining work is confirmatory (full verify-deploy.sh + deploy-headless.sh, deferred here to the batch's own gate stage)."
+      "type": "plan",
+      "path": "specs/645_repair_seven_failing_gate8_suites/plans/01_mcp-merge-closure-confirmation.md",
+      "summary": "Two-phase verification-and-close plan: the named .mcp.json merge defect is already fixed and committed, so no code edit is scoped -- phase 1 captures verbatim suite/known-failures evidence, phase 2 redeploys and defers the complete gate set to the orchestration close."
     }
   ],
-  "dispatch_seq": 9,
-  "findings_count": 1,
-  "next_steps": "Run /orchestrate 645 to create an implementation plan",
+  "dispatch_seq": 13,
+  "phase_count": 2,
+  "estimated_hours": 0.75,
+  "dependency_waves": 2,
+  "next_steps": "Run /orchestrate 645 to execute the plan",
   "memory_candidates": [
     {
-      "content": "merge.lua's remove_tracked() (extension merge-target unmerge path) treated 'new_array'/'new_object'/'new_value' tracked-entry types identically (unconditional wholesale t[key]=nil). This is correct for a scalar or freshly-created array but wrong for 'new_object': deep_merge's 'Object: recurse' arm always tracks a new object's children individually, so wholesale removal destroys any sibling key added into that same object after the extension's own first load (e.g. a hand-written .mcp.json mcpServers entry surviving a forced-reload regenerate). Fixed by giving 'new_object' its own branch that recurses into tracked children (mirroring the 'merged' branch) and only prunes the object once empty. Generalizes: any object-keyed (not array-keyed) merge target in this engine was exposed to this class of defect until the object-vs-scalar/array distinction was made explicit in remove_tracked.",
+      "content": "A plan dispatch whose research reports the named defect already fixed should produce a verification-and-close plan, not a no-op return and not a re-derivation: phase 1 captures the acceptance criteria's verbatim evidence (suite pass/fail counts, roster row counts, git-clean proof that the fix is committed rather than an uncommitted working-tree artifact a sibling or regenerate could erase), phase 2 redeploys and records the complete-gate-set deferral. The git-clean check is the non-obvious step -- an already-fixed verdict is only durable if the fix is in history, which is a different claim from the suite passing right now.",
       "category": "PATTERN",
-      "source_artifact": "specs/645_repair_seven_failing_gate8_suites/reports/01_mcp-merge-defect-already-fixed.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["merge.lua", "remove_tracked", "new_object", "mcpServers", "deep_merge", "unmerge_settings"]
-    },
-    {
-      "content": "An unfiltered verify-deploy.sh invocation refuses with a 'DEFERRED: a batch-gate-pending marker exists' message when the current /orchestrate batch cycle already owes the full gate set to its own once-per-invocation batch-gate stage. --override-batch-gate-deferral is reserved for that stage's own discharger; a concurrent dispatch (e.g. a research/plan dispatch running alongside sibling implement dispatches in the same cycle) should use --only-gate/--gate8-touched for a scoped check instead of forcing the override.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/645_repair_seven_failing_gate8_suites/reports/01_mcp-merge-defect-already-fixed.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["verify-deploy.sh", "batch-gate-pending", "override-batch-gate-deferral", "gate8-touched", "orchestrate batch"]
+      "source_artifact": "specs/645_repair_seven_failing_gate8_suites/plans/01_mcp-merge-closure-confirmation.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["already-fixed", "verification-only plan", "premise re-validation", "carried-figure", "batch-gate deferral"]
     }
   ],
   "metadata": {
     "session_id": "sess_1795494587_0fa3fc_645",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 1
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 2,
+    "estimated_hours": 0.75,
+    "dependency_waves": 2
   }
 }

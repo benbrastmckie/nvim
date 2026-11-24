@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 13,
+  "phases_completed": 0,
+  "phases_total": 2,
+  "summary": "Re-validated the task description's premise against live state and found the single remaining in-scope defect already closed: test-mcp-merge-target.sh runs 7 passed / 0 failed exit 0, and merge.lua's new_object recursing branch is committed and clean. Wrote a two-phase verification-and-close plan scoping zero code edits -- phase 1 captures the verbatim suite and known-failures evidence for acceptance criteria 2, 3 and 4; phase 2 redeploys for criterion 5 and defers the complete gate set to the orchestration close for criterion 1. Also recorded that the description's agent-system/extensions/core/** edit-target line does not apply to this defect, whose fix lives in primary Neovim plugin code.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/645_repair_seven_failing_gate8_suites/plans/01_mcp-merge-closure-confirmation.md",
+      "summary": "Two-phase verification-and-close plan; no code edit scoped, whole-tree claim declared on the deploy phase."
+    }
+  ]
+}
