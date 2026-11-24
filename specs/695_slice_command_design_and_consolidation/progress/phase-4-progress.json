@@ -1,0 +1,30 @@
+{
+  "phase": 4,
+  "phase_name": "Amend the records the ruling overturns",
+  "started_at": "2026-11-24T01:27:00Z",
+  "last_updated": "2026-11-24T01:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Assertions amended to the new record",
+      "status": "done",
+      "files_touched": [
+        "specs/decisions/slice-command-one-path-to-review.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add dated amendment notes to the slices record and the landing record",
+      "status": "done",
+      "files_touched": [
+        "specs/decisions/review-slices-are-declared-tasks.md",
+        "specs/decisions/isolation-off-landing-verification-and-review-time-squash.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "note": "Prose tier. git diff --numstat on the two existing records: 8/0 and 6/0, additions only, confined to the amendment notes."
+}

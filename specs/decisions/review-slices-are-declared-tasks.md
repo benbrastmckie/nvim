@@ -6,6 +6,14 @@ record") in the places listed under "Assertions amended". It does not disturb th
 record's verification predicate V1 to V5, its landing proof, or its retirement order, all of
 which stand as written.
 
+**Amended by** `specs/decisions/slice-command-one-path-to-review.md`, 2026-11-24: S3, S4 and S6
+are overturned, S5 in part, together with "What is retained from the inference route", "Why not
+abandon the inference route entirely" and the redeploy obligation. A slice is a declared path
+set cut from the work-branch tip and built by plumbing; it is not a task record, there is no
+declared `review_base`, and nothing of `review-stack-prepare.sh` is retained. S1 and S2 stand as
+outcomes on a changed ground, and S7 stands with `/slice` in place of `/merge`. The amending
+record's "Assertions amended" lists each part.
+
 Decided 2026-11-23 by operator direction, in session `sess_1795472390_63c292`, after the
 restack element of `stack_pr_submission_from_integration_branch` landed and its remaining
 elements were reviewed for cost against value.

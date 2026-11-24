@@ -342,27 +342,27 @@ that is absent or already terminal gets a row saying so rather than being droppe
 
 ---
 
-### Phase 4: Amend the records the ruling overturns [NOT STARTED]
+### Phase 4: Amend the records the ruling overturns [COMPLETED]
 
 **Goal**: Make the two existing records point at the new one so no reader acts on an overturned
 ruling.
 
 **Tasks**:
-- [ ] In the new record, add `## Assertions amended`: one row per amended assertion of
+- [x] In the new record, add `## Assertions amended`: one row per amended assertion of
       `review-slices-are-declared-tasks.md` (S3, S4, S5 in part, S6, the retention list, "Why
       not abandon the inference route entirely", the redeploy obligation), each with the
       assertion and what now holds; and a line listing what stands unamended (S1 and S2 as
       outcomes with a changed ground, S7). Add rows for the landing record's L3, L4 and
-      review-submission interface as they read after both amendments.
-- [ ] In `specs/decisions/review-slices-are-declared-tasks.md` (confirmed present at plan time,
+      review-submission interface as they read after both amendments. *(completed)*
+- [x] In `specs/decisions/review-slices-are-declared-tasks.md` (confirmed present at plan time,
       178 lines), add a dated `**Amended by**` note directly under the opening paragraph naming
       the new record and the amended parts. Change no ruling text in place. If the file is
-      absent at implementation time, stop the phase and record the blocker; do not recreate it.
-- [ ] In `specs/decisions/isolation-off-landing-verification-and-review-time-squash.md`
+      absent at implementation time, stop the phase and record the blocker; do not recreate it. *(completed)*
+- [x] In `specs/decisions/isolation-off-landing-verification-and-review-time-squash.md`
       (confirmed present at plan time, with an existing `**Amended by**` note at line 17), add a
       second dated `**Amended by**` note naming the new record for L3, L4 and the
       review-submission interface. If the existing note has moved, anchor on its text, not its
-      line number.
+      line number. *(completed)*
 
 **Timing**: 1 hour
 

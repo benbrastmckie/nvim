@@ -20,6 +20,12 @@ review slices. The reviewable unit becomes a slice declared before the work rath
 reconstructed from landing proofs at review time. L1, L2, the verification predicate V1 to V5,
 the landing proof and the retirement order are unaffected.
 
+**Amended by** `specs/decisions/slice-command-one-path-to-review.md`, 2026-11-24: L3, L4 and the
+"Interface to review submission" section are amended again. The reviewable unit is a slice, a
+declared path set cut from the work-branch tip; one commit per slice is built at review time by
+plumbing, and no landing proof is read to build it. L1, L2, L5, the verification predicate V1 to
+V5, the landing proof and the retirement order are unaffected.
+
 ## The contradiction
 
 R3-amended builds the per-task squash by reading a batch branch: it selects the task's commits

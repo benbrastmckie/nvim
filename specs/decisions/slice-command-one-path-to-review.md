@@ -810,3 +810,48 @@ Ruled, and now overturned:
   the work branch must merge it before any rebuild. In a repository that declares
   `integration_branch`, that merge is an ordinary commit on the work branch and is the
   operator's or an ordinary task's to make.
+
+## Assertions amended
+
+### In `specs/decisions/review-slices-are-declared-tasks.md`
+
+| Part | Assertion | Now |
+|---|---|---|
+| S1 | The reviewable unit is declared before the work; "A review slice is a task record" | **Outcome stands, ground and form change.** A slice is declared and approved by a person before it is built, and no boundary is inferred. It is declared after the work and before the review, as a row in a series file, not as a task record |
+| S2 | A slice is not the task that did the work; a slice containing both writers of a shared path is clean by construction | **Stands**, on a simpler ground: a file is in exactly one slice, so which task wrote which line is never presented and the `shared_paths` floor has nothing to act on |
+| S3 | `review_base` is a declared key; a repository whose `review_base` equals its `integration_branch` is refused | **Overturned.** No key, no refusal by name. The target is chosen at the prompt; an empty difference is the only unusable target ("Review base") |
+| S4 | A slice lands by an ordinary scoped commit from a working tree; "nothing is overlaid blob by blob" | **Overturned.** A slice is built by overlay in a private index. The measurement S4 quotes ("the only landing that worked was an ordinary scoped commit") is about landing uncommitted work onto a side ref while the primary tree stays dirty (landing record, option A). A slice is cut from a committed tip and leaves `HEAD`, index and tree untouched, so that objection does not reach it; the landing record's own interface section measured the overlay as working |
+| S5 | Slice `N+1` branches from slice `N`; order is `dependencies[]` edges between slice tasks; a merged parent changes the child's base by a forge base edit | **Overturned in part.** Stacking by declared dependency stands. A slice's base is the target plus only the slices it names, so independent slices are not chained. Order is the `depends_on` field of the series file. After a parent merges, the child is rebuilt from its declaration; no forge base edit |
+| S6 | Approval creates one task per slice; slices are researched, planned, implemented and verified as ordinary tasks | **Overturned.** A slice is not a task ("Rejected alternatives") |
+| S7 | Every push behind a typed `/please`, every forge call inside the user-invoked `/merge`, `rules/pr-prohibition.md` unamended | **Stands**, with `/slice` as the user-invoked command in place of `/merge` |
+| "What is retained from the inference route" | The resolvers, the manifest, `show`, `record-request` and `restack` are retained and still wired | **Overturned.** Nothing of `review-stack-prepare.sh` is retained |
+| "Why not abandon the inference route entirely" | "A stack already cut by `cut` exists and its manifest is on disk" | **Overturned; the premise is false.** No manifest, no review ref and no `review_base` declaration exists in any of four repositories checked (E6) |
+| "Obligations on the implementing plan", redeploy declaration | Site the redeploy once per batch, not once per slice | **Lapses** with S6 |
+| "Obligations", grant count | State the count; do not design around it | **Stands**; restated under "Grants" with the one-live-grant fact added |
+| "Obligations", slice proposal quality | The proposal shows each slice's contents, order and shared paths | **Stands and is made concrete** as prompt 2. "Paths shared with another slice" becomes the `in two slices` count, which must be zero |
+| "What this does not deliver", last paragraph | Whether declared slices make isolation attractive again is open work | **Closed**: irrelevant to review; the five held records are abandonable |
+
+### In `specs/decisions/isolation-off-landing-verification-and-review-time-squash.md`
+
+Each row reads as it stands after both this record and the slices record.
+
+| Part | Assertion | Now |
+|---|---|---|
+| L3 | The reviewable unit of a task is its attributed commit set | The reviewable unit is a slice: a declared path set cut from the work-ref tip. A task's attributed commit set remains the unit of landing verification and is not read to build a slice |
+| L4 | One commit per task is produced at review time, on a review ref, by plumbing | One commit per **slice** is produced at review time, on a slice branch, by plumbing. "By plumbing" stands as L4 wrote it; "per task" does not |
+| Interface, "The ref it reads" | The integration branch named in the batch record | The checked-out work ref, at its tip |
+| Interface, "The range" and "Whether it is one commit per task" | One landing proof per task | No proof is read. A completed task's `modified_files` is a grouping hint for the proposal and nothing more |
+| Interface, "How one commit per task is built" | The blob overlay, with tree equality as the check | The same overlay and the same check, applied to declared path sets taken at the tip |
+| Interface, "The stated limit" | Per entangled task the review step chooses between accepting, naming or merging | Does not arise: a file is in exactly one slice |
+| Interface, "Tasks with no proof" | Attribution by V2 is the fallback | Not needed; nothing is attributed |
+
+L1, L2, L5, the landing predicate V1 to V5, the landing proof and the retirement order are not
+amended. L5's retirement is completed by the deletion ruled here.
+
+### In the stack-PR design record
+
+Its rulings PD1 to PD12 describe `review-stack-prepare.sh`. With that script deleted they have
+no subject. PD1's `review_base` refusal, as implemented at the script's lines 217 to 247, is
+overturned by "Review base". The record itself was not read for this ruling; the slices
+record's own table lists PD3, PD5, PD6 and PD7 as amended and the rest as not, and that table
+is superseded by the deletion.
