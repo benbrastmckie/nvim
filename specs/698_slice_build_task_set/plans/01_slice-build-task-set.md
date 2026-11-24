@@ -244,40 +244,40 @@ record each candidate in the channel the conclusion stage reads.
 
 ---
 
-### Phase 3: Revise the Descriptions of 694 and 655 [NOT STARTED]
+### Phase 3: Revise the Descriptions of 694 and 655 [COMPLETED]
 
 **Goal**: Both existing records rest on the ruling's ground, cited by slug, with their edges
 untouched.
 
 **Tasks**:
-- [ ] Confirm both targets exist and are `not_started` with no plan file
+- [x] Confirm both targets exist and are `not_started` with no plan file
       (`jq` on `specs/state.json`; `ls specs/655_*/plans` is empty; 694 has no directory). If
       either has gained a plan file or left `not_started`, do not write: record the finding
       with `issue-record.sh`, move that record's revision into the runbook as an operator step,
-      and continue with the other.
-- [ ] Save both current descriptions to `records/01_prior-descriptions.json` (keys `694`,
-      `655`) before any write.
-- [ ] 694: replace the body. Keep the source-store paragraph. New scope: doc parity for
+      and continue with the other. *(completed)*
+- [x] Save both current descriptions to `records/01_prior-descriptions.json` (keys `694`,
+      `655`) before any write. *(completed: full pre-revision entries saved, not only the descriptions)*
+- [x] 694: replace the body. Keep the source-store paragraph. New scope: doc parity for
       `/slice` across `README.md`, `merge-sources/claudemd.md` and `docs/guides/user-guide.md`;
       redeploy with the bounded-wait idiom and `index-entries.json` line-count reconciliation;
       the operator runbook for the slice route (the typed `/please push` lines, then `/slice`;
       grant count and window as they stand after `bind_push_grant_to_pushed_ref`), sited in
       `docs/guides/user-guide.md`; acceptance is one real slice pushed and opened by the
       operator in a second repository. State that it runs after all six successors, named by
-      slug, and that its predecessors are to be re-edged by the foreground runbook.
-- [ ] 655: replace only the "PRIORITY RAISED" paragraph with the ruling's ground: the
+      slug, and that its predecessors are to be re-edged by the foreground runbook. *(completed)*
+- [x] 655: replace only the "PRIORITY RAISED" paragraph with the ruling's ground: the
       generated-path declaration has a second consumer, the `/slice` bar's line count ("The size
       bar", "What is counted"); until it exists every path counts and the prompt says so; it is
       ordered after `slice_bar_measurement_and_declaration`. Everything from "=== ORIGINAL
-      DESCRIPTION BELOW" onward stays byte-identical.
-- [ ] Write each with the Stage 7 "For Description Update" block of
+      DESCRIPTION BELOW" onward stays byte-identical. *(completed)*
+- [x] Write each with the Stage 7 "For Description Update" block of
       `skills/skill-reviser/SKILL.md` (`state-write.sh` object-merge of `description` and
       `last_updated`, `--session-id`, `--arg desc`, `--argjson num`, `--regen-todo`). Pass the
-      description from a file via `--arg desc "$(cat file)"`; never hand-roll a `jq` rewrite.
-- [ ] Regenerate the roadmap, which renders truncated descriptions:
-      `bash .claude/scripts/roadmap-integration.sh --regenerate`.
-- [ ] Do not touch `dependencies`, `file_scope`, `roadmap_ext_blocked` or `status` on either
-      record.
+      description from a file via `--arg desc "$(cat file)"`; never hand-roll a `jq` rewrite. *(completed)*
+- [x] Regenerate the roadmap, which renders truncated descriptions:
+      `bash .claude/scripts/roadmap-integration.sh --regenerate`. *(completed: the only ROADMAP.md change is one line marking this task in flight; the roadmap does not render either revised description)*
+- [x] Do not touch `dependencies`, `file_scope`, `roadmap_ext_blocked` or `status` on either
+      record. *(completed)*
 
 **Timing**: 0.75 hours
 

@@ -387,37 +387,41 @@ Every claim about either implementation re-derived from the live files, with lin
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
-=== SCOPE NARROWED BY RULING ===
+=== RE-GROUNDED ON THE /slice RULING ===
 
-specs/decisions/review-slices-are-declared-tasks.md rules that a review slice is declared before the work rather than inferred from landing proofs after it (S1, S2), and that a slice lands by an ordinary scoped commit rather than a blob overlay (S4). Read that record's "What is retained from the inference route, and what is not" section before planning.
+specs/decisions/slice-command-one-path-to-review.md rules that /slice is the one path from a work branch to review ("The ruling in six lines"), that the stack mode of the old merge command is never built, and that this record survives revised ("Verdict on each open record"; "Successors", the line under the table): it becomes doc parity, redeploy and the operator runbook for /slice. Read "The command surface", "The mechanism", "The size bar" and "Grants" before planning. The ground this description last stood on, specs/decisions/review-slices-are-declared-tasks.md, is amended by that ruling in the places its "Assertions amended" section lists.
 
-The consequence for this record: the second-repository demonstration it used to own existed to prove that the INFERENCE machinery -- union-find over dependency edges and landing-proof path overlap, topological reordering, the merge-base overlay and the moved-base three-way recompute -- generalizes beyond the repository that developed it. That machinery is no longer the route by which a review unit is first produced, so a proof of its generality buys no capability the operator gains. It is NOT part of this record any more.
+=== ORDER ===
 
-=== WHAT THIS RECORD NOW OWNS ===
+This record runs last, after all six records the ruling's "Successors" table proposes, named here by slug: slice_command_build, bind_push_grant_to_pushed_ref, slice_bar_measurement_and_declaration, narrow_handoff_to_print_slice, delete_review_stack_inference_route, remove_merge_command. The ruling asks for the first, fourth and fifth of its table; the other three are added so that doc parity and the line-count reconciliation run once, over the finished surface. ITS PREDECESSORS ARE TO BE RE-EDGED BY A FOREGROUND STEP: until specs/698_slice_build_task_set/records/01_creation-runbook.md has been run, `dependencies` still names handoff_prints_review_stack and the abandoned merge_command_stack_mode, and the six records above may not exist. Do not plan or implement this record before that step; if any of the six is missing or unfinished at dispatch, stop and say so.
 
-Two elements only.
+=== WHAT THIS RECORD OWNS ===
 
-ELEMENT 1 -- DOC PARITY FOR /merge STACK MODE. Update the /merge row and usage in README.md, merge-sources/claudemd.md and the /merge section of docs/guides/user-guide.md so all three name the stack mode consistently. The mode's own documented contract is authored by the record that owns commands/merge.md; this record only brings the three surfaces that ADVERTISE /merge into agreement with it. Do not re-author the mode here, and do not widen into commands/merge.md itself.
+Three elements.
+
+ELEMENT 1 -- DOC PARITY FOR /slice. Bring the three surfaces that advertise the command into agreement with commands/slice.md as built: the command row and usage in README.md, the command table of merge-sources/claudemd.md, and docs/guides/user-guide.md. remove_merge_command has already renamed the old command's references on these surfaces; this record checks that the three say the same thing about /slice (user-invoked only; optional description; one invocation, one target; the two prompts; continue on a later invocation) and fills what a rename could not. The command's own contract is authored by slice_command_build; do not re-author it here and do not widen into commands/slice.md.
 
 ELEMENT 2 -- REDEPLOY AND LINE-COUNT RECONCILIATION. Redeploy with deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1), checking its exit status, and reconcile index-entries.json line counts via generate-context-line-counts.sh --check.
 
-=== THE OPERATOR RUNBOOK IS STILL OWED, AND IS STILL PART OF THE DELIVERABLE ===
+ELEMENT 3 -- THE OPERATOR RUNBOOK FOR THE SLICE ROUTE. The flow deliberately stops short of pushing and of opening pull requests (rules/pr-prohibition.md), so a human needs the exact sequence only they may type: /slice, the two prompts, then one typed `/please push <remote> slice/<series>/<id>` line per built slice, one at a time, then /slice again to open them; and what a later /slice does once a parent merges. State the grant count and the window AS THEY STAND AFTER bind_push_grant_to_pushed_ref: read the binding and the expiry from the hooks at authoring time, do not copy them from the ruling's "Grants" section, which describes the state before that record. State the cost of a visible stack as "The mechanism" gives it. Site the runbook in a durable location outside specs/ -- docs/guides/user-guide.md is the candidate, since this record already edits it for Element 1. A runbook under specs/ is lost to archival.
 
-The flow deliberately stops short of pushing and of opening pull requests (rules/pr-prohibition.md), so a human needs the exact sequence only they may type. Write it for the SLICE route, not the inference route: the declared slice sequence, one `/please push` per slice branch, then `/merge --stack`. State the grant count and that each grant binds to HEAD when typed inside a 600-second window, so a commit by another session in between means typing it again.
+=== ACCEPTANCE ===
 
-Site the runbook in a durable location outside specs/ -- docs/guides/user-guide.md is the candidate, since this record already edits it for Element 1. A runbook under specs/ is lost to archival (see the landing-target reasoning in task_landing_target_requirement).
+One real slice pushed and opened by the operator in a SECOND repository, following the runbook as written ("Verdict on each open record", this record's row). An agent can neither push nor open a pull request, so the implementing agent stops short: it delivers Elements 1 to 3, returns with the record not closed, and names the lines the operator types. The second repository needs the redeployed tree; no scratch repository, no simulated push and no simulated merge stands in for it. No number from any repository's measured bar enters a deliverable ("The size bar", Portability).
 
-=== WHAT WAS DROPPED AND MUST NOT BE REINTRODUCED ===
+=== WHAT MUST NOT BE REINTRODUCED ===
 
-- The scratch repository created outside this repository, its own non-origin remote name, its bare remote, its feature integration branch and distinct review base.
-- The batch record with three dependent tasks' proofs and the copied deployed scripts.
-- The cut -> simulated-push-by-fetch (PD12) -> simulated-squash-merge -> restack transcript.
+- Any documentation of a stack mode on the old merge command, or of a second way to open a pull request.
+- A demonstration of the inference route (the review-stack builder, its cut, show and restack transcript); delete_review_stack_inference_route removes that route.
+- A `review_base` declaration in any runbook step: the target is chosen at the prompt ("Review base").
 
-If a future ruling reinstates inference as a primary path, that demonstration becomes owed again and should be a record of its own rather than reattached here.
+=== CARRIED STATE ===
+
+`file_scope` (README.md, merge-sources/claudemd.md, docs/guides/user-guide.md, index-entries.json) still fits and was left unchanged. `roadmap_ext_blocked` and its annotation belong to the roadmap pass.
 
 === VERIFY BY ===
 
-The three doc surfaces naming stack mode consistently; deploy-headless.sh reporting a clean verify; generate-context-line-counts.sh --check clean; the runbook present in its durable location, naming the slice route and the grant count. No scratch repository is created and no transcript is produced.
+The three doc surfaces describing /slice consistently and naming no other route to a pull request; deploy-headless.sh reporting a clean verify; generate-context-line-counts.sh --check clean; the runbook present in its durable location, naming the slice route, the grant count and the window as built; then, by the operator, one slice pushed and opened in a second repository.
 
 ---
 
@@ -1273,7 +1277,9 @@ DONE WHEN. No load, unload, reload or resync path can write .claude-extensions.j
 - **Topic**: orchestrator
 - **Dependencies**: Task 513, Task 517, Task 553, Task 654, Task 657
 
-**Description**: PRIORITY RAISED 2026-11-23. specs/decisions/review-slices-are-declared-tasks.md rules that a review slice is declared before the work and lands by an ordinary scoped commit (S1/S2/S4). The landing record's V3 already records why this element matters more under that ruling than it did before: "The generated state files ride in every task's commits and are not separable by path; including them refused one correct landing in fourteen." A slice's reviewable diff carries those same generated files. Declaring them so they collapse by default in review is therefore no longer a cosmetic nicety -- it is what makes a slice's diff readable by the human who has to approve it. Site this earlier in the next /roadmap pass than its current position implies.
+**Description**: RE-GROUNDED 2026-11-24 ON THE /slice RULING. specs/decisions/slice-command-one-path-to-review.md gives this record's generated-path declaration a second consumer and overturns the ground it was last given ("Verdict on each open record", this record's row). A slice is a declared set of paths cut from the work-branch tip, and it is refused when it is over a size bar ("The size bar"). That bar counts added lines over the slice's paths, and "What is counted" in the same section excludes paths declared generated from the line count while still listing them. The declaration of generated paths is this record's. Until it exists every path counts toward the bar and the /slice proposal prompt says so, which makes the bar wrong, on the high side, in any repository that commits generated files: the ruling calls this a hard edge from the accuracy of the bar onto this record, not from the bar's existence.
+
+So this record now serves two readers of one declaration: the review surface, where declared paths collapse, and the /slice line count, where they are excluded. Design the declaration so both read the same list. The count lives in the /slice script, in the place slice_bar_measurement_and_declaration leaves for an exclusion list; this record is ordered after that record and wires its declaration into that place, touching nothing else in the script. That edge is to be written by the foreground step in specs/698_slice_build_task_set/records/01_creation-runbook.md; until it has been run the predecessor may not exist, and the wiring half of this record waits on it while the declaration half does not.
 
 === ORIGINAL DESCRIPTION BELOW, UNCHANGED ===
 

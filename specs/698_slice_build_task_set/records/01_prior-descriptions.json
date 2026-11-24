@@ -1,0 +1,493 @@
+{
+  "saved_at": "2026-11-24",
+  "note": "Full pre-revision entries of the two records whose description this task revises. Restore a description by re-running the skill-reviser Stage 7 description-update block with the text under .[\"694\"].description or .[\"655\"].description.",
+  "694": {
+    "project_number": 694,
+    "project_name": "stack_pr_redeploy_and_second_repo_demo",
+    "status": "not_started",
+    "task_type": "meta",
+    "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\n=== SCOPE NARROWED BY RULING ===\n\nspecs/decisions/review-slices-are-declared-tasks.md rules that a review slice is declared before the work rather than inferred from landing proofs after it (S1, S2), and that a slice lands by an ordinary scoped commit rather than a blob overlay (S4). Read that record's \"What is retained from the inference route, and what is not\" section before planning.\n\nThe consequence for this record: the second-repository demonstration it used to own existed to prove that the INFERENCE machinery -- union-find over dependency edges and landing-proof path overlap, topological reordering, the merge-base overlay and the moved-base three-way recompute -- generalizes beyond the repository that developed it. That machinery is no longer the route by which a review unit is first produced, so a proof of its generality buys no capability the operator gains. It is NOT part of this record any more.\n\n=== WHAT THIS RECORD NOW OWNS ===\n\nTwo elements only.\n\nELEMENT 1 -- DOC PARITY FOR /merge STACK MODE. Update the /merge row and usage in README.md, merge-sources/claudemd.md and the /merge section of docs/guides/user-guide.md so all three name the stack mode consistently. The mode's own documented contract is authored by the record that owns commands/merge.md; this record only brings the three surfaces that ADVERTISE /merge into agreement with it. Do not re-author the mode here, and do not widen into commands/merge.md itself.\n\nELEMENT 2 -- REDEPLOY AND LINE-COUNT RECONCILIATION. Redeploy with deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1), checking its exit status, and reconcile index-entries.json line counts via generate-context-line-counts.sh --check.\n\n=== THE OPERATOR RUNBOOK IS STILL OWED, AND IS STILL PART OF THE DELIVERABLE ===\n\nThe flow deliberately stops short of pushing and of opening pull requests (rules/pr-prohibition.md), so a human needs the exact sequence only they may type. Write it for the SLICE route, not the inference route: the declared slice sequence, one `/please push` per slice branch, then `/merge --stack`. State the grant count and that each grant binds to HEAD when typed inside a 600-second window, so a commit by another session in between means typing it again.\n\nSite the runbook in a durable location outside specs/ -- docs/guides/user-guide.md is the candidate, since this record already edits it for Element 1. A runbook under specs/ is lost to archival (see the landing-target reasoning in task_landing_target_requirement).\n\n=== WHAT WAS DROPPED AND MUST NOT BE REINTRODUCED ===\n\n- The scratch repository created outside this repository, its own non-origin remote name, its bare remote, its feature integration branch and distinct review base.\n- The batch record with three dependent tasks' proofs and the copied deployed scripts.\n- The cut -> simulated-push-by-fetch (PD12) -> simulated-squash-merge -> restack transcript.\n\nIf a future ruling reinstates inference as a primary path, that demonstration becomes owed again and should be a record of its own rather than reattached here.\n\n=== VERIFY BY ===\n\nThe three doc surfaces naming stack mode consistently; deploy-headless.sh reporting a clean verify; generate-context-line-counts.sh --check clean; the runbook present in its durable location, naming the slice route and the grant count. No scratch repository is created and no transcript is produced.",
+    "topic": "orchestrator",
+    "dependencies": [
+      691,
+      692,
+      693,
+      695
+    ],
+    "file_scope": [
+      "agent-system/extensions/core/README.md",
+      "agent-system/extensions/core/merge-sources/claudemd.md",
+      "agent-system/extensions/core/docs/guides/user-guide.md",
+      "agent-system/extensions/core/index-entries.json",
+      "__WHOLE_TREE__"
+    ],
+    "created": "2026-11-23T22:15:32Z",
+    "last_updated": "2026-11-23T22:15:32Z",
+    "audit_verdict": {
+      "proposal": {
+        "id": "stack_pr_redeploy_and_second_repo_demo",
+        "project_number": null,
+        "title": "Redeploy, demonstrate the PR stack in a second repository, and write the operator runbook"
+      },
+      "verdict_counts": {
+        "covered-by-closed": 44,
+        "duplicate-of-open": 19,
+        "scope-blind": 47
+      },
+      "verdicts_detail": [
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 390,
+          "project_name": "migrate_mis_sited_agent_system_tasks",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.5096525096525096
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 421,
+          "project_name": "retarget_distill_meta_as_evidence_consumer",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.416988416988417
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 431,
+          "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.41312741312741313
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 452,
+          "project_name": "baseline_relative_gate_criteria",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.4594594594594595
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 454,
+          "project_name": "same_turn_gate_runs_foreground",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.40540540540540543
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 472,
+          "project_name": "handoff_validator_crash_and_defect_record_gap",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.4362934362934363
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 481,
+          "project_name": "migrate_mis_sited_agent_system_task_delta",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.42857142857142855
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 501,
+          "project_name": "cycle_postflight_containment_parity",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.44787644787644787
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 513,
+          "project_name": "phase_commit_boundary_mechanical_check",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.42084942084942084
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 518,
+          "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.42857142857142855
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 524,
+          "project_name": "scoped_commit_staged_vs_worktree_divergence",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.4092664092664093
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 539,
+          "project_name": "lean_plan_challenge_block_authoring_contract",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.49034749034749037
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 540,
+          "project_name": "lean_decide_authoring_and_probe_guard_facts",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.4555984555984556
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 542,
+          "project_name": "bounded_waiter_detach_form_pid_fidelity",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.4671814671814672
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 548,
+          "project_name": "plan_contingency_file_scope_and_containment_drop",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.4594594594594595
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 553,
+          "project_name": "git_commit_scoped_gate_refusal_diagnostic",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.43243243243243246
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 561,
+          "project_name": "bounded_waiter_load_sizing_and_output_capture",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.44787644787644787
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 575,
+          "project_name": "fix_ceiling_check_stopword_unit_false_positive",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.41312741312741313
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 665,
+          "project_name": "previous_work_section_in_generated_roadmap",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.416988416988417
+        }
+      ],
+      "passes": {
+        "mechanical": true,
+        "semantic": true
+      },
+      "degradations_count": 47
+    },
+    "roadmap_annotation": "blocked on a record that does not exist: the /slice build; re-edge onto it and revise before dispatch",
+    "roadmap_ext_blocked": true
+  },
+  "655": {
+    "project_number": 655,
+    "project_name": "branch_aware_orchestration_and_squash_landing",
+    "status": "not_started",
+    "task_type": "meta",
+    "topic": "orchestrator",
+    "description": "PRIORITY RAISED 2026-11-23. specs/decisions/review-slices-are-declared-tasks.md rules that a review slice is declared before the work and lands by an ordinary scoped commit (S1/S2/S4). The landing record's V3 already records why this element matters more under that ruling than it did before: \"The generated state files ride in every task's commits and are not separable by path; including them refused one correct landing in fourteen.\" A slice's reviewable diff carries those same generated files. Declaring them so they collapse by default in review is therefore no longer a cosmetic nicety -- it is what makes a slice's diff readable by the human who has to approve it. Site this earlier in the next /roadmap pass than its current position implies.\n\n=== ORIGINAL DESCRIPTION BELOW, UNCHANGED ===\n\nDeclare generated paths so they collapse in review\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nSCOPE: THE GENERATED-FILE DECLARATION ONLY. This record's slug still names branch-aware orchestration and squash landing; that work is no longer here. See \"WHAT MOVED\" below.\n\n=== WHAT TO BUILD ===\n\nA repo-agnostic mechanism declaring machine-written paths so they collapse by default in review. `.gitattributes` with `linguist-generated=true` is the mechanism; the declaration site, and whether it is generated or hand-maintained, is the design question. The system already knows which paths it generates -- task-management artifacts under specs/, the deployed .claude/** tree, the regenerated task list and roadmap -- so it can declare them rather than asking the operator to enumerate them. It must not change what is COMMITTED, only how it RENDERS in review.\n\nInputs to design for:\n- `.claude-extensions.json` top-level keys, documented in context/standards/repo-level-declarations.md, are the existing home for a per-repository declaration (specs/decisions/commit-layer-cluster-ordering.md, \"Inputs to the branch feature\", item 5).\n- A repository may ignore `specs/` wholly or in part; a declaration for an ignored path must be harmless there.\n- Under the batch-worktree topology, and on that record's own unconfirmed assumption about bookkeeping commits (its \"Unconfirmed assumption\" section; the user has not ruled), the per-task squash commit carries code only wherever `specs/` is tracked, so the generated state files reach review as separate bookkeeping commits, not inside the squash. Design the declaration for the review surface a reader actually sees: the integration branch's range.\n\n=== WHAT MOVED ===\n\nEvery branch-topology element this record used to carry is superseded by specs/decisions/batch-worktree-isolation-and-task-squash-landing.md, which amends specs/decisions/branch-topology-and-landing-strategy.md, and is owned by the task named here:\n- Admission-time starting-branch verification, and per-invocation branch creation: `integration_branch_admission_and_batch_worktree`.\n- Phase commits landing on the invocation's branch: `two_root_contract_dispatch_and_commit_scripts`, with `two_root_contract_in_hooks` and `two_root_classification_of_remaining_consumers`.\n- Per-task squash landing: `per_task_attribution_squash_landing`.\n- Failure and partial retention: `per_task_attribution_squash_landing` (the branch is left intact on a refusal) and `batch_worktree_cleanup_retention_orphan_report` (retention and cleanup).\n- Documentation parity for the branch strategy: `branch_topology_documentation_parity`.\nDo not build any of those here.\n\n=== CARRIED STATE TO CORRECT AT PLAN TIME ===\n\n- `file_scope` still lists the seven files of the superseded scope (two orchestration scripts, two commit scripts, one rule file, two standards documents). It was left unchanged because this description does not fix which files the declaration touches. Re-declare it from the plan, file by file; until then it over-claims territory on the commit scripts.\n- `dependencies` still lists the predecessors of the superseded scope. They were left in place; the amending record's Edges section states which of them this scope still needs.\n\n=== CONSTRAINTS ===\n\n- Repo-agnostic: no literal branch name and no consumer-repo-specific path in any deliverable.\n- git push and pull-request creation stay prohibited for agents (rules/pr-prohibition.md).\n- Must not change commit scope, pathspec containment, or staging. This is a rendering declaration.\n\nVERIFICATION. The declared generated paths render collapsed in review. Nothing that was committed before is committed differently. In a repository that ignores `specs/`, the declaration is inert and produces no warning.",
+    "created": "2026-11-19T17:53:11Z",
+    "last_updated": "2026-11-20T20:34:07Z",
+    "dependencies": [
+      513,
+      517,
+      553,
+      654,
+      657
+    ],
+    "file_scope": [
+      "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+      "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+      "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+      "agent-system/extensions/core/scripts/git-commit-phase.sh",
+      "agent-system/extensions/core/rules/git-workflow.md",
+      "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+      "agent-system/extensions/core/context/standards/git-staging-scope.md"
+    ],
+    "next_artifact_number": 1,
+    "session_id": "sess_1795104353_c9a564",
+    "artifacts": [],
+    "audit_verdict": {
+      "proposal": {
+        "id": "branch_aware_orchestration_and_squash_landing",
+        "project_number": null,
+        "title": "Make orchestration branch-aware with per-invocation branch and squash landing"
+      },
+      "verdict_counts": {
+        "covered-by-closed": 136,
+        "duplicate-of-open": 7,
+        "overlaps-open": 17,
+        "scope-blind": 43
+      },
+      "verdicts_detail": [
+        {
+          "verdict": "overlaps-open",
+          "project_number": 639,
+          "project_name": "make_issue_record_failures_visible",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/git-commit-phase.sh",
+            "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+            "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.2777777777777778
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 390,
+          "project_name": "migrate_mis_sited_agent_system_tasks",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.4444444444444444
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 451,
+          "project_name": "snapshot_lean_challenge_at_plan_time",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.3888888888888889
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 472,
+          "project_name": "handoff_validator_crash_and_defect_record_gap",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.3472222222222222
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 484,
+          "project_name": "collapse_perpath_scope_excursion_issue_rows_into_o",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/git-commit-phase.sh",
+            "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.2777777777777778
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 486,
+          "project_name": "manifest_registration_dropped_from_phase_commit",
+          "shared_paths": [
+            "agent-system/extensions/core/context/standards/git-staging-scope.md",
+            "agent-system/extensions/core/scripts/git-commit-phase.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.3194444444444444
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 501,
+          "project_name": "cycle_postflight_containment_parity",
+          "shared_paths": [
+            "agent-system/extensions/core/context/standards/git-staging-scope.md",
+            "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+            "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.4027777777777778
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 509,
+          "project_name": "redeploy_phase_declaration_and_gate_criterion",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.4444444444444444
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 514,
+          "project_name": "convergence_guard_blind_to_zero_dispatch_cycles",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.3611111111111111
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 519,
+          "project_name": "infra_exempt_transport_error_dispatch_deaths",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.25
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 524,
+          "project_name": "scoped_commit_staged_vs_worktree_divergence",
+          "shared_paths": [
+            "agent-system/extensions/core/context/standards/git-staging-scope.md",
+            "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.3194444444444444
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 535,
+          "project_name": "phase_commit_drops_own_plan_artifact",
+          "shared_paths": [
+            "agent-system/extensions/core/context/standards/git-staging-scope.md",
+            "agent-system/extensions/core/scripts/git-commit-phase.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.5
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 536,
+          "project_name": "source_store_commit_and_registration_review",
+          "shared_paths": [
+            "agent-system/extensions/core/context/standards/git-staging-scope.md",
+            "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.19444444444444445
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 541,
+          "project_name": "snapshot_artifacts_contaminate_phase_commits",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/git-commit-phase.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.3888888888888889
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 542,
+          "project_name": "bounded_waiter_detach_form_pid_fidelity",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.4444444444444444
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 548,
+          "project_name": "plan_contingency_file_scope_and_containment_drop",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.4305555555555556
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 551,
+          "project_name": "orchestrate_stale_handoff_recurrence_and_missing_defect_record",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.3333333333333333
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 553,
+          "project_name": "git_commit_scoped_gate_refusal_diagnostic",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.375
+        },
+        {
+          "verdict": "duplicate-of-open",
+          "project_number": 561,
+          "project_name": "bounded_waiter_load_sizing_and_output_capture",
+          "shared_paths": null,
+          "mechanical_class": "none",
+          "semantic_score": 0.4166666666666667
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 567,
+          "project_name": "port_containment_strip_to_git_commit_scoped",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.08333333333333333
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 570,
+          "project_name": "stall_signal_counts_unattributed_commits",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.25
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 577,
+          "project_name": "aux_revision_cannot_clear_handoff_blocker",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.3333333333333333
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 598,
+          "project_name": "v10_containment_remedy_for_coupled_pair_paths",
+          "shared_paths": [
+            "agent-system/extensions/core/context/standards/git-staging-scope.md",
+            "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.25
+        },
+        {
+          "verdict": "overlaps-open",
+          "project_number": 609,
+          "project_name": "pending_ask_user_charged_to_failed_tasks",
+          "shared_paths": [
+            "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+          ],
+          "mechanical_class": "overlap",
+          "semantic_score": 0.2777777777777778
+        }
+      ],
+      "passes": {
+        "mechanical": true,
+        "semantic": true
+      },
+      "degradations_count": 43
+    },
+    "title": "Declare generated paths so they collapse in review",
+    "roadmap_annotation": "until this lands the size bar miscounts wherever generated files ride in a slice"
+  }
+}

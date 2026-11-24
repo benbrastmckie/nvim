@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Revise the Descriptions of 694 and 655",
+  "started_at": "2026-11-24T11:38:00Z",
+  "last_updated": "2026-11-24T11:41:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm targets and save prior descriptions", "status": "done",
+     "files_touched": ["specs/698_slice_build_task_set/records/01_prior-descriptions.json"]},
+    {"id": 2, "description": "Write revised descriptions of 694 and 655 through state-write.sh with --regen-todo", "status": "done",
+     "files_touched": ["specs/state.json", "specs/TODO.md"]},
+    {"id": 3, "description": "Regenerate the roadmap", "status": "done", "files_touched": ["specs/ROADMAP.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "verification": "validate-state.sh --deep output byte-identical before and after (22 passed, 10 warnings, 0 failed). Both entries equal their saved copies with description and last_updated deleted; 694 dependencies still [691,692,693,695]; 655 text from the ORIGINAL DESCRIPTION marker onward identical; neither description contains the stack-mode flag, PRIORITY RAISED or a successor number. Scope hypothesis: state.json moved on four lines; ROADMAP.md moved by one line (this task shown in flight), not on lines for the two records. Local tier.",
+  "handoff_count": 0
+}
