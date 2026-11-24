@@ -1,0 +1,35 @@
+{
+  "phase": 1,
+  "phase_name": "Re-derive the evidence and open the record",
+  "started_at": "2026-11-24T00:15:54Z",
+  "last_updated": "2026-11-24T00:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-derive all evidence from live files and forge reads",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Write record header and Evidence section, with differences from report and description",
+      "status": "done",
+      "files_touched": [
+        "specs/decisions/slice-command-one-path-to-review.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "1.5",
+      "description": "Read sapience-app scripts/stack_cut.py in full",
+      "type": "altered",
+      "reason": "Cut, schema, size and restack paths read in full; provenance, validate and verify functions read by signature and docstring, which sufficed to correct the granularity claim.",
+      "annotation": "*(deviation: altered \u2014 key ranges read in full, the rest by signature and docstring)*"
+    }
+  ],
+  "handoff_count": 0,
+  "note": "Verification tier prose: diff read-through; line citations spot-checked against live files. Forge reads succeeded; no figure is CARRIED-UNVERIFIED."
+}

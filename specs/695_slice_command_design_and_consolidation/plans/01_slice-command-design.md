@@ -1,7 +1,7 @@
 # Implementation Plan: Task #695
 
 - **Task**: 695 - Design the /slice command: one clean path from work branch to a stack of review pull requests
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/695_slice_command_design_and_consolidation/reports/01_slice-command-design.md
@@ -133,47 +133,47 @@ absent). `specs/ROADMAP.md` exists but was not consulted and carries no entry na
 Phases within the same wave can execute in parallel. Phases 1 to 3 and 5 write the same file,
 so the chain is strictly sequential.
 
-### Phase 1: Re-derive the evidence and open the record [NOT STARTED]
+### Phase 1: Re-derive the evidence and open the record [COMPLETED]
 
 **Goal**: Create the decision record with its header and a complete Evidence section in which
 every claim about an existing implementation is re-derived from live files, with line numbers.
 
 **Tasks**:
-- [ ] Record the commits read: this repository's `HEAD`; sf1-engine's `HEAD` and whether
+- [x] Record the commits read: this repository's `HEAD`; sf1-engine's `HEAD` and whether
       `integration/tools/build-pr-slices.sh` is modified in its working tree; sapience-app's
-      `HEAD`.
-- [ ] Re-derive for `agent-system/extensions/core/scripts/review-stack-prepare.sh`: line count,
+      `HEAD`. *(completed)*
+- [x] Re-derive for `agent-system/extensions/core/scripts/review-stack-prepare.sh`: line count,
       the four subcommands, the line ranges of the resolver refusal (equal-name comparison),
       union-find, component building, topological sort, the overlay function, the moved-base
       `merge-tree`, and restack. Re-run `scripts/tests/test-review-stack-prepare.sh` from the
-      source store and record the pass count.
-- [ ] Re-derive callers: `grep -rl review-stack-prepare`, `grep -rl milestone-ref-land` and
-      `grep -rl milestone-review-handoff` over the core extension; record each hit list.
-- [ ] Re-derive for sf1-engine `build-pr-slices.sh` at the commit recorded: line count, the base
+      source store and record the pass count. *(completed)*
+- [x] Re-derive callers: `grep -rl review-stack-prepare`, `grep -rl milestone-ref-land` and
+      `grep -rl milestone-review-handoff` over the core extension; record each hit list. *(completed)*
+- [x] Re-derive for sf1-engine `build-pr-slices.sh` at the commit recorded: line count, the base
       literal, the ancestry refusal, the tree-composition and slice-build functions, the three
       structural checks, the dependency-scoped base logic, and the count of lines bound to that
-      repository's diagnostics. Do not carry any line number from the research report.
-- [ ] Read sapience-app `scripts/stack_cut.py` in full (the research read only its header and
+      repository's diagnostics. Do not carry any line number from the research report. *(completed)*
+- [x] Read sapience-app `scripts/stack_cut.py` in full (the research read only its header and
       function list); confirm or correct "hunk-level cut and restack" and the overlay function's
-      line range.
-- [ ] Re-run the forge reads: `gh pr list --state all --limit 100 --json
+      line range. *(deviation: altered — lines 1-110, 369-640, 727-741, 861-906 read in full, the rest by signature and docstring; "hunk-level" corrected to whole-file blobs)*
+- [x] Re-run the forge reads: `gh pr list --state all --limit 100 --json
       number,state,author,headRefName,baseRefName,additions,changedFiles,mergedBy` in sf1-engine
       and sapience-app; recompute merged count, author split, `pr/*` head count, and the median
       and 75th percentile of added lines and files per base. Re-run `git for-each-ref` for
-      `refs/heads/{pr,review,milestone}` and `refs/remotes` in each repository checked.
-- [ ] Re-derive for `commands/merge.md`, `hooks/please-grant.sh`, `hooks/guard-git-push.sh` and
+      `refs/heads/{pr,review,milestone}` and `refs/remotes` in each repository checked. *(completed)*
+- [x] Re-derive for `commands/merge.md`, `hooks/please-grant.sh`, `hooks/guard-git-push.sh` and
       `scripts/lib/push-grant-lib.sh`: the checked-out-branch read, the default-branch refusal,
       the literal remote, the `--target` default, the minting prefixes, the `HEAD` match at
-      consume time, and the expiry window default.
-- [ ] Re-run both searches from the research report's F8 and record the union as the mechanism
-      inventory, with the search that found each row.
-- [ ] Confirm whether `review_base` is declared in each repository's `.claude-extensions.json`
-      and whether `specs/.orchestration/reviews/` exists in any.
-- [ ] Write the record's title, a "This record rules. It builds nothing." line, the decision
+      consume time, and the expiry window default. *(completed)*
+- [x] Re-run both searches from the research report's F8 and record the union as the mechanism
+      inventory, with the search that found each row. *(completed)*
+- [x] Confirm whether `review_base` is declared in each repository's `.claude-extensions.json`
+      and whether `specs/.orchestration/reviews/` exists in any. *(completed)*
+- [x] Write the record's title, a "This record rules. It builds nothing." line, the decision
       date and session, and an `## Evidence` section holding the above as tables. Any figure
-      that could not be re-derived is marked CARRIED-UNVERIFIED with its source named.
-- [ ] State, in the evidence section, each place where the re-derivation differs from the
-      research report or the task description.
+      that could not be re-derived is marked CARRIED-UNVERIFIED with its source named. *(completed)*
+- [x] State, in the evidence section, each place where the re-derivation differs from the
+      research report or the task description. *(completed)*
 
 **Timing**: 1.5 hours
 
