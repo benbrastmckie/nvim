@@ -439,7 +439,61 @@ VERIFY BY: scripts/tests/test-review-stack-prepare.sh green with its existing 38
 - **Topic**: core-agent-system
 - **Dependencies**: Task 692
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in this repository, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). No task-number references and no record-versioning language under agent-system/**.
+**Description**: === MEASURED 2026-11-23 BY THE OPERATOR SESSION; READ BEFORE RESEARCHING ===
+
+The grep this record asks the research round to re-run has been run, in BOTH this repository and
+the consumer repository (Sapience/sf1-engine) whose milestone refs prompted the record. The
+binary the premise section below offers -- "a stale deploy, or a caller this grep missed" -- is
+FALSE IN BOTH DIRECTIONS. Do not spend the research round re-deriving it; start from here.
+
+1. THIS REPOSITORY'S SOURCE STORE: confirmed no lifecycle caller. References survive only in the
+   script, tests/test-milestone-ref-land.sh, tests/suite-classification.data,
+   tests/test-milestone-review-handoff.sh, two manifest rows, and the two context documents named
+   in the deletion list below. The premise paragraph's claim holds here.
+
+2. THE CONSUMER REPOSITORY IS NOT RUNNING A STALE DEPLOY. An exhaustive sweep of its deployed
+   .claude/ tree finds the SAME seven references and no invocation site -- no script, no hook, no
+   skill or command markdown calls the script there either. It has no .opencode/ and no
+   agent-system/ tree. So the "stale deploy -> redeploy is the remedy, see 688" conclusion is NOT
+   available, and reaching it would be a wrong answer.
+
+3. YET THE REF WAS BEING ADVANCED THERE, THAT SAME DAY. refs/heads/milestone/P1 in that
+   repository was advanced five times on 2026-11-23 -- 03:29, 04:12, 04:44, 05:14 and 12:01
+   Pacific -- with EMPTY reflog messages, which is the signature of `git update-ref` invoked
+   without -m, as this script invokes it. The test suite is ruled out: it builds `mktemp -d`
+   fixtures with a deployed-shape .claude/scripts/ tree and never touches live refs.
+
+   So the repository has a live writer that grep cannot find. The most plausible remaining
+   explanation, and the one the research round should test first, is that an agent READ one of
+   the two context documents that still cite this script as an implementation and ran it by hand.
+
+CONSEQUENCE FOR THIS RECORD'S PLAN. Deletion stays the deliverable and is now better supported,
+not worse: a script with no caller that is nevertheless being executed is a stronger argument for
+removing it than an unused one. But step 3 below changes character. Re-pointing
+context/patterns/ref-plumbing-landing.md and context/standards/git-workflow-narrative.md is NOT
+cosmetic cleanup trailing the deletion -- on the hypothesis above those documents ARE the
+invocation vector, so the plan must treat them as part of the fix and say so. Decide explicitly,
+as the step already requires, whether the ref-plumbing document retains the TECHNIQUE
+(compare-and-swap update-ref, commit-tree) while ceasing to name this script as its
+implementation.
+
+ALREADY DONE, NOT THIS RECORD'S WORK. The eight existing milestone/<id> refs (M1, M2, M4, M5 here;
+L1, P1, S1, S7 in the consumer repository) were deleted by hand on 2026-11-23 after proving each
+tip's tree byte-identical to a commit already reachable on that repository's work branch, and
+that none had an upstream. No ref cleanup belongs in this plan. The tree-equality check used --
+resolving each tip's tree and searching the work branch's history for a commit with the identical
+tree -- is the cheap durable test for whether such a ref carries unique content, and is worth
+stating wherever the plan discusses what the refs were for.
+
+THE CONSUMER-REPOSITORY FOLLOW-UP IS NOT THIS RECORD'S. Identifying that live writer and unwiring
+it is work in that repository, whose own tree is the edit target; the siting rule puts the task
+there, not here. This record's "Check before deleting" clause below is satisfied for the purpose
+of deleting from THIS source store: no caller exists in either tree, so nothing here depends on
+the file. Say so in the plan rather than blocking on the consumer repository.
+
+=== ORIGINAL DESCRIPTION BELOW, UNCHANGED ===
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in this repository, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). No task-number references and no record-versioning language under agent-system/**.
 
 === PREMISE CORRECTED BEFORE PLANNING; RE-VERIFY, DO NOT TRUST THIS PARAGRAPH BLIND ===
 
