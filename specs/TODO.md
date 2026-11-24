@@ -1,5 +1,5 @@
 ---
-next_project_number: 696
+next_project_number: 697
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 696
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,671,674,679,680,684,686,689,692,693 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,671,674,679,680,684,686,689,692,693,696 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,690,694 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,692,693 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -116,6 +116,7 @@ next_project_number: 696
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 693 [PLANNED] — RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
+696 [NOT STARTED] — Narrow the orchestration batch-gate stage's own verify-deploy...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -179,6 +180,44 @@ next_project_number: 696
 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 
 ## Tasks
+
+### 696. Narrow batch gate stage verify deploy invocation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Narrow the orchestration batch-gate stage's own verify-deploy invocation: gate the stage on modified_files, honor the gate cache, and bound its wall clock
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-batch-gate.sh (never the deployed .claude/** mirror, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**.
+
+MEASURED, this repository, 2026-11-23, session sess_1795478339_253676: a single-task /orchestrate batch whose implement phase modified exactly three markdown files under specs/decisions/ and nothing else. The batch gate stage ran roughly 45 minutes of wall clock and returned two confirmed findings, BOTH unattributed to the task (pre-existing failures in tests/test-gate-lock.sh and tests/test-lint-unit-integration-boundary.sh); the attributed set was empty. Zero task-caused findings. The task had already reached completed and committed before the stage started, the stage being advisory by contract.
+
+FOUR COMPOUNDING CAUSES, each independently checkable.
+
+1. The trigger predicate reads the wrong field. orchestrate-batch-gate.sh fires whenever the multi-state .implement_agents map is non-empty -- whenever ANY implement dispatch occurred -- and never consults what that dispatch touched. The information needed sits in the same file: .invocation_modified_files. The per-task postflight already computes exactly this predicate and reported "[deploy-check] modified_files do not overlap agent-system/extensions/** -- not applicable, passing through" roughly 45 minutes before the stage swept that tree anyway.
+
+2. The invocation declines every narrowing verify-deploy.sh offers. The call is: verify-deploy.sh --findings --quiet <root> --override-batch-gate-deferral. No --skip-slow, no --skip-unchanged, no --gate8-touched. The script's own comment states the full depth is deliberate ("Capture: full depth (no --skip-slow), explicit TARGET, exactly once"), so this is a design choice to revisit explicitly, not an oversight to patch silently.
+
+3. No cache reuse, although the run was cache-eligible. verify-deploy.sh's --skip-unchanged caching requires no --only-gate, no --gate8-touched, non-nested and non-stale -- all true of this call. It is simply not passed, so every invocation recomputes the whole battery cold even when nothing under agent-system/** or .claude/** is dirty (git status over those paths was empty for this run).
+
+4. No timeout anywhere in orchestrate-batch-gate.sh (grep: zero hits), while skill-orchestrate's bounded-wait idiom for it is a 540-second kill-0 loop. Gate 31's slow cost-class bucket is serialized and, per tests/suite-cost-hints.txt, the nine selected suites sum to roughly 18 minutes (test-gate-cache-equivalence.sh alone 543000 ms; test-verify-deploy-gate-selection-crash-net.sh 148607 ms; test-orchestrate-cycle-plan.sh 106551 ms). Three of the nine are verify-deploy's own self-tests, each booting a complete nested verify-deploy run inside a /tmp fixture -- observed as a four-level-deep process tree. An 18-minute floor against a 540-second wait window GUARANTEES at least three wait rounds per invocation. The recurrence is arithmetic, not a hang, which is why it reproduces every run rather than intermittently.
+
+REMEDY TO DESIGN, in rising cost. Decide between these explicitly and record the rejected alternatives; do not apply all four by reflex.
+  (a) No-op the stage when no task's own invocation_modified_files intersects the deploy tree (agent-system/** or .claude/**), reusing the predicate the per-task deploy-check already applies rather than authoring a second one. Cheapest, and it alone would have reduced this run's stage to nothing.
+  (b) Pass --skip-unchanged so the existing gate cache is honored.
+  (c) Pass --gate8-touched with the batch's union of invocation_modified_files, routing gates 8 and 31 through lib/suite-selection-lib.sh's suite_selection_select; a specs-only batch narrows to the empty set.
+  (d) Give the stage a timeout, so a runaway surfaces as a finding instead of as wall clock.
+
+NON-NEGOTIABLE INVARIANT, surviving whichever shape is chosen: the complete gate set still runs once per batch for a batch that DOES touch the deploy tree, deferred and never forgiven. A narrowed or skipped run must never be presented as equivalent to a full-battery pass -- context/contracts/batch-gate-stage.md and verify-deploy.sh's own forced-dirty note both already carry that distinction and must keep agreeing with whatever lands here.
+
+TERRITORY, two adjacent live records. Read both before designing; duplicate neither.
+  Task 586 (suite and gate wall-clock cost consumer, status partial) owns the COST half: its declared file_scope already covers tests/suite-cost-hints.txt, tests/test-gate-cache-equivalence.sh, tests/run-all.sh, scripts/verify-deploy.sh and scripts/measure-gate-costs.sh, and its subject is deleting, optimizing or demoting the suites the cost probe indicts. The 543-second cache-equivalence suite is exactly such a suite. This record must NOT re-litigate suite cost; the measurement above is fresh evidence for 586, and a serializing dependency edge is owed because the two file scopes overlap on verify-deploy.sh.
+  Task 599 (batch-gate-deferral narrowing form, status not_started) owns a DIFFERENT surface: the "## Batch Gate Deferral" directive composed by scripts/orchestrate-build-dispatch.sh, which tells a dispatched implement agent what narrowing to run when the gate defers. That is dispatch-time guidance to an agent; this record is the close-time invocation the stage makes itself. Keep the two distinct, and make whatever repository-level declaration surface 599 chooses for narrowing forms serve this record too rather than standing up a second declaration.
+
+VERIFICATION. Extend scripts/tests/test-orchestrate-batch-gate.sh (or create it if absent) with a specs-only-batch case asserting the stage no-ops, and a deploy-tree-touching case asserting the full battery still runs once. Per the baseline-relative criterion rule, state the acceptance criterion against this repository's standing pre-existing findings rather than against an absolute clean gate: tests/test-gate-lock.sh and tests/test-lint-unit-integration-boundary.sh are currently red for unrelated reasons and must not be read as this record's regressions.
+
+---
 
 ### 695. Design the /slice command: one clean path from work branch to a stack of review pull requests
 - **Status**: [COMPLETED]
