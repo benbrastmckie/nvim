@@ -1,0 +1,81 @@
+{
+  "phase": 4,
+  "phase_name": "commands/slice.md -- The Command Surface",
+  "started_at": "2026-11-24T17:10:00Z",
+  "last_updated": "2026-11-24T17:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create commands/slice.md with merge.md's frontmatter shape and tag.md's user-invoked-only restriction framing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/slice.md"]
+    },
+    {
+      "id": 2,
+      "description": "Resolution (printed, no question): work ref, remote, fetch freshness, dirty-tree line, no-remote stop",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/slice.md"]
+    },
+    {
+      "id": 3,
+      "description": "Prompt 1 (the target): candidate set, measured differences, non-ancestor shown-not-selectable, empty-difference 'nothing to slice', equal name never a disqualifier",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/slice.md"]
+    },
+    {
+      "id": 4,
+      "description": "The bar line (printed, no question): default, unmeasured",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/slice.md"]
+    },
+    {
+      "id": 5,
+      "description": "Prompt 2 (the proposal): table, four fixed lines always printed with zeros shown, no-per-slice-check sentence, approve/revise/cancel, nothing written before approve",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/slice.md"]
+    },
+    {
+      "id": 6,
+      "description": "On approval: write series file and PR bodies, run build, verify the union, print per-slice lines and the closing then: /slice",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/slice.md"]
+    },
+    {
+      "id": 7,
+      "description": "The continue step: status report, open-due question, merged marking, rebuild-due with push line, stale-target merge-up line",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/slice.md"]
+    },
+    {
+      "id": 8,
+      "description": "The open step: the forge call, here and nowhere else, recording the request URL afterward",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/slice.md"]
+    },
+    {
+      "id": 9,
+      "description": "Visible stack, re-derive-never-rebase, one-invocation-one-target statements; no branch/remote/consumer-path name and no task-ref/record-versioning language anywhere in the file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/slice.md"]
+    }
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.6",
+      "description": "The on-approval 'not built: over the bar with no reason' per-slice outcome",
+      "type": "altered",
+      "reason": "Phase 1 (already implemented and committed, with its own task list and a passing test pinning this exact behavior) made over_bar_no_reason a GLOBAL, whole-document refusal (ss_refuse exits the entire check/build call), not a per-slice skip-and-continue outcome. The ruling's 'On approval' example shows a row 'd' built to failure as a post-build partial outcome alongside successfully built rows -- not reachable given build's actual all-or-nothing validation semantics inherited from Phase 1. Resolved honestly: commands/slice.md shows an unresolved over-bar-no-reason row as 'OVER, NO REASON: will not build' AT PROMPT 2 (before approval) and states plainly that approval is unavailable until the row is revised away, since check (run at prompt 2) already refuses the whole document on this condition. STEP 5's own per-slice summary therefore only ever shows 'built' and 'waits on <id>' outcomes, since by the time approval is possible, check has already succeeded with no outstanding bar refusal.",
+      "annotation": "*(completed: deviation -- the 'not built: over the bar with no reason' outcome is shown at prompt 2 as a pre-approval blocker, not as a post-build per-slice summary line, because Phase 1's inherited over_bar_no_reason refusal is whole-document, not per-slice)*"
+    },
+    {
+      "task_id": "4.6",
+      "description": "'Verify the union' at the command level",
+      "type": "altered",
+      "reason": "slice-series.sh has exactly three subcommands (check, build, status) and no fourth verification entry point, per the ruling's own constraint ('one script... and no other entry point'). STEP 5 therefore explains that the union property needs no separate runtime check at the command level: check (already run at prompt 2) proves every difference path is assigned to exactly one slice, and build's overlay primitive is the same one the script's own suite statically proves preserves that assignment (the Phase 3 union-check test). No new subcommand or ad hoc verification call was added.",
+      "annotation": "*(completed: deviation -- 'verify the union' documented as already covered by check's assignment proof plus the suite's own static union-check guarantee, rather than inventing a fourth script entry point)*"
+    }
+  ]
+}

@@ -414,60 +414,72 @@ Confirm by re-running the selector over both paths at the start of this phase.
 
 ---
 
-### Phase 4: `commands/slice.md` — The Command Surface [NOT STARTED]
+### Phase 4: `commands/slice.md` — The Command Surface [COMPLETED]
 
 **Goal**: One command file owning everything the script must not: resolution, prompt 1, the bar
 line, prompt 2, the per-slice typed push lines, the continue step, and the open step — the one
 and only place a forge call appears.
 
 **Tasks**:
-- [ ] Create `commands/slice.md` with `commands/merge.md`'s frontmatter shape: a `description`,
+- [x] Create `commands/slice.md` with `commands/merge.md`'s frontmatter shape: a `description`,
       an `argument-hint` for the optional free-text description, and `allowed-tools` naming
       `AskUserQuestion`, the git and forge CLI surfaces, and the new script's invocation.
-- [ ] Carry `commands/tag.md`'s restriction framing: user-invoked only; no agent, skill, or
+      *(completed: allowed-tools also names Read/Write/Glob, needed to list in-flight series
+      files and write the durable series document)*
+- [x] Carry `commands/tag.md`'s restriction framing: user-invoked only; no agent, skill, or
       lifecycle script invokes it; state the `rules/pr-prohibition.md` boundary explicitly.
-- [ ] **Resolution** (printed, no question): work ref and short sha; the remote (the branch's
+      *(completed)*
+- [x] **Resolution** (printed, no question): work ref and short sha; the remote (the branch's
       configured remote, else the only remote; asked only when the branch has none configured and
       there is more than one); fetch freshness, including the "figures are against the last
       fetch" line on failure; and the uncommitted-paths line when the tree is dirty. A repository
-      with no remote stops with one line.
-- [ ] **Prompt 1 (the target)**: one question, each candidate carrying its measured difference
+      with no remote stops with one line. *(completed)*
+- [x] **Prompt 1 (the target)**: one question, each candidate carrying its measured difference
       from the work ref. Candidate set: an in-flight series for this work ref shown first as
       `continue`, the remote's default branch, the bases of the user's own open requests on that
       remote where they differ, and free entry always last. A candidate that is not an ancestor
       of the work ref is shown and cannot be chosen, with the merge-up named. A candidate whose
       difference is empty is shown as `nothing to slice`. An equal name is never itself a reason
-      to refuse.
-- [ ] **The bar line** (printed, no question): lines and files with the source label. This record
+      to refuse. *(completed)*
+- [x] **The bar line** (printed, no question): lines and files with the source label. This record
       ships only the default — 1,500 lines and 30 files, printed as `default, unmeasured`.
-- [ ] **Prompt 2 (the proposal)**: the table (id, title, files, lines / bar, depends on, opens
+      *(completed)*
+- [x] **Prompt 2 (the proposal)**: the table (id, title, files, lines / bar, depends on, opens
       against, with `OVER: <reason>` and `OVER, NO REASON`), the four fixed lines always printed
       with zeros shown as zeros (assigned / unassigned / in-two-slices; not landing; generated
       "none declared; every path counts toward the bar"; cost), the sentence that no per-slice
       check ran, and `approve / revise / cancel`. The proposal is made by the command's model from
       the difference, the directory structure, and completed tasks' `modified_files` as a hint
       only. Revise takes free text and re-proposes, including replacing the bar (recorded as
-      `chosen at prompt`). **Nothing is written before approve.**
-- [ ] State that the counts shown at prompt 2 come from a `check` run over a candidate series
-      document that is not the durable series path, so the prompt writes nothing.
-- [ ] **On approval**: write the series file and the pull-request bodies, run `build`, verify the
+      `chosen at prompt`). **Nothing is written before approve.** *(completed)*
+- [x] State that the counts shown at prompt 2 come from a `check` run over a candidate series
+      document that is not the durable series path, so the prompt writes nothing. *(completed)*
+- [x] **On approval**: write the series file and the pull-request bodies, run `build`, verify the
       union, then print one line per slice — the built short sha and the exact
       `/please push <remote> slice/<series>/<id>` line to type, `waits on <id>` for a waiting
       slice, `not built: over the bar with no reason` for a refused one — and the closing
-      `then: /slice`.
-- [ ] **The continue step** of a later invocation: one state line per slice from `status`, then
+      `then: /slice`. *(completed: deviation -- the "not built: over the bar with no reason"
+      outcome is shown at prompt 2 as a pre-approval blocker rather than a post-build per-slice
+      line, since Phase 1's already-committed over_bar_no_reason refusal is whole-document, not
+      per-slice; STEP 5's per-slice summary covers "built" and "waits on <id>" only, which is
+      everything build can actually produce once check has already succeeded at prompt 2; see
+      progress file deviation 4.6)*
+- [x] **The continue step** of a later invocation: one state line per slice from `status`, then
       one question listing only what is due — the request to open (base, head, title; opened on
       "yes" and its URL recorded in the series file); the content-based merged marking; the
       rebuild of an unmerged slice whose base has moved, with the push line printed again (plain
       if never pushed, `--force-with-lease` if it was); and, when the target is not an ancestor of
-      the work ref, one line naming the merge-up needed and nothing else.
-- [ ] **The open step**: the forge call, here and nowhere else, with the request URL recorded in
-      the series file afterward.
-- [ ] State the visible-stack option (allowed when asked for in revise) and its cost line, and
+      the work ref, one line naming the merge-up needed and nothing else. *(completed)*
+- [x] **The open step**: the forge call, here and nowhere else, with the request URL recorded in
+      the series file afterward. *(completed)*
+- [x] State the visible-stack option (allowed when asked for in revise) and its cost line, and
       "Re-derive, never rebase": no restack, no three-way merge, no conflict resolution.
-- [ ] State "one invocation, one target": work bound for a second target is a second series.
-- [ ] Carry no branch name, no remote name, no consumer path, and no task-number or
-      record-versioning language anywhere in the file.
+      *(completed)*
+- [x] State "one invocation, one target": work bound for a second target is a second series.
+      *(completed)*
+- [x] Carry no branch name, no remote name, no consumer path, and no task-number or
+      record-versioning language anywhere in the file. *(completed: verified via grep for
+      origin/main/master, task-ref patterns, and record-versioning trigger words)*
 
 **Timing**: 2 hours
 
