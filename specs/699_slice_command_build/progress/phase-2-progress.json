@@ -1,0 +1,81 @@
+{
+  "phase": 2,
+  "phase_name": "build -- Private Index, Overlay, write-tree, commit-tree, Compare-and-Swap",
+  "started_at": "2026-11-24T16:25:00Z",
+  "last_updated": "2026-11-24T16:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Implement the overlay primitive (private GIT_INDEX_FILE, read-tree, per-path update-index), self-contained, no source/extraction from review-stack-prepare.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/slice-series.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Compute each slice's base (target tip overlaid with unmerged dependency closure) and parent (target tip, or the one unmerged dependency's commit)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/slice-series.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Implement the waiting rule: 2+ unmerged dependencies waits, no slice commit has two parents",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/slice-series.sh"]
+    },
+    {
+      "id": 4,
+      "description": "write-tree, commit-tree <tree> -p <parent> with title/body",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/slice-series.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Move the ref by three-argument git update-ref, refusing on compare-and-swap conflict rather than overwriting",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/slice-series.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Re-derive never rebase: a rebuild is a fresh overlay against the current base, no three-way merge",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/slice-series.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Write the slice's pull-request body if absent, leaving an existing body untouched; record commit/base_commit/ref/state back into the series document",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/slice-series.sh"]
+    },
+    {
+      "id": 8,
+      "description": "Assert build refuses every slice check refuses, by routing through the same validation functions",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/slice-series.sh", "agent-system/extensions/core/scripts/tests/test-slice-series.sh"]
+    },
+    {
+      "id": 9,
+      "description": "Suite cases: one-slice build; independent two-slice build; dependent slice on one unmerged dependency's commit; two-unmerged-dependency waiting; a deleted path; compare-and-swap refusal; untouched-HEAD/index/worktree assertion after every case",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-slice-series.sh"]
+    }
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.9",
+      "description": "Untouched-working-tree assertion scope",
+      "type": "altered",
+      "reason": "The plan's Phase 2 Verification bullet reads 'the fixture's HEAD, git status --porcelain, and git diff --cached are unchanged' literally, but build's own task list requires it to write the series document back to disk and create a pull-request body file -- both are new, previously-absent paths that necessarily change full `git status --porcelain` output (new untracked entries) even though no already-tracked file is touched. Implemented the assertion against HEAD, the shared index's tracked content (`git ls-files -s`), and the unstaged diff over tracked paths (`git diff`) instead of raw `git status --porcelain`, since the literal wording and the task list's own required file-writing cannot both hold simultaneously and the narrower tracked-state reading is what 'HEAD, the shared index, and the working tree untouched' (Phase 2 Goal) actually describes.",
+      "annotation": "*(completed: deviation -- untouched-state assertion scoped to tracked HEAD/index/diff, not raw git status --porcelain, since build's own required PR-body and series-document writes are new untracked paths)*"
+    },
+    {
+      "task_id": "2.5",
+      "description": "Test-only race-injection seam for the compare-and-swap case",
+      "type": "altered",
+      "reason": "Testing a true read-then-write race deterministically in a single-threaded synchronous test requires a seam: added an undocumented-in-production, test-only environment variable (SS_TEST_PRE_SWAP_HOOK) that, if set to an executable, runs with the ref name as its argument immediately after the compare-and-swap 'old' value is captured and before the swap is attempted. Unset in ordinary use; the production script's own behavior is unaffected when the variable is absent.",
+      "annotation": "*(completed: deviation -- added SS_TEST_PRE_SWAP_HOOK test-only seam to make the compare-and-swap refusal case deterministically testable)*"
+    }
+  ]
+}

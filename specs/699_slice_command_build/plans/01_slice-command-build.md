@@ -276,38 +276,51 @@ and running the new suite directly; the sentinel is not re-claimed in later phas
 
 ---
 
-### Phase 2: `build` — Private Index, Overlay, `write-tree`, `commit-tree`, Compare-and-Swap [NOT STARTED]
+### Phase 2: `build` — Private Index, Overlay, `write-tree`, `commit-tree`, Compare-and-Swap [COMPLETED]
 
 **Goal**: `build` turns an approved series document into one commit per buildable slice and moves
 each `refs/heads/slice/<series>/<id>` by compare-and-swap, with `HEAD`, the shared index, and the
 working tree untouched, refusing everything `check` refuses.
 
 **Tasks**:
-- [ ] Implement the overlay primitive, written fresh and self-contained: a private
+- [x] Implement the overlay primitive, written fresh and self-contained: a private
       `GIT_INDEX_FILE` (a `mktemp` file removed immediately after `write-tree`), `read-tree` of
       the base tree, then per declared path either `update-index --cacheinfo` with that path's
       mode and object id at the work ref, or `update-index --force-remove` for a path the work
       ref deletes. No `source` of and no extraction from `scripts/review-stack-prepare.sh`.
-- [ ] Compute each slice's base: the target's tip overlaid with the slices in its dependency
+      *(completed)*
+- [x] Compute each slice's base: the target's tip overlaid with the slices in its dependency
       closure. Compute its parent: the target's tip, or the one unmerged dependency's commit.
-- [ ] Implement the waiting rule: a slice with two or more unmerged dependencies is not built and
-      is reported as waiting, so no slice commit ever has two parents.
-- [ ] `write-tree`, then `commit-tree <tree> -p <parent>` with the slice's title and body.
-- [ ] Move the ref by three-argument `git update-ref <ref> <new> <old>`, refusing (never silently
+      *(completed)*
+- [x] Implement the waiting rule: a slice with two or more unmerged dependencies is not built and
+      is reported as waiting, so no slice commit ever has two parents. *(completed)*
+- [x] `write-tree`, then `commit-tree <tree> -p <parent>` with the slice's title and body.
+      *(completed: commit message is the slice title; the schema has no separate commit-message
+      body field)*
+- [x] Move the ref by three-argument `git update-ref <ref> <new> <old>`, refusing (never silently
       overwriting) when the compare-and-swap fails because the ref moved concurrently.
-- [ ] Re-derive, never rebase: a rebuild of an already-built slice is a fresh overlay against the
+      *(completed)*
+- [x] Re-derive, never rebase: a rebuild of an already-built slice is a fresh overlay against the
       current base, with no three-way merge and no conflict resolution anywhere in the path.
-- [ ] Write the slice's pull-request body to
+      *(completed)*
+- [x] Write the slice's pull-request body to
       `specs/.orchestration/slices/<series id>/<slice id>.md` if absent, leaving an existing body
       untouched (it is editable until the request is opened), and record `commit`, `base_commit`,
-      `ref`, and `state` back into the series document.
-- [ ] Assert `build` refuses every slice `check` refuses, by routing `build` through the same
-      validation entry point rather than duplicating the checks.
-- [ ] Suite cases: a one-slice build; an independent two-slice build; a dependent slice built on
+      `ref`, and `state` back into the series document. *(completed)*
+- [x] Assert `build` refuses every slice `check` refuses, by routing `build` through the same
+      validation entry point rather than duplicating the checks. *(completed: build calls the
+      same ss_check_ancestor/ss_check_assignment_and_globs/ss_check_depends_on/ss_check_bar
+      functions check uses; one representative case (depends_on_cycle) pins the routing)*
+- [x] Suite cases: a one-slice build; an independent two-slice build; a dependent slice built on
       its one unmerged dependency's commit; a slice with two unmerged dependencies reported as
       waiting and not built; a path the work ref deletes; a compare-and-swap refusal when the ref
       moved; and an assertion after every build case that `HEAD`, the shared index, and the
-      working tree are byte-identical to their pre-build state.
+      working tree are byte-identical to their pre-build state. *(completed: 13 new cases, 36
+      total passing; deviation -- the untouched-state assertion compares HEAD, the shared
+      index's tracked content, and `git diff` over tracked paths rather than raw `git status
+      --porcelain`, since build's own required series-document and pull-request-body writes are
+      new untracked paths that raw `git status --porcelain` would flag as a change; see progress
+      file deviation 2.9)*
 
 **Timing**: 2 hours
 
