@@ -1,16 +1,23 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 3,
-  "summary": "Wrote a 6-phase, 10-hour implementation plan for the /slice build: series-file schema plus script skeleton, check and the static no-push/no-forge assertion (Phase 1); the build subcommand's fresh overlay/write-tree/commit-tree/compare-and-swap primitive (Phase 2); status, the union check and two further static assertions (Phase 3); commands/slice.md's whole command surface including the forge call (Phase 4); registration plus the runtime-file row (Phase 5); redeploy, scoped verification and the operator handoff with the record left open (Phase 6). Territory is 8 source-store files plus the __WHOLE_TREE__ redeploy claim -- three more than the dispatch listed, because the doc lint mechanically requires a README.md row for a manifest-declared command and because the plan decided yes on the deferred orchestrator-runtime-files.md row (which drags in its coupled index-entries.json line count). validate-artifact.sh reports PASS with 0 warnings.",
+  "status": "partial",
+  "phase": "implement",
+  "dispatch_seq": 5,
+  "summary": "All six implementation phases are complete: scripts/slice-series.sh (check/build/status, no other entry point) with a 45-case suite, commands/slice.md's full command surface, registration across manifest.json/suite-classification.data/README.md/orchestrator-runtime-files.md, and a clean redeploy (deploy-headless.sh exit 0, landed_verify_clean). The record is deliberately NOT closed: per rules/pr-prohibition.md an agent can neither push nor open a pull request, so this dispatch stops short exactly as the dispatch instructed, naming the exact operator-typed lines (/please push, then /slice) needed to finish.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/699_slice_command_build/plans/01_slice-command-build.md",
-      "summary": "Six-phase plan for the /slice script, series file, command file, suite, registration and redeploy, stopping short of the operator-only push and pull-request step."
+      "type": "summary",
+      "path": "specs/699_slice_command_build/summaries/01_slice-command-build-summary.md",
+      "summary": "All six implementation phases complete: /slice command, slice-series.sh script, 45-case suite, registration, and clean redeploy; record stays open pending operator push/open."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/699_slice_command_build/handoffs/phase-6-handoff-20261124T191000Z.md",
+      "summary": "Final phase handoff naming the exact operator-typed lines to close the record."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
-  "blockers": []
+  "blockers": [
+    "Operator must run /slice from this repository's master branch, approve a proposal over the live difference against origin/master, then type the printed /please push origin slice/<series_id>/<id> line for each built slice (one at a time), then run /slice again to open the pull request(s). No agent can perform any of these three steps."
+  ]
 }
