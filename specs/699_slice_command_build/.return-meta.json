@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/699_slice_command_build/plans/01_slice-command-build.md",
-      "summary": "Six-phase, 10-hour plan for the /slice build: script (check/build/status), series file, command file, suite, registration, redeploy; stops short of the operator-only push and pull-request step."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795525113_9bbf2b_699",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 10,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "Registering a new slash command in this agent system is a three-surface edit, not a one-line manifest edit: check-extension-docs.sh's README-vs-manifest command sub-check fails any provides.commands entry whose command name is not mentioned in that extension's own README.md, so manifest.json plus commands/<name>.md plus a README.md Commands-table row are all mechanically required before gate 3 passes. The deployed CLAUDE.md command table (merge-sources/claudemd.md) is NOT mechanically required -- a slash command is discovered from the deployed commands/ directory regardless -- so a command can ship invocable while its CLAUDE.md row is deferred to a doc-parity record. A new script plus its suite additionally needs a provides.scripts pair (Rule Q flags an undeclared source script) and a suite-classification.data row (lint-unit-integration-boundary.sh fails an unclassified discovered suite).",
-      "category": "PATTERN",
-      "source_artifact": "specs/699_slice_command_build/plans/01_slice-command-build.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["command-registration", "manifest", "check-extension-docs", "suite-classification", "readme-table"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 699 to execute the plan",
-  "dispatch_seq": 3
+    "session_id": "sess_1795525113_9bbf2b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #699
 
 - **Task**: 699 - slice_command_build
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: None (the ruling's "Successors" table, row 1: ordered after nothing)
 - **Research Inputs**: specs/699_slice_command_build/reports/01_slice-command-build.md
@@ -187,7 +187,7 @@ exist on disk, then the redeploy of what was registered).
 
 ---
 
-### Phase 1: Series Schema, Script Skeleton, `check`, and the Static Assertion [NOT STARTED]
+### Phase 1: Series Schema, Script Skeleton, `check`, and the Static Assertion [COMPLETED]
 
 **Goal**: The series-file schema exists as a documented contract inside the script, the script
 dispatches exactly three subcommands and refuses any other, `check` performs every validation the
@@ -196,47 +196,52 @@ no-push/no-checkout/no-merge/no-forge assertion is written and passing before an
 acceptance criterion is checked.
 
 **Tasks**:
-- [ ] Create `scripts/slice-series.sh` with `set -uo pipefail`, `SCRIPT_DIR` resolution,
+- [x] Create `scripts/slice-series.sh` with `set -uo pipefail`, `SCRIPT_DIR` resolution,
       `lib/common.sh` sourcing, and the `deploy-root-guard.sh` sourcing convention the corpus's
-      other `scripts/*.sh` members use.
-- [ ] Write the series-document schema as a header block: `series_id`; `target` (`remote`,
+      other `scripts/*.sh` members use. *(completed)*
+- [x] Write the series-document schema as a header block: `series_id`; `target` (`remote`,
       `branch`, `commit` at last build); `work_ref` (`name`, `commit` at last build); `bar`
       (`lines`, `files`, `source` ∈ `declared` | `measured` (with `n`) | `default` |
       `chosen at prompt`); `not_landing` (path globs); and per slice `id`, `title`, `paths`
       (globs), `depends_on`, `over_bar_reason`, `state` ∈ `proposed` | `built` | `pushed` |
       `open` | `merged`, `ref`, `commit`, `base_commit`, `request_url`. Name the body file's
       location (`specs/.orchestration/slices/<series id>/<slice id>.md`) in the same block.
-- [ ] Implement subcommand dispatch for exactly `check`, `build`, `status`; any other argument
+      *(completed)*
+- [x] Implement subcommand dispatch for exactly `check`, `build`, `status`; any other argument
       (including none) is a named refusal, not a usage fallthrough into a default subcommand.
-- [ ] Give every subcommand a **candidate-document input** — a positional path, or `-` to read
+      *(completed)*
+- [x] Give every subcommand a **candidate-document input** — a positional path, or `-` to read
       the series document from stdin — resolved separately from the durable
       `specs/.orchestration/slices/<series id>.json` path, so prompt 2's counts can come from a
-      validation run that writes nothing.
-- [ ] Implement `check`: (a) the target is an ancestor of the work ref; (b) every path in the
+      validation run that writes nothing. *(completed)*
+- [x] Implement `check`: (a) the target is an ancestor of the work ref; (b) every path in the
       target→work-ref difference is in exactly one slice or matched by `not_landing`; (c) no
       declared glob matches nothing; (d) every `depends_on` entry names a declared slice and the
       edge set has no cycle (bounded DFS with a visited / in-progress marker, refusing on
       revisit — no persisted order, no component analysis); (e) every slice is at or under the
-      bar or carries one of the two accepted reasons.
-- [ ] Implement `check`'s count output: assigned-of-changed, unassigned, in-two-slices,
+      bar or carries one of the two accepted reasons. *(completed: over_bar_reason enum settled
+      as single_file|generated_tree, recorded as a deviation note in the progress file)*
+- [x] Implement `check`'s count output: assigned-of-changed, unassigned, in-two-slices,
       not-landing (glob count plus "others"), the generated line ("none declared; every path
       counts toward the bar"), and the per-slice files / added-lines figures the proposal table
       prints. Added lines come from the first column of a `--numstat` difference over the
-      slice's own paths; every path counts.
-- [ ] Implement the refusal convention from Decision 6, with one named reason and one exit code
+      slice's own paths; every path counts. *(completed)*
+- [x] Implement the refusal convention from Decision 6, with one named reason and one exit code
       per refusal class above, and the comment explaining why a refusal resolver is never wrapped
-      in a command substitution.
-- [ ] Create `scripts/tests/test-slice-series.sh` using the deployed-shape sandbox convention
+      in a command substitution. *(completed)*
+- [x] Create `scripts/tests/test-slice-series.sh` using the deployed-shape sandbox convention
       (`common_test_workdir_init`, an `install_scripts` helper copying the script under test,
       the whole `lib/` tree, and `deploy-root-guard.sh` into a `.claude/scripts/`-shaped fixture)
       and resolving its own roots via `common_test_repo_root` / `common_test_ext_root`, never a
-      fixed-depth parent walk past the extension-root boundary.
-- [ ] Write the **static assertion first**: the script's non-comment lines contain no
+      fixed-depth parent walk past the extension-root boundary. *(completed)*
+- [x] Write the **static assertion first**: the script's non-comment lines contain no
       `git push`, `git checkout`, `git switch`, `git merge`, `git rebase`, `git replay`, `gh`, or
       `glab` invocation. This case must be written and passing before any later case is added.
-- [ ] Add `check` cases: one per refusal class, each with its expected named reason and exit
+      *(completed)*
+- [x] Add `check` cases: one per refusal class, each with its expected named reason and exit
       code, plus a passing case asserting the printed counts. Fixture remotes and branches carry
-      names that are neither a default remote name nor a default branch name.
+      names that are neither a default remote name nor a default branch name. *(completed: 23
+      cases, 0 failed)*
 
 **Timing**: 2 hours
 
