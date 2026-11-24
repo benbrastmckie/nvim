@@ -1017,7 +1017,7 @@
     {
       "project_number": 700,
       "project_name": "bind_push_grant_to_pushed_ref",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.\n\nRULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.\n\n=== WHAT THIS RECORD OWNS: BIND A PUSH GRANT TO THE PUSHED REF ===\n\n\"Grants\", numbered item 1, and \"Successors\", row 6. Today a grant is matched against `git rev-parse HEAD` at consume time (scripts/lib/push-grant-lib.sh, near line 453; hooks/please-grant.sh records HEAD near line 211) and lives PG_EXPIRY_WINDOW seconds, default 600. For a ref built by plumbing, HEAD is not the commit being pushed. Two consequences the ruling states: (a) any commit by any session inside the window kills the grant although the pushed ref is untouched, which is routine in a repository with live orchestration; (b) the grant does not pin what is pushed, because the ref can be rebuilt between the typed line and the push without the match noticing.\n\nTHE CHANGE. A grant for a ref other than the checked-out branch binds to that ref's commit at mint time and is matched against that ref's commit at consume time, instead of HEAD. A grant for the checked-out branch keeps its present behaviour. `/please push <remote> <branch>` already names any branch, checked out or not (hooks/please-grant.sh); this record changes what such a grant is bound to, not who can mint one. One grant at a time, the expiry window and the default-branch force bar are unchanged.\n\nNOT THIS RECORD'S. Items 2 and 3 of \"Grants\" (a typed `/slice push <id>` minting for a slice ref; a batch grant) are not built here and the ruling does not recommend the third. The `/merge` minting branch of hooks/please-grant.sh is removed by remove_merge_command, which is ordered after this record because both edit that hook; do not touch that branch here.\n\n=== TERRITORY ===\n\nhooks/please-grant.sh; hooks/guard-git-push.sh; scripts/lib/push-grant-lib.sh; scripts/tests/test-please-grant.sh; scripts/tests/test-guard-git-push.sh. Research confirms whether scripts/git-push-granted.sh or any document stating the HEAD binding needs the same change, and extends file_scope if so. Ordered after nothing and independent of /slice; it lowers the cost of slice_command_build's acceptance step in a repository with live orchestration, so it is worth dispatching alongside it.\n\n=== VERIFY BY ===\n\nSuite cases for: a grant for a non-checked-out ref survives an unrelated commit on HEAD inside the window; the same grant is refused once the granted ref itself moves; a grant for the checked-out branch behaves as before; deploy-headless.sh reporting a clean verify. No push is performed by an agent (rules/pr-prohibition.md); every case runs against fixture repositories.",
       "topic": "core-agent-system",
@@ -1029,7 +1029,7 @@
         "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"
       ],
       "created": "2026-11-24T12:45:07Z",
-      "last_updated": "2026-11-24T13:07:30Z",
+      "last_updated": "2026-11-24T13:08:21Z",
       "audit_verdict": {
         "proposal": {
           "id": "bind_push_grant_to_pushed_ref",
@@ -1249,7 +1249,7 @@
         },
         "degradations_count": 46
       },
-      "session_id": "sess_1795525113_9bbf2b",
+      "session_id": "sess_1795525113_9bbf2b_700",
       "artifacts": [
         {
           "path": "specs/700_bind_push_grant_to_pushed_ref/reports/01_bind-grant-to-pushed-ref.md",
@@ -1262,17 +1262,23 @@
     {
       "project_number": 699,
       "project_name": "slice_command_build",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.\n\nRULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.\n\n=== WHAT THIS RECORD OWNS: THE /slice BUILD ===\n\nBuild the one mechanism the ruling keeps (\"The ruling in six lines\", line 1; \"One survivor, and what is deleted\", row \"new\"; \"Successors\", row 1): a user-invoked command over one small script and one series file. Nothing in the source store names /slice today (commands/slice.md is absent; a search for the command name and for slice_bar returns no file).\n\nTHE SCRIPT (\"The mechanism\"). Three subcommands and no other entry point: check, build, status. check: the target is an ancestor of the work ref; every path in the difference is in exactly one slice or on not_landing; no glob matches nothing; depends_on names real slices and has no cycle; every slice is at or under the bar or carries a reason. build: private index, base tree, overlay of the slice's paths at the work ref, write-tree, commit-tree, compare-and-swap move of refs/heads/slice/<series>/<id>, with HEAD, the index and the working tree untouched; a slice with two or more unmerged dependencies waits, so no slice commit has two parents; build refuses whatever check refuses. status: local ref and remote ref against the recorded commit, and the content-based merged test. No inference code is written: no union-find, no topological sort, no overlap analysis. The script contains no push, checkout, merge or forge invocation, and its suite asserts that statically (\"Basis\", carried from builder A; \"Constraints held\").\n\nTHE SERIES FILE (\"The mechanism\"). specs/.orchestration/slices/<series id>.json is the single home of slice state, with the fields that section lists, and the pull-request body beside it as <series id>/<slice id>.md. It is a runtime file: decide in the plan whether context/standards/orchestrator-runtime-files.md gains a row for it, and if so add that file to this record's territory.\n\nTHE COMMAND FILE (\"The command surface\"). commands/slice.md owns what a script must not: resolution, prompt 1 (the target, each candidate shown with its measured difference; a non-ancestor candidate shown and not choosable; an empty difference shown as nothing to slice), the bar line, prompt 2 (the proposal table and its four fixed lines; approve / revise / cancel; nothing written before approve), the per-slice typed push lines printed on approval, the continue step of a later invocation, and the open step (the forge call lives here and nowhere else). User-invoked only, in the same class as /tag. \"Re-derive, never rebase\": no restack, no three-way merge, no conflict resolution.\n\nTHE BAR IN THIS RECORD. Only the shipped default (1,500 lines and 30 files, printed as `default, unmeasured`), the refusal with its two accepted reasons, and the bar being revisable at prompt 2 (\"The size bar\"). The declared slice_bar key and the measured 75th percentile belong to slice_bar_measurement_and_declaration and are not built here. Every path counts toward the bar and prompt 2 says so.\n\nNOT THIS RECORD'S. Deleting review-stack-prepare.sh (delete_review_stack_inference_route), narrowing the handoff (narrow_handoff_to_print_slice), removing /merge (remove_merge_command), the grant binding (bind_push_grant_to_pushed_ref), and doc parity plus the operator runbook (stack_pr_redeploy_and_second_repo_demo). Do not base the script on review-stack-prepare.sh (\"Basis\": no existing code is the basis).\n\n=== ACCEPTANCE IS NOT A SUITE COUNT ===\n\n\"Successors\", closing paragraph, and \"Risks\", first item: this record ends with one real slice of a real difference, pushed by a typed grant and opened as a pull request by the operator typing /slice. Two builders with green suites and no pull request are what the ruling deletes. An agent can neither push nor open a pull request (rules/pr-prohibition.md), so the IMPLEMENTING AGENT STOPS SHORT: it builds, tests, redeploys, and returns with the record NOT closed, naming the exact lines the operator types. The record closes only after the operator has pushed one slice and opened its pull request with /slice, and the request URL is recorded in the series file. remove_merge_command reads that as its precondition. A real difference exists to cut: this repository's work branch is several hundred commits ahead of its remote default branch.\n\n=== TERRITORY ===\n\nNew commands/slice.md; one new script and its suite (filenames are settled by the plan; add them to file_scope then); manifest.json and scripts/tests/suite-classification.data rows for the three new files. Ordered after nothing. Dispatchable alongside bind_push_grant_to_pushed_ref, with which it shares no file.\n\n=== CONSTRAINTS ===\n\nRepo-agnostic: no branch name, remote name or consumer path in any deliverable; the target, the remote and the bar are resolved or chosen at run time. No number appears in a deliverable as a property of the system beyond the default labelled unmeasured. The commit-containment scripts are not edited and not depended on; completed tasks' modified_files is a grouping hint only.\n\n=== VERIFY BY ===\n\nThe suite green, including the static no-push / no-forge assertion and a union check (target tree overlaid with every slice equals the work ref's tree on every assigned path); deploy-headless.sh reporting a clean verify; then, by the operator, one slice pushed by a typed grant and opened by /slice, its URL recorded.",
       "topic": "core-agent-system",
       "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/README.md",
         "agent-system/extensions/core/commands/slice.md",
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+        "agent-system/extensions/core/index-entries.json",
         "agent-system/extensions/core/manifest.json",
-        "agent-system/extensions/core/scripts/tests/suite-classification.data"
+        "agent-system/extensions/core/scripts/slice-series.sh",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data",
+        "agent-system/extensions/core/scripts/tests/test-slice-series.sh"
       ],
       "created": "2026-11-24T12:44:54Z",
-      "last_updated": "2026-11-24T13:07:06Z",
+      "last_updated": "2026-11-24T13:20:47Z",
       "audit_verdict": {
         "proposal": {
           "id": "slice_command_build",
@@ -1501,6 +1507,11 @@
           "path": "specs/699_slice_command_build/reports/01_slice-command-build.md",
           "type": "report",
           "summary": "Codebase research grounding the /slice build: the shared overlay/commit-tree/CAS primitive in review-stack-prepare.sh (not its basis), command-file and suite/manifest registration conventions, the orchestrator-runtime-files.md row precedent for the series file, and a re-measured 412-commit live difference confirming the VERIFY BY precondition."
+        },
+        {
+          "path": "specs/699_slice_command_build/plans/01_slice-command-build.md",
+          "type": "plan",
+          "summary": "Six-phase plan for the /slice script, series file, command file, suite, registration and redeploy, stopping short of the operator-only push and pull-request step."
         }
       ],
       "next_artifact_number": 2

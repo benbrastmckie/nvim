@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795525113_9bbf2b_699",
-  "dispatch_seq": 1,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/699_slice_command_build/reports/01_slice-command-build.md",
-      "summary": "Codebase research grounding the /slice build: the shared overlay/commit-tree/CAS primitive in review-stack-prepare.sh (not its basis), command-file and suite/manifest registration conventions, the orchestrator-runtime-files.md row precedent for the series file, and a re-measured 412-commit live difference confirming the VERIFY BY precondition."
+      "type": "plan",
+      "path": "specs/699_slice_command_build/plans/01_slice-command-build.md",
+      "summary": "Six-phase, 10-hour plan for the /slice build: script (check/build/status), series file, command file, suite, registration, redeploy; stops short of the operator-only push and pull-request step."
     }
   ],
-  "next_steps": "Run /orchestrate 699 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1795525113_9bbf2b_699",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 10,
+    "dependency_waves": [[1], [2], [3], [4], [5], [6]]
+  },
   "memory_candidates": [
     {
-      "content": "In agent-system/extensions/core, scripts/review-stack-prepare.sh's rsp_overlay_tree (private GIT_INDEX_FILE + read-tree + per-path update-index --cacheinfo/--force-remove + write-tree) is the canonical worked example of the 'private index overlay' git-plumbing idiom documented generically in context/patterns/ref-plumbing-landing.md. A new script needing the same idiom should re-derive it fresh rather than source/depend on review-stack-prepare.sh when that script is itself scheduled for deletion by another record -- check decision records under specs/decisions/ for a scheduled-deletion status before treating any existing script as a dependency.",
+      "content": "Registering a new slash command in this agent system is a three-surface edit, not a one-line manifest edit: check-extension-docs.sh's README-vs-manifest command sub-check fails any provides.commands entry whose command name is not mentioned in that extension's own README.md, so manifest.json plus commands/<name>.md plus a README.md Commands-table row are all mechanically required before gate 3 passes. The deployed CLAUDE.md command table (merge-sources/claudemd.md) is NOT mechanically required -- a slash command is discovered from the deployed commands/ directory regardless -- so a command can ship invocable while its CLAUDE.md row is deferred to a doc-parity record. A new script plus its suite additionally needs a provides.scripts pair (Rule Q flags an undeclared source script) and a suite-classification.data row (lint-unit-integration-boundary.sh fails an unclassified discovered suite).",
       "category": "PATTERN",
-      "source_artifact": "specs/699_slice_command_build/reports/01_slice-command-build.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["ref-plumbing", "overlay-tree", "commit-tree", "compare-and-swap", "git-index-file"]
-    },
-    {
-      "content": "In this repository's agent-system source store, commands/tag.md and commands/merge.md are the two reference shapes for user-only command files: /tag (no allowed-tools, narrative workflow, delegates to a skill) for a command with no interactive AskUserQuestion prompts and no direct forge call; /merge (allowed-tools: Bash(git:*), Bash(gh:*), Bash(glab:*), AskUserQuestion) for a command that both prompts interactively and calls the forge CLI directly from the command body rather than from a backing script. Choose the template by whether the new command needs interactive prompts + forge calls, not just by 'is it user-only'.",
-      "category": "PATTERN",
-      "source_artifact": "specs/699_slice_command_build/reports/01_slice-command-build.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["command-file-convention", "allowed-tools", "AskUserQuestion", "user-only-command", "forge-call"]
-    },
-    {
-      "content": "context/standards/orchestrator-runtime-files.md classifies specs/.orchestration/reviews/<stack id>/manifest.json as 'Durable provenance, but untracked', covered by the pre-existing **/.orchestration/ gitignore directory-class pattern with no new gitignore pattern needed. Any new state file placed under specs/.orchestration/** inherits this gitignore coverage automatically; the only remaining decision is whether it earns its own documentation row in that standards file, which is a discoverability judgment call, not a mechanical requirement.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/699_slice_command_build/reports/01_slice-command-build.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["orchestrator-runtime-files", "gitignore-class", "orchestration-directory", "runtime-state-file"]
+      "source_artifact": "specs/699_slice_command_build/plans/01_slice-command-build.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["command-registration", "manifest", "check-extension-docs", "suite-classification", "readme-table"]
     }
-  ]
+  ],
+  "next_steps": "Run /orchestrate 699 to execute the plan",
+  "dispatch_seq": 3
 }
