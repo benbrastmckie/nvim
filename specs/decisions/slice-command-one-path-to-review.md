@@ -732,12 +732,31 @@ created by this record. Territory is relative to `agent-system/extensions/core/`
 |---|---|---|---|
 | 1 | **`/slice` build.** The script (`check`, `build`, `status`), the series file, the command with both prompts, the open step, the suite | new `commands/slice.md`, one new script and suite, `manifest.json`, `suite-classification.data` | nothing |
 | 2 | **Bar measurement and the `slice_bar` declaration** | the script; `context/standards/repo-level-declarations.md` | 1. The line count is wrong in any repository with generated files until 655's declaration exists: a hard edge from the *accuracy* of the bar onto 655, not from its existence |
-| 3 | **Delete the inference route**: `review-stack-prepare.sh`, its suite, the `review_base` section, the review-manifest row | the files of "One survivor, and what is deleted", rows 2 | nothing; it has no caller. Independent of 1 |
+| 3 | **Delete the inference route**: `review-stack-prepare.sh`, its suite, the `review_base` section, the review-manifest row | the files of "One survivor, and what is deleted", rows 2 | 4, which removes its one caller, and so transitively 1. See the amendment note under this table |
 | 4 | **Narrow the handoff** (692, revised) | `scripts/milestone-review-handoff.sh`, its suite, `context/contracts/conclusion-stage.md` | 1, so the line it prints names a command that exists |
 | 5 | **Remove `/merge`** and rewrite its references, including the `merge` minting branch and the rule text that names it | `commands/merge.md`, `hooks/please-grant.sh`, and the other files of E7's 27 | 1, and only after `/slice` has opened one real pull request |
 | 6 | **Bind a grant to the pushed ref** ("Grants", item 1) | `hooks/please-grant.sh`, `hooks/guard-git-push.sh`, `scripts/lib/push-grant-lib.sh` | nothing; independent. Shares `hooks/please-grant.sh` with 5 and is sequenced against it |
 
 Doc parity, redeploy and the runbook are 694, revised, after 1, 4 and 5.
+
+**Amended by** `specs/decisions/slice-command-one-path-to-review.md`, "Successors", 2026-11-24:
+successor 3 is ordered after successor 4, and through it after successor 1. It is not independent.
+`scripts/milestone-review-handoff.sh` calls `review-stack-prepare.sh`: it resolves the script at
+line 81 (`rsp_script="${SCRIPT_DIR}/review-stack-prepare.sh"`), runs `cut --milestone` at line 264
+and `show --stack-id` at line 271, and prints a `script_missing` refusal at line 262 when the
+script is absent. Its suite, `scripts/tests/test-milestone-review-handoff.sh`, copies the script
+into its fixture (lines 20 and 52). Deleting the script while that caller stands turns every
+milestone handoff into the refusal arm. Successor 4 narrows the handoff to print `/slice` and
+removes the caller; successor 4 is itself ordered after 1. The order is therefore 1, then 4,
+then 3.
+
+Two context documents cite the script as the live ref-plumbing implementation and are re-pointed
+in the same change that deletes it: `context/patterns/ref-plumbing-landing.md` (line 9, "the
+worked implementation"; line 32, the review-ref build and restack sites) and
+`context/standards/git-workflow-narrative.md` (line 273, the compare-and-swap property
+"exercised today by" the script). These are in addition to the two documents E1 lists. Where E1,
+search 2 and "Builder A is deleted" say the script has no caller, this note governs the ordering;
+the deletion verdict itself stands. Evidence: 698, issue entry `iss_1795519330398_fX2q1n`.
 
 **The acceptance bar for successor 1** is not a suite count. It ends with one real slice of a
 real difference, pushed by a typed grant and opened as a pull request by the operator typing
