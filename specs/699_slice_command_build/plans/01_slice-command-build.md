@@ -351,7 +351,7 @@ that suite directly.
 
 ---
 
-### Phase 3: `status`, the Union Check, and the Repo-Agnosticism Assertion [NOT STARTED]
+### Phase 3: `status`, the Union Check, and the Repo-Agnosticism Assertion [COMPLETED]
 
 **Goal**: `status` reports, per slice, the local ref and the remote ref against the recorded
 commit plus the content-based merged test; the suite proves the union property; and the suite
@@ -359,23 +359,30 @@ proves statically that the script hardcodes no remote or branch name and depends
 review-stack file.
 
 **Tasks**:
-- [ ] Implement `status`: per slice, the local ref against the recorded commit, the remote
+- [x] Implement `status`: per slice, the local ref against the recorded commit, the remote
       tracking ref against the recorded commit, and the merged test — the slice's own paths at
       the target's tip equal the slice's content, so a squash merge is recognised. A content
-      test, never a commit-ancestry test.
-- [ ] Have `status` report the state vocabulary already in the schema (`proposed`, `built`,
+      test, never a commit-ancestry test. *(completed)*
+- [x] Have `status` report the state vocabulary already in the schema (`proposed`, `built`,
       `pushed`, `open`, `merged`) and name, for an unmerged slice whose base has moved, that a
-      rebuild is due — printing the fact, performing no push and no merge.
-- [ ] Add the union check to the suite: the target's tree overlaid with every built slice equals
+      rebuild is due — printing the fact, performing no push and no merge. *(completed)*
+- [x] Add the union check to the suite: the target's tree overlaid with every built slice equals
       the work ref's tree on every assigned path. Compare resolved tree content over the assigned
-      path set, not a commit range.
-- [ ] Add the repo-agnosticism static assertion: the script's text contains no literal default
-      remote name and no literal default branch name.
-- [ ] Add a static assertion that the script neither `source`s nor invokes
+      path set, not a commit range. *(completed)*
+- [x] Add the repo-agnosticism static assertion: the script's text contains no literal default
+      remote name and no literal default branch name. *(completed)*
+- [x] Add a static assertion that the script neither `source`s nor invokes
       `review-stack-prepare.sh` nor any other script outside `lib/` and `deploy-root-guard.sh`.
-- [ ] Add `status` cases: a built-but-unpushed slice; a pushed slice whose remote ref matches;
+      *(completed: deviation -- excludes pure-comment lines from the review-stack-prepare grep,
+      since the script's own explanatory comment names the decision not to depend on it; see
+      progress file deviation 3.5)*
+- [x] Add `status` cases: a built-but-unpushed slice; a pushed slice whose remote ref matches;
       a pushed slice whose remote ref diverges from the recorded commit; a slice merged by squash
-      (recognised by content); and an unmerged slice whose base has moved.
+      (recognised by content); and an unmerged slice whose base has moved. *(completed: 9 new
+      cases, 45 total passing; deviation -- the "pushed" fixtures fabricate the resulting
+      refs/remotes/<remote>/... ref directly via `git update-ref` rather than `git push`, which
+      this environment's guard hook blocks unconditionally even against a throwaway local
+      fixture remote; see progress file deviation 3.1)*
 
 **Timing**: 1.5 hours
 

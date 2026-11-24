@@ -576,6 +576,203 @@ HOOK
   rm -rf "$repo"
 fi
 
+# =====================================================================
+# Phase 3: status, the union check, and the repo-agnosticism assertion.
+# =====================================================================
+
+# REMOTE_NAME is neither a default remote name ("origin") nor a default branch name, per the
+# same fixture-naming convention BRANCH_TARGET/BRANCH_WORK already follow.
+REMOTE_NAME="forgehub"
+
+status_field() {
+  local out="$1" id="$2" field="$3"
+  printf '%s\n' "$out" | grep "^STATUS ${id} " | grep -oE "${field}=[^ ]*" | cut -d= -f2-
+}
+
+doc_with_remote() {
+  base_doc | jq --arg r "$REMOTE_NAME" '.target.remote = $r'
+}
+
+# -----------------------------------------------------------------------
+# a built-but-unpushed slice
+# -----------------------------------------------------------------------
+repo="$(make_repo)"
+doc="$(doc_with_remote | jq 'del(.slices[1]) | .not_landing += ["sliceB/*"]')"
+printf '%s' "$doc" >"$repo/candidate.json"
+run_ss "$repo" build candidate.json
+run_ss "$repo" status candidate.json
+if [ "$LAST_CODE" -eq 0 ] \
+  && [ "$(status_field "$LAST_OUT" sliceA local_ref)" = "exists" ] \
+  && [ "$(status_field "$LAST_OUT" sliceA local_matches_recorded)" = "yes" ] \
+  && [ "$(status_field "$LAST_OUT" sliceA remote_ref)" = "absent" ] \
+  && [ "$(status_field "$LAST_OUT" sliceA remote_matches_recorded)" = "n/a" ] \
+  && [ "$(status_field "$LAST_OUT" sliceA merged)" = "no" ]; then
+  common_test_pass "status on a built-but-unpushed slice reports local=exists, remote=absent"
+else
+  common_test_fail "built-but-unpushed status case" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# -----------------------------------------------------------------------
+# a pushed slice whose remote ref matches
+# -----------------------------------------------------------------------
+repo="$(make_repo)"
+doc="$(doc_with_remote | jq 'del(.slices[1]) | .not_landing += ["sliceB/*"]')"
+printf '%s' "$doc" >"$repo/candidate.json"
+run_ss "$repo" build candidate.json
+built_commit="$(doc_field "$repo/candidate.json" sliceA commit)"
+# Simulate a completed push's resulting remote-tracking ref directly (never via `git push`,
+# which this suite never invokes -- the operator's push is out of scope for this script).
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/slice/s1/sliceA" "$built_commit"
+run_ss "$repo" status candidate.json
+if [ "$LAST_CODE" -eq 0 ] \
+  && [ "$(status_field "$LAST_OUT" sliceA remote_ref)" = "exists" ] \
+  && [ "$(status_field "$LAST_OUT" sliceA remote_matches_recorded)" = "yes" ]; then
+  common_test_pass "status on a pushed slice whose remote ref matches the recorded commit"
+else
+  common_test_fail "pushed-and-matching status case" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# -----------------------------------------------------------------------
+# a pushed slice whose remote ref diverges from the recorded commit
+# -----------------------------------------------------------------------
+repo="$(make_repo)"
+doc="$(doc_with_remote | jq 'del(.slices[1]) | .not_landing += ["sliceB/*"]')"
+printf '%s' "$doc" >"$repo/candidate.json"
+run_ss "$repo" build candidate.json
+target_tip="$(git -C "$repo" rev-parse "$BRANCH_TARGET")"
+# An unrelated commit stands in for a remote ref that has diverged from what this document
+# recorded (e.g. someone else pushed over it).
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/slice/s1/sliceA" "$target_tip"
+run_ss "$repo" status candidate.json
+if [ "$LAST_CODE" -eq 0 ] \
+  && [ "$(status_field "$LAST_OUT" sliceA remote_ref)" = "exists" ] \
+  && [ "$(status_field "$LAST_OUT" sliceA remote_matches_recorded)" = "no" ]; then
+  common_test_pass "status on a pushed slice whose remote ref diverges from the recorded commit"
+else
+  common_test_fail "pushed-and-diverging status case" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# -----------------------------------------------------------------------
+# a slice merged by squash (recognised by content, never by commit ancestry)
+# -----------------------------------------------------------------------
+repo="$(make_repo)"
+doc="$(doc_with_remote | jq 'del(.slices[1]) | .not_landing += ["sliceB/*"]')"
+printf '%s' "$doc" >"$repo/candidate.json"
+run_ss "$repo" build candidate.json
+# Land sliceA's own content directly on the target branch with a fresh, unrelated commit --
+# a squash merge has no shared history with the slice's own commit, only identical content.
+( cd "$repo" && git checkout -q "$BRANCH_TARGET" \
+  && mkdir -p sliceA && echo one >sliceA/f1.txt && echo one >sliceA/f2.txt \
+  && git add sliceA/f1.txt sliceA/f2.txt >/dev/null 2>&1 \
+  && git commit -q -m "squash merge sliceA" >/dev/null 2>&1 )
+run_ss "$repo" status candidate.json
+if [ "$LAST_CODE" -eq 0 ] && [ "$(status_field "$LAST_OUT" sliceA merged)" = "yes" ]; then
+  common_test_pass "status recognises a squash-merged slice by content, with no shared commit history"
+else
+  common_test_fail "squash-merge content recognition" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# -----------------------------------------------------------------------
+# an unmerged slice whose base has moved: status names a rebuild as due
+# -----------------------------------------------------------------------
+repo="$(make_repo)"
+doc="$(doc_with_remote | jq 'del(.slices[1]) | .not_landing += ["sliceB/*"]')"
+printf '%s' "$doc" >"$repo/candidate.json"
+run_ss "$repo" build candidate.json
+run_ss "$repo" status candidate.json
+rebuild_due_before="$(status_field "$LAST_OUT" sliceA rebuild_due)"
+( cd "$repo" && git checkout -q "$BRANCH_TARGET" \
+  && echo unrelated >unrelated.txt && git add unrelated.txt >/dev/null 2>&1 \
+  && git commit -q -m "unrelated target progress" >/dev/null 2>&1 )
+run_ss "$repo" status candidate.json
+if [ "$rebuild_due_before" = "no" ] \
+  && [ "$LAST_CODE" -eq 0 ] \
+  && [ "$(status_field "$LAST_OUT" sliceA rebuild_due)" = "yes" ] \
+  && [ "$(status_field "$LAST_OUT" sliceA merged)" = "no" ]; then
+  common_test_pass "status names a rebuild due for an unmerged slice whose base has moved, writing and merging nothing"
+else
+  common_test_fail "rebuild-due-on-moved-base case" "before=${rebuild_due_before} exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# =====================================================================
+# Static assertion: no literal default remote name and no literal default branch name.
+# =====================================================================
+default_name_hits="$(grep -nE '\borigin\b|\bmain\b|\bmaster\b' "$SS" || true)"
+if [ -z "$default_name_hits" ]; then
+  common_test_pass "static check: slice-series.sh names no default remote or branch name"
+else
+  common_test_fail "static check: found a literal default remote/branch name" "$default_name_hits"
+fi
+
+# =====================================================================
+# Static assertion: no source of, or invocation of, review-stack-prepare.sh or any script
+# outside lib/ and deploy-root-guard.sh.
+# =====================================================================
+dep_hits="$(grep -nE 'review-stack-prepare' "$SS" | grep -v '^[0-9]*:#' || true)"
+if [ -z "$dep_hits" ]; then
+  common_test_pass "static check: slice-series.sh neither sources nor invokes review-stack-prepare.sh"
+else
+  common_test_fail "static check: found a review-stack-prepare.sh reference" "$dep_hits"
+fi
+
+other_source_hits="$(grep -nE '^\s*(source|\.)\s+"?\$\{?SCRIPT_DIR\}?/' "$SS" | grep -v 'lib/common\.sh' | grep -v 'deploy-root-guard\.sh' || true)"
+if [ -z "$other_source_hits" ]; then
+  common_test_pass "static check: slice-series.sh sources nothing outside lib/ and deploy-root-guard.sh"
+else
+  common_test_fail "static check: found an unexpected source/invocation" "$other_source_hits"
+fi
+
+# =====================================================================
+# The union check: the target's tree overlaid with every built slice equals the work ref's
+# tree on every assigned path. Compared over resolved tree content, never a commit range.
+# =====================================================================
+assert_union_property() {
+  local repo="$1" doc_path="$2" label="$3"
+  local work_ref_commit
+  work_ref_commit="$(git -C "$repo" rev-parse "$BRANCH_WORK")"
+  local -a ids
+  mapfile -d '' -t ids < <(jq -j '.slices[].id | . + "\u0000"' "$doc_path")
+  local mismatch="" id
+  for id in "${ids[@]}"; do
+    [ -n "$id" ] || continue
+    local commit
+    commit="$(jq -r --arg id "$id" '.slices[] | select(.id == $id) | .commit // ""' "$doc_path")"
+    [ -n "$commit" ] || continue
+    local -a globs pathspecs
+    mapfile -d '' -t globs < <(jq -j --arg id "$id" '
+      .slices[] | select(.id == $id) | (.paths // [])[] | . + "\u0000"' "$doc_path")
+    pathspecs=()
+    local g
+    for g in "${globs[@]}"; do
+      [ -n "$g" ] || continue
+      pathspecs+=(":(glob)${g}")
+    done
+    [ "${#pathspecs[@]}" -gt 0 ] || continue
+    local diff_out
+    diff_out="$(git -C "$repo" diff --name-only "$commit" "$work_ref_commit" -- "${pathspecs[@]}" 2>/dev/null)"
+    if [ -n "$diff_out" ]; then
+      mismatch="${mismatch}slice ${id}: ${diff_out}; "
+    fi
+  done
+  if [ -z "$mismatch" ]; then
+    common_test_pass "$label"
+  else
+    common_test_fail "$label" "$mismatch"
+  fi
+}
+
+repo="$(make_repo)"
+doc="$(base_doc | jq '.slices[1].depends_on = []')" # sliceA and sliceB, independent, both assigned
+printf '%s' "$doc" >"$repo/candidate.json"
+run_ss "$repo" build candidate.json
+assert_union_property "$repo" "$repo/candidate.json" "the union check: target overlaid with every built slice equals the work ref on every assigned path"
+rm -rf "$repo"
+
 echo ""
 echo "Results: ${PASSED} passed, ${FAILED} failed"
 

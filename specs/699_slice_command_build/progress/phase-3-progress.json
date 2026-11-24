@@ -1,0 +1,63 @@
+{
+  "phase": 3,
+  "phase_name": "status, the Union Check, and the Repo-Agnosticism Assertion",
+  "started_at": "2026-11-24T16:50:00Z",
+  "last_updated": "2026-11-24T17:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Implement status: local ref vs recorded commit, remote tracking ref vs recorded commit, content-based merged test",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/slice-series.sh"]
+    },
+    {
+      "id": 2,
+      "description": "status reports the state vocabulary already in the schema and names a rebuild due for an unmerged slice whose base has moved, printing only, pushing/merging nothing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/slice-series.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add the union check to the suite",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-slice-series.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Add the repo-agnosticism static assertion (no literal default remote/branch name)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-slice-series.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Add the no-dependency static assertion (no source/invocation of review-stack-prepare.sh or any script outside lib/ and deploy-root-guard.sh)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-slice-series.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Add status cases: built-but-unpushed; pushed-and-matching; pushed-and-diverging; squash-merged by content; rebuild due on moved base",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-slice-series.sh"]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.5",
+      "description": "No-dependency static assertion scope",
+      "type": "altered",
+      "reason": "The assertion's grep over 'review-stack-prepare' initially matched the script's own explanatory comment stating the decision NOT to depend on review-stack-prepare.sh (a legitimate, intentional comment, not a real dependency). Narrowed the grep to exclude pure-comment lines (`grep -v '^[0-9]*:#'`), the exact exclusion convention the Phase 1 static push/checkout/forge assertion already uses for the same reason.",
+      "annotation": "*(completed: deviation -- excluded pure-comment lines from the review-stack-prepare grep, matching the Phase 1 static assertion's own comment-exclusion convention)*"
+    },
+    {
+      "task_id": "3.1",
+      "description": "Remote-tracking-ref test fixtures use git update-ref, never git push",
+      "type": "altered",
+      "reason": "git push is blocked unconditionally by this environment's guard hook (guard-git-push.sh), including against a throwaway local bare/fixture remote with no network or forge involvement -- the hook pattern-matches the command text regardless of destination. Status's own test cases for 'pushed and matching' / 'pushed and diverging' instead fabricate the resulting refs/remotes/<remote>/... ref directly via `git update-ref`, which is not blocked and is sufficient since the script itself only ever reads that ref's value (it never pushes).",
+      "annotation": "*(completed: deviation -- remote-tracking-ref fixtures built via git update-ref, not git push, since git push is unconditionally guard-blocked in this environment even for a local throwaway fixture)*"
+    }
+  ]
+}

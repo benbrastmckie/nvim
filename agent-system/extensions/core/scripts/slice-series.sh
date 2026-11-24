@@ -579,8 +579,113 @@ ss_cmd_build() {
   fi
 }
 
+# ss_slice_content_matches_target <id> <slice-commit> -- the content-based merged test: true
+# (exit 0) when this slice's own declared paths are byte-identical at the slice's own built
+# commit and at the target's current tip. A content test, never a commit-ancestry test, so a
+# squash merge (no shared history, identical resulting content) is recognised.
+ss_slice_content_matches_target() {
+  local id="$1" slice_commit="$2"
+  local -a globs pathspecs
+  mapfile -d '' -t globs < <(printf '%s' "$SS_DOC" | jq -j --arg id "$id" '
+    .slices[] | select(.id == $id) | (.paths // [])[] | . + "\u0000"')
+  pathspecs=()
+  local g
+  for g in "${globs[@]}"; do
+    [ -n "$g" ] || continue
+    pathspecs+=(":(glob)${g}")
+  done
+  [ "${#pathspecs[@]}" -gt 0 ] || return 1
+  local diff_out
+  diff_out="$(git diff --name-only "$slice_commit" "$SS_TARGET_COMMIT" -- "${pathspecs[@]}" 2>/dev/null)"
+  [ -z "$diff_out" ]
+}
+
+# ss_cmd_status <document-path|-> -- per slice: the local ref and the remote tracking ref
+# against the recorded commit, plus the content-based merged test. Purely a report: never
+# writes to the document, never refuses on a condition `build`/`check` would refuse on (e.g.
+# target not an ancestor of work_ref), since the whole point of `status` is to inform the
+# caller about current reality -- including a reality `commands/slice.md`'s continue step must
+# react to -- without blocking on it. No push, no merge, ever performed here.
 ss_cmd_status() {
-  ss_refuse 2 usage_error "status is not yet implemented"
+  ss_load_document "$1"
+  ss_resolve_commits
+
+  local series_id remote
+  series_id="$(printf '%s' "$SS_DOC" | jq -r '.series_id')"
+  remote="$(printf '%s' "$SS_DOC" | jq -r '.target.remote // empty')"
+
+  local -a ids
+  mapfile -d '' -t ids < <(printf '%s' "$SS_DOC" | jq -j '.slices[].id | . + "\u0000"')
+
+  local id
+  for id in "${ids[@]}"; do
+    [ -n "$id" ] || continue
+    local state ref rec_commit rec_base
+    state="$(printf '%s' "$SS_DOC" | jq -r --arg id "$id" '.slices[] | select(.id == $id) | .state // ""')"
+    ref="$(printf '%s' "$SS_DOC" | jq -r --arg id "$id" '.slices[] | select(.id == $id) | .ref // ""')"
+    [ -n "$ref" ] || ref="refs/heads/slice/${series_id}/${id}"
+    rec_commit="$(printf '%s' "$SS_DOC" | jq -r --arg id "$id" '.slices[] | select(.id == $id) | .commit // ""')"
+    rec_base="$(printf '%s' "$SS_DOC" | jq -r --arg id "$id" '.slices[] | select(.id == $id) | .base_commit // ""')"
+
+    local local_ref_state="absent" local_commit="" local_match="n/a"
+    local_commit="$(git rev-parse -q --verify "$ref" 2>/dev/null || true)"
+    if [ -n "$local_commit" ]; then
+      local_ref_state="exists"
+      if [ -n "$rec_commit" ]; then
+        if [ "$local_commit" = "$rec_commit" ]; then
+          local_match="yes"
+        else
+          local_match="no"
+        fi
+      fi
+    fi
+
+    local remote_ref_state="no_remote" remote_commit="" remote_match="n/a"
+    if [ -n "$remote" ]; then
+      remote_ref_state="absent"
+      remote_commit="$(git rev-parse -q --verify "refs/remotes/${remote}/slice/${series_id}/${id}" 2>/dev/null || true)"
+      if [ -n "$remote_commit" ]; then
+        remote_ref_state="exists"
+        if [ -n "$rec_commit" ]; then
+          if [ "$remote_commit" = "$rec_commit" ]; then
+            remote_match="yes"
+          else
+            remote_match="no"
+          fi
+        fi
+      fi
+    fi
+
+    local merged="no"
+    if [ -n "$local_commit" ] && ss_slice_content_matches_target "$id" "$local_commit"; then
+      merged="yes"
+    fi
+
+    local rebuild_due="no"
+    if [ "$merged" != "yes" ]; then
+      local -a deps
+      mapfile -d '' -t deps < <(printf '%s' "$SS_DOC" | jq -j --arg id "$id" '
+        .slices[] | select(.id == $id) | (.depends_on // [])[] | . + "\u0000"')
+      local -a unmerged_deps=()
+      local d dstate
+      for d in "${deps[@]}"; do
+        [ -n "$d" ] || continue
+        dstate="$(printf '%s' "$SS_DOC" | jq -r --arg id "$d" '.slices[] | select(.id == $id) | .state // ""')"
+        [ "$dstate" = "merged" ] || unmerged_deps+=("$d")
+      done
+      local current_base=""
+      if [ "${#unmerged_deps[@]}" -eq 0 ]; then
+        current_base="$SS_TARGET_COMMIT"
+      elif [ "${#unmerged_deps[@]}" -eq 1 ]; then
+        current_base="$(printf '%s' "$SS_DOC" | jq -r --arg id "${unmerged_deps[0]}" '.slices[] | select(.id == $id) | .commit // ""')"
+      fi
+      if [ -n "$current_base" ] && [ -n "$rec_base" ] && [ "$current_base" != "$rec_base" ]; then
+        rebuild_due="yes"
+      fi
+    fi
+
+    echo "STATUS ${id} state=${state} local_ref=${local_ref_state} local_commit=${local_commit:--} local_matches_recorded=${local_match} remote_ref=${remote_ref_state} remote_commit=${remote_commit:--} remote_matches_recorded=${remote_match} merged=${merged} rebuild_due=${rebuild_due}"
+  done
 }
 
 ss_main() {
