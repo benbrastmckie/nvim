@@ -1,0 +1,37 @@
+{
+  "status": "researched",
+  "started_at": "2026-11-24T11:20:30Z",
+  "completed_at": "2026-11-24T11:24:00Z",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/698_slice_build_task_set/reports/01_slice-build-task-set.md",
+      "summary": "Designs the /slice build task set: six new records, two description revisions, fifteen edges, with every ordering claim and file-state figure re-derived from the live state and source store."
+    }
+  ],
+  "next_steps": "Run /orchestrate 698 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "A decision record's 'ordered after nothing; it has no caller' claim about a deletion successor goes stale the moment a sibling task that was meant to be revised closes as written instead. Before siting a deletion task as independent, re-run grep -rl for the doomed file's name over the source store: a caller added after the ruling (and context docs re-pointed to cite the file as the live implementation) turns an independent deletion into one ordered after the task that removes the caller.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/698_slice_build_task_set/reports/01_slice-build-task-set.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["deletion ordering", "stale ruling", "live caller", "dependency edge", "successor tasks"]
+    },
+    {
+      "content": "update-task-status.sh can add a dependency edge (preflight <dependent> edge_only <session> --depends-on-add='[N]', dependent is the positional number, cycle-refused at write time) but has no edge-removal flag. Removing an edge is a state-write.sh jq filter of the shape (.active_projects[] | select(.project_number == N) | .dependencies) |= (. - [A, B]). An edge onto an abandoned-and-archived task dangles (the predecessor is no longer in active_projects), while an edge onto a completed task is merely satisfied.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/698_slice_build_task_set/reports/01_slice-build-task-set.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["depends-on-add", "edge removal", "state-write.sh", "dangling dependency", "edge_only"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795519174_6a98f8_698",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
+  }
+}
