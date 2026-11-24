@@ -1,5 +1,5 @@
 ---
-next_project_number: 698
+next_project_number: 699
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 698
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,640,646,663,664,665,671,674,679,680,684,686,689,694,696 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,640,646,663,664,665,671,674,679,680,684,686,689,694,696,698 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -63,6 +63,7 @@ next_project_number: 698
 664 [NOT STARTED] — Add a /tmp sweep pass to /refresh for dead scratchpad...
 680 [NOT STARTED] — Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged...
 684 [NOT STARTED] — Sweep and fix stale command and sub-mode references across...
+698 [NOT STARTED] — Research the /slice decision record and create or revise...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
@@ -174,6 +175,16 @@ next_project_number: 698
 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 
 ## Tasks
+
+### 698. Slice build task set
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Research the /slice decision record and create or revise every task record the /slice build still needs. The accepted ruling specs/decisions/slice-command-one-path-to-review.md names six ordered successors; five of them have no task record at all, one has lost its owner, and three existing records need revising. Produce the task set, correctly sequenced and edged, so the /slice build can be orchestrated. SCOPE: this task researches and designs the task SET, then creates and revises those records via /task and /revise; it does NOT implement any successor. Successor 1 (the /slice build itself: commands/slice.md, one new script and suite with check/build/status, the series file, the command with both prompts, the open step, manifest.json, suite-classification.data) is ordered after nothing and is the critical path. Successor 2 (bar measurement and the slice_bar declaration, in the script plus context/standards/repo-level-declarations.md) is ordered after successor 1, with a hard edge onto task 655 for the bar accuracy only, not its existence. Successor 3 (delete the inference route: review-stack-prepare.sh at 74 KB, its suite, the review_base section with 10 occurrences remaining in repo-level-declarations.md, and the review-manifest row) is ordered after nothing and is independent of the build. Successor 4 (narrow the handoff to print /slice and drop the review.ref write, in scripts/milestone-review-handoff.sh, its suite, and context/contracts/conclusion-stage.md) is ordered after successor 1 and NEEDS A NEW RECORD: the ruling assigned it to task 692 revised, but 692 closed as written without the revision and is terminal, so /revise 692 is unavailable. Successor 5 (remove /merge at commands/merge.md plus the merge minting branch in hooks/please-grant.sh and the rest of E7 27 files) is ordered after successor 1 AND only after /slice has opened one real pull request. Successor 6 (bind a grant to the pushed ref, in hooks/please-grant.sh, hooks/guard-git-push.sh, scripts/lib/push-grant-lib.sh) is ordered after nothing and shares hooks/please-grant.sh with successor 5, so it is sequenced against it. ALSO OWED: /revise 694 (doc parity, redeploy and the operator runbook; currently renders EXT-BLOCKED, ordered after successors 1, 4 and 5, and its edges onto 692 and the abandoned 693 must be replaced with one onto successor 1) and /revise 655 (re-ground its description on the bar line count). The acceptance bar for successor 1 is NOT a suite count: the ruling requires one real slice of a real difference, pushed by a typed grant and opened as a pull request by the operator typing /slice, and is explicit that /merge is not removed until that has happened. Verify every ordering claim and file-state figure above against the live record and tree rather than carrying them, since the ruling itself overturned an earlier one. Note also that no dependency edge among these is writable until both endpoints exist as task records, so edge creation must follow record creation.
+
+---
 
 ### 697. Case h assertion review stack refusal arm
 - **Status**: [COMPLETED]
