@@ -1,7 +1,7 @@
 # Implementation Plan: Task #645
 
 - **Task**: 645 - Repair seven failing Gate 8 suites (remaining scope: the `.mcp.json` merge defect)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/645_repair_seven_failing_gate8_suites/reports/01_mcp-merge-defect-already-fixed.md
@@ -115,31 +115,37 @@ no roadmap phases are added.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Confirm Closure and Capture Verbatim Evidence [NOT STARTED]
+### Phase 1: Confirm Closure and Capture Verbatim Evidence [COMPLETED]
 
 **Goal**: Establish, from live runs rather than from the report, that the C/E defect is closed and
 that the known-failures roster did not grow — producing the exact strings acceptance criteria 2,
 3, and 4 require the summary to quote.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/tests/test-mcp-merge-target.sh` and capture its final
+- [x] Run `bash .claude/scripts/tests/test-mcp-merge-target.sh` and capture its final
       `Results: N passed, M failed` line and exit code verbatim. Capture the `[PASS]`/`[FAIL]`
-      lines for Assertion C (requirement d) and Assertion E specifically.
-- [ ] If and only if that run is not 7/0: stop, record via `issue-record.sh`, and report. Do not
+      lines for Assertion C (requirement d) and Assertion E specifically. *(completed: Results: 7
+      passed, 0 failed, exit 0; Assertion C and Assertion E both [PASS])*
+- [x] If and only if that run is not 7/0: stop, record via `issue-record.sh`, and report. Do not
       edit the suite, do not loosen an assertion, and do not add a `known-failures.txt` row — all
-      three are forbidden by the task's binding constraints.
-- [ ] Count the `known-failures.txt` data rows (non-comment, non-blank) in the deployed copy and
-      confirm the count is 4 or lower. Record the row count and the suite basenames.
-- [ ] Confirm the fix is committed, not uncommitted: `git status --short` must be empty for
+      three are forbidden by the task's binding constraints. *(completed: run was 7/0, so this
+      branch did not trigger)*
+- [x] Count the `known-failures.txt` data rows (non-comment, non-blank) in the deployed copy and
+      confirm the count is 4 or lower. Record the row count and the suite basenames. *(completed:
+      4 rows -- test-run-all-parallel.sh, test-gate-cache-equivalence.sh,
+      test-verify-deploy-context-budget.sh, test-double-loading-check.sh)*
+- [x] Confirm the fix is committed, not uncommitted: `git status --short` must be empty for
       `lua/neotex/plugins/ai/shared/extensions/merge.lua`,
       `lua/neotex/plugins/ai/shared/extensions/init.lua`, and
-      `agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh`.
-- [ ] Confirm `merge.lua`'s `remove_tracked` still carries the `"new_object" and info.children`
+      `agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh`. *(completed: all
+      three clean)*
+- [x] Confirm `merge.lua`'s `remove_tracked` still carries the `"new_object" and info.children`
       recursing branch (and that `"new_array"`/`"new_value"` retain unconditional removal), so the
       summary's root-cause statement is anchored to live code rather than to the report.
-- [ ] Record the one-fault finding for the summary: C and E are the same fault on the same tracked
+      *(completed: lines 583/587/601-602 confirmed live)*
+- [x] Record the one-fault finding for the summary: C and E are the same fault on the same tracked
       record (`mcpServers` -> `mcpfixture-server`), C post-regenerate and E post-unload — not two
-      independent faults.
+      independent faults. *(completed)*
 
 **Timing**: 0.25 hours
 

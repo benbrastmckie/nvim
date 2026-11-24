@@ -1,33 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/645_repair_seven_failing_gate8_suites/plans/01_mcp-merge-closure-confirmation.md",
-      "summary": "Two-phase verification-and-close plan: the named .mcp.json merge defect is already fixed and committed, so no code edit is scoped -- phase 1 captures verbatim suite/known-failures evidence, phase 2 redeploys and defers the complete gate set to the orchestration close."
-    }
-  ],
-  "dispatch_seq": 13,
-  "phase_count": 2,
-  "estimated_hours": 0.75,
-  "dependency_waves": 2,
-  "next_steps": "Run /orchestrate 645 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "A plan dispatch whose research reports the named defect already fixed should produce a verification-and-close plan, not a no-op return and not a re-derivation: phase 1 captures the acceptance criteria's verbatim evidence (suite pass/fail counts, roster row counts, git-clean proof that the fix is committed rather than an uncommitted working-tree artifact a sibling or regenerate could erase), phase 2 redeploys and records the complete-gate-set deferral. The git-clean check is the non-obvious step -- an already-fixed verdict is only durable if the fix is in history, which is a different claim from the suite passing right now.",
-      "category": "PATTERN",
-      "source_artifact": "specs/645_repair_seven_failing_gate8_suites/plans/01_mcp-merge-closure-confirmation.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["already-fixed", "verification-only plan", "premise re-validation", "carried-figure", "batch-gate deferral"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 17,
   "metadata": {
-    "session_id": "sess_1795494587_0fa3fc_645",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 2,
-    "estimated_hours": 0.75,
-    "dependency_waves": 2
+    "session_id": "sess_1795494587_0fa3fc",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
