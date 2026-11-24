@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Reconcile line counts, redeploy, and close verification",
+  "started_at": "2026-11-23T02:00:00Z",
+  "last_updated": "2026-11-23T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "generate-context-line-counts.sh --check / --write / re-check", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 2, "description": "Redeploy via bounded-wait idiom; capture verify report", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm deployed tree carries no trace of the deleted script", "status": "done", "files_touched": [".claude/scripts/milestone-ref-land.sh", ".claude/scripts/tests/test-milestone-review-handoff.sh"]},
+    {"id": 4, "description": "Scoped touched-path check over all task-touched paths (full gate deferred to batch close per dispatch's Batch Gate Deferral)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Full account: (1) generate-context-line-counts.sh --check found exactly the one predicted mismatch, --write + re-check passed clean ('CHECK PASSED: all line_count values are exact'). (2) deploy-headless.sh (bounded-wait, detached) landed with RESULT=landed_verify_red (1/41 failed: whole-tree orphan detection, 2 findings for the deployed milestone-ref-land.sh/test-milestone-ref-land.sh) -- exactly the Risk-table-anticipated orphan case; removed both explicitly, grep -rln milestone-ref-land .claude/ now returns nothing, and a scoped re-check (verify-deploy.sh --only-gate 13,3,5 --skip-unchanged) passed 'PASS -- 4 check(s), 0 failure(s)'. (3) bash verify-touched.sh (no args, per this dispatch's Batch Gate Deferral directive -- never an unscoped verify-deploy.sh, which itself DEFERRED (EXIT 3) against a live batch-gate-pending marker when tried) ran its primary 121-suite named battery clean except the 2 confirmed pre-existing/unrelated failures (test-gate-cache-equivalence.sh marked EXPECTED; test-orchestrate-conclusion-roadmap.sh Case H, same missing-fixture-file issue established in Phase 1/2); test-milestone-review-handoff.sh itself PASSED. verify-touched.sh's own secondary OWED-fallback sweep (98 suites) then stalled on a stale /run/user/1000/.gate-lock (holder pid confirmed DEAD) and hit its 900s bounded timeout before the mutex's own 1800s staleness window would have cleared it -- recorded as an environmental/infrastructure issue via issue-record.sh, not a finding against this task, since the primary battery plus the immediately-prior scoped gate-13/3/5 re-check already cover every path this task touched. The complete, once-per-invocation full gate set is deferred to the batch close per this dispatch's Batch Gate Deferral directive, as recorded here."
+}

@@ -4128,7 +4128,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "The git commit-tree + git update-ref idiom for landing work onto a ref without touching the working tree, index, or HEAD, and its compare-and-swap and no-checkout obligations",
-      "line_count": 98,
+      "line_count": 99,
       "keywords": [
         "ref-plumbing",
         "commit-tree",

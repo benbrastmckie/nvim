@@ -295,29 +295,38 @@ for an indexed document edit.
 
 ---
 
-### Phase 3: Reconcile line counts, redeploy, and close verification [NOT STARTED]
+### Phase 3: Reconcile line counts, redeploy, and close verification [COMPLETED]
 
 **Goal**: Bring the derived line counts back in sync, regenerate the deployed tree so it carries
 no trace of the deleted script, and discharge this task's scoped verification obligation.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check`;
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check`;
       on reported drift run the same script with `--write`, then re-run `--check` and confirm it
-      exits 0.
-- [ ] Redeploy using the bounded-wait idiom: `timeout 540 bash
+      exits 0. *(completed: --check found exactly the predicted single mismatch on
+      ref-plumbing-landing.md, 98->99; --write then --check passed clean)*
+- [x] Redeploy using the bounded-wait idiom: `timeout 540 bash
       agent-system/extensions/core/scripts/deploy-headless.sh` with the Bash tool timeout set to
-      600000. Capture the deploy's own verify report.
-- [ ] Confirm the deployed tree carries no trace of the deleted script:
+      600000. Capture the deploy's own verify report. *(completed: landed with
+      RESULT=landed_verify_red, 1 of 41 checks failed -- the orphan finding addressed by the
+      next task)*
+- [x] Confirm the deployed tree carries no trace of the deleted script:
       `grep -rn "milestone-ref-land" .claude/` returns nothing and
       `.claude/scripts/milestone-ref-land.sh` is absent. If the deploy's orphan handling leaves
-      the file behind, remove the orphan explicitly and re-check.
-- [ ] Run the scoped touched-path check over every path this task touched:
+      the file behind, remove the orphan explicitly and re-check. *(completed: the deploy's own
+      orphan handling left both files behind as predicted by the Risk table; removed explicitly,
+      re-grep clean, and a scoped re-check of gates 13/3/5 passed 4/4)*
+- [x] Run the scoped touched-path check over every path this task touched:
       `bash agent-system/extensions/core/scripts/verify-touched.sh` with this task's declared
       paths, checking its exit status directly. Under `/orchestrate`, the complete gate set is
       deferred to the orchestration close (the once-per-invocation batch gate stage) and is not
       independently invoked here; record that deferral in this phase's verification notes. In a
       standalone, non-orchestrated run with no orchestration close to defer to, run
-      `bash .claude/scripts/verify-deploy.sh` directly instead.
+      `bash .claude/scripts/verify-deploy.sh` directly instead. *(completed: verify-touched.sh's
+      primary 121-suite named battery passed clean except the 2 confirmed pre-existing/unrelated
+      failures recorded in this phase's progress notes; the complete gate set is deferred to the
+      orchestration batch close, as recorded there, per this dispatch's Batch Gate Deferral
+      directive)*
 
 **Timing**: 0.75 hours
 
@@ -350,20 +359,32 @@ needs accounting before the write.
 
 ## Testing & Validation
 
-- [ ] `grep -rn "milestone-ref-land" agent-system/` finds no remaining reference to the script or
-      its suite — the record's own primary "verify by" criterion.
-- [ ] `grep -rn "milestone-ref-land" .claude/` likewise finds nothing after the redeploy.
-- [ ] `jq -e . agent-system/extensions/core/manifest.json` parses, with no row for either deleted
-      file.
-- [ ] `suite-classification.data` has no row for the deleted suite and preserves its
-      tab-separated shape for every surviving row.
-- [ ] Neither context document cites the deleted script as an implementation; the ref-plumbing
-      pattern's technique sections are byte-unchanged.
-- [ ] `test-milestone-review-handoff.sh` is green and its only change is one comment line.
-- [ ] `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` exits 0.
-- [ ] The redeploy reports a clean verify.
-- [ ] No task-number reference and no record-versioning phrasing was introduced under
-      `agent-system/**`.
+- [x] `grep -rn "milestone-ref-land" agent-system/` finds no remaining reference to the script or
+      its suite — the record's own primary "verify by" criterion. *(completed: exit 1, no
+      matches)*
+- [x] `grep -rn "milestone-ref-land" .claude/` likewise finds nothing after the redeploy.
+      *(completed: exit 1, no matches, after explicitly removing the two orphan files the
+      deploy's own handling left behind)*
+- [x] `jq -e . agent-system/extensions/core/manifest.json` parses, with no row for either deleted
+      file. *(completed)*
+- [x] `suite-classification.data` has no row for the deleted suite and preserves its
+      tab-separated shape for every surviving row. *(completed: confirmed by direct read of the
+      surrounding rows)*
+- [x] Neither context document cites the deleted script as an implementation; the ref-plumbing
+      pattern's technique sections are byte-unchanged. *(completed: `git diff` across the Phase 1
+      -> Phase 2 commit range confirms only the Audience line and Landing Mechanism sentence
+      changed)*
+- [x] `test-milestone-review-handoff.sh` is green and its only change is one comment line.
+      *(completed: `[PASS]` in the Phase 3 verify-touched.sh run; `git diff` shows a single
+      comment-only hunk)*
+- [x] `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` exits 0.
+      *(completed: "CHECK PASSED: all line_count values are exact")*
+- [x] The redeploy reports a clean verify. *(completed: second deploy-headless.sh run after
+      removing the orphan files reported `RESULT=landed_verify_clean`, `PASS -- 41 check(s), 0
+      failure(s)`, EXIT:0)*
+- [x] No task-number reference and no record-versioning phrasing was introduced under
+      `agent-system/**`. *(completed: grepped the full task diff for the banned phrase list;
+      none found)*
 
 ## Artifacts & Outputs
 
