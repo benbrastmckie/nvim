@@ -1828,7 +1828,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Git safety guidelines and patterns",
-      "line_count": 703,
+      "line_count": 706,
       "keywords": [
         "standards",
         "git",
