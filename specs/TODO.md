@@ -13,10 +13,10 @@ next_project_number: 705
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,579,580,586,590,599,613,618,629,631,632,640,646,663,664,665,671,674,679,680,684,686,689,696,699,700 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,579,580,586,590,599,613,618,629,631,632,640,646,663,664,665,671,674,679,680,684,686,689,696,699 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,577,583,592,593,605,630,701,702 | 383,390,399,410,431,438,452,453,511,519,539,542,551,563,586,599,629,699 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,576,588,594,609,703 | 439,479,491,509,533,552,556,570,577,593,701,702 | core-agent-system, orchestrator, agent-system |
-| 4 | 473,501,518,581,595,641,704 | 454,472,492,539,561,580,594,700,703 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 473,501,518,581,595,641,704 | 454,472,492,539,561,580,594,703 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,571,596,642,688,694 | 501,518,595,641,704 | core-agent-system, orchestrator, agent-system |
 | 6 | 536 | 524 | agent-system |
 | 7 | 548 | 536 | agent-system |
@@ -69,8 +69,6 @@ next_project_number: 705
       └─ 704 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 702 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
     └─ 703 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
-700 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
-  └─ 704 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
@@ -310,12 +308,13 @@ Suite cases for each source in order, for fewer than five merged requests fallin
 ---
 
 ### 700. Bind push grant to pushed ref
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [700_bind_push_grant_to_pushed_ref/reports/01_bind-grant-to-pushed-ref.md]
 - **Plan**: [700_bind_push_grant_to_pushed_ref/plans/01_bind-grant-to-pushed-ref.md]
+- **Summary**: [700_bind_push_grant_to_pushed_ref/summaries/01_bind-grant-to-pushed-ref-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.
 

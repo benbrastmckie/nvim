@@ -1,7 +1,7 @@
 # Implementation Plan: Task #700
 
 - **Task**: 700 - Bind a push grant to the pushed ref
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: None (independent successor; shares `hooks/please-grant.sh` with the
   `/merge`-removal successor, which is ordered after this record and must not be anticipated here)

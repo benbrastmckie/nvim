@@ -24,21 +24,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/summaries/01_bind-grant-to-pushed-ref-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["verify-touched.sh", "source store", "deployed mirror", "dual-mode resolution", "pre-redeploy verification"]
+      "suggested_keywords": [
+        "verify-touched.sh",
+        "source store",
+        "deployed mirror",
+        "dual-mode resolution",
+        "pre-redeploy verification"
+      ]
     },
     {
       "content": "When writing a new regression-suite case meant to prove a bug fix, verify empirically (via a scratch copy of the pre-fix files, e.g. git show <commit>~1:path > scratch-copy, never touching the live working tree) that the case actually FAILS against the pre-fix code, rather than assuming it does from the task description. In one case this surfaced that two of four planned 'proves the fix' cases were actually satisfied by the OLD code too (vacuously, because the old bug was 'too strict' in a way that happened to also produce the expected-blocked outcome for the new negative cases) -- they were still valid as forward-looking regression pins, but mis-describing them as discriminating evidence would have been wrong. Record the honest finding rather than the assumed one.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/summaries/01_bind-grant-to-pushed-ref-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["regression test", "discriminating case", "scratch copy verification", "fix-proving tests", "vacuous pass"]
+      "suggested_keywords": [
+        "regression test",
+        "discriminating case",
+        "scratch copy verification",
+        "fix-proving tests",
+        "vacuous pass"
+      ]
     },
     {
       "content": "A test-only mint/fixture helper that hardcodes its own binding logic (e.g. a suite's mint_grant_in binding every grant to bare HEAD regardless of the action's own named ref) can model a production code path LESS faithfully than the suite's pass rate suggests -- it may be structurally incapable of exercising a whole class of valid scenarios (here: any non-checked-out-ref grant) until the helper itself is updated to mirror the real binding logic. When fixing a production binding/resolution bug, audit every test-fixture helper that independently re-implements the same binding logic, not just the production call sites.",
       "category": "INSIGHT",
       "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/summaries/01_bind-grant-to-pushed-ref-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test fixture fidelity", "mint helper", "fixture drift", "test-only reimplementation"]
+      "suggested_keywords": [
+        "test fixture fidelity",
+        "mint helper",
+        "fixture drift",
+        "test-only reimplementation"
+      ]
     }
   ],
   "sapience_notes": [
@@ -89,7 +106,11 @@
     "session_id": "sess_1795543276_2f1165",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }
