@@ -1,7 +1,239 @@
 {
   "version": "1.1.0",
-  "next_project_number": 697,
+  "next_project_number": 698,
   "active_projects": [
+    {
+      "project_number": 697,
+      "project_name": "case_h_assertion_review_stack_refusal_arm",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.\n\nTHE SUITE IS RED RIGHT NOW, AND THE FAILING ASSERTION IS ALREADY KNOWN EXACTLY. scripts/tests/test-orchestrate-conclusion-roadmap.sh Case H fails as a designed consequence of the review-stack wiring that landed in scripts/milestone-review-handoff.sh. This is a predicted, recorded breakage, not a regression to diagnose from scratch. Do not re-derive it.\n\nTHE FAILING ASSERTION. Case H's third assertion block:\n\n  if grep -q \"/please push ${caseH_branch}\\$\" <<< \"$LAST_STDERR\" && grep -q \"^  /merge\" <<< \"$LAST_STDERR\"; then\n    common_test_pass \"Case H: the literal /please + /merge commands are printed\"\n\nThe first conjunct still holds. The second cannot. The handoff script now calls\nreview-stack-prepare.sh cut --milestone <id> and then show, non-fatally, printing one of two\narms: on success the real per-PR review stack, on refusal the refusal reason plus\n`/please push <branch>` ALONE with no `/merge` line. Suppressing `/merge` on the refusal arm is\nthe deliberate point of that change, not an incidental detail -- `/merge` acts on the\nchecked-out branch, refuses outright on main or master, and hardcodes remote origin and target\nmain, so it could never have worked from that arm. Case H's sandbox does not install\nreview-stack-prepare.sh, so cut refuses and the refusal arm is what runs.\n\nWHAT THIS RECORD OWNS: choose ONE remedy and implement it.\n\n(a) RECOMMENDED. Retarget the assertion to the refusal-arm shape: assert `/please push <branch>`\n    IS printed and `/merge` is NOT. Smallest change, leaves Case H's sandbox untouched, and\n    converts the case into a positive regression guard for the `/merge` suppression -- which is\n    otherwise asserted only in the handoff script's own suite.\n\n(b) Install review-stack-prepare.sh into Case H's sandbox so the success arm runs, and rewrite\n    the assertion to expect the rendered stack. Larger: the fixture must declare a review base\n    and a GitHub-shaped remote. That shape already exists as the success fixture in\n    scripts/tests/test-milestone-review-handoff.sh and can be borrowed rather than reinvented.\n\nState which was chosen and why in the plan. Do not do both.\n\nCHECK, DO NOT ASSUME, ONE ADJACENT ASSERTION. Case H's next block asserts\n.roadmap_milestones[0].review.state == \"prepared\" and .roadmap_milestones[0].review.ref ==\nrefs/heads/<branch>. specs/decisions/slice-command-one-path-to-review.md and\nspecs/decisions/review-slices-are-declared-tasks.md amend how a reviewable unit is produced, and\na review.ref write may or may not survive those rulings. Establish whether that assertion is\nstill correct BEFORE touching the file. If it is now wrong, rule on it here rather than leaving\na second latent red behind the first. If it is still correct, leave it alone and say so.\n\nSHARED TERRITORY, DECLARED AND ORDERED. previous_work_section_in_generated_roadmap (665) also\ndeclares scripts/tests/test-orchestrate-conclusion-roadmap.sh in its file_scope. That record is\na feature; this one is a red-to-green fix, so this one runs FIRST and 665 carries the dependency\nedge onto it. Do not race it.\n\nVERIFY BY: scripts/tests/test-orchestrate-conclusion-roadmap.sh green in full, with Case H\npassing on whichever arm was chosen; scripts/tests/test-milestone-review-handoff.sh still green\n(this work must not regress it); deploy-headless.sh reporting a clean verify.",
+      "topic": "orchestrator",
+      "created": "2026-11-24T02:27:59Z",
+      "last_updated": "2026-11-24T02:27:59Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "case_h_assertion_review_stack_refusal_arm",
+          "project_number": null,
+          "title": "Retarget the conclusion-roadmap suite's Case H assertion to the review-stack refusal arm"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 75,
+          "duplicate-of-open": 33,
+          "scope-blind": 47
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 694,
+            "project_name": "stack_pr_redeploy_and_second_repo_demo",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4017094017094017
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 693,
+            "project_name": "merge_command_stack_mode",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43162393162393164
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 684,
+            "project_name": "sweep_stale_command_and_submode_references",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.41025641025641024
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5470085470085471
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45726495726495725
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4358974358974359
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49145299145299143
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4658119658119658
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 457,
+            "project_name": "repo_specific_content_in_shared_source_store",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4017094017094017
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49572649572649574
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44871794871794873
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4829059829059829
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 506,
+            "project_name": "bounded_waiter_hook_fires_on_documenting_prose",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4017094017094017
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44017094017094016
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4358974358974359
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45726495726495725
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 523,
+            "project_name": "gate27_missing_declaration_call_site_counting",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44871794871794873
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46153846153846156
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 533,
+            "project_name": "lake_build_guard_stale_replay_env_lean_file",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4358974358974359
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47863247863247865
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49572649572649574
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5726495726495726
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 544,
+            "project_name": "fixture_dependent_challenge_statement_pinning",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4230769230769231
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 546,
+            "project_name": "literature_search_zero_result_degraded_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4230769230769231
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 47
+      },
+      "file_scope": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"
+      ]
+    },
     {
       "project_number": 696,
       "project_name": "narrow_batch_gate_stage_verify_deploy_invocation",
@@ -21827,7 +22059,9 @@
       "created": "2026-11-20T18:45:37Z",
       "last_updated": "2026-11-20T18:45:37Z",
       "session_id": "sess_1795198159_2f76a2",
-      "dependencies": [],
+      "dependencies": [
+        697
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/roadmap-integration.sh",
         "agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh",
@@ -22383,7 +22617,7 @@
     {
       "project_number": 690,
       "project_name": "milestone_ref_land_recreates_retired_ref",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "general",
       "title": "milestone-ref-land.sh re-creates a deliberately retired milestone ref",
       "description": "=== MEASURED 2026-11-23 BY THE OPERATOR SESSION; READ BEFORE RESEARCHING ===\n\nThe grep this record asks the research round to re-run has been run, in BOTH this repository and\nthe consumer repository (Sapience/sf1-engine) whose milestone refs prompted the record. The\nbinary the premise section below offers -- \"a stale deploy, or a caller this grep missed\" -- is\nFALSE IN BOTH DIRECTIONS. Do not spend the research round re-deriving it; start from here.\n\n1. THIS REPOSITORY'S SOURCE STORE: confirmed no lifecycle caller. References survive only in the\n   script, tests/test-milestone-ref-land.sh, tests/suite-classification.data,\n   tests/test-milestone-review-handoff.sh, two manifest rows, and the two context documents named\n   in the deletion list below. The premise paragraph's claim holds here.\n\n2. THE CONSUMER REPOSITORY IS NOT RUNNING A STALE DEPLOY. An exhaustive sweep of its deployed\n   .claude/ tree finds the SAME seven references and no invocation site -- no script, no hook, no\n   skill or command markdown calls the script there either. It has no .opencode/ and no\n   agent-system/ tree. So the \"stale deploy -> redeploy is the remedy, see 688\" conclusion is NOT\n   available, and reaching it would be a wrong answer.\n\n3. YET THE REF WAS BEING ADVANCED THERE, THAT SAME DAY. refs/heads/milestone/P1 in that\n   repository was advanced five times on 2026-11-23 -- 03:29, 04:12, 04:44, 05:14 and 12:01\n   Pacific -- with EMPTY reflog messages, which is the signature of `git update-ref` invoked\n   without -m, as this script invokes it. The test suite is ruled out: it builds `mktemp -d`\n   fixtures with a deployed-shape .claude/scripts/ tree and never touches live refs.\n\n   So the repository has a live writer that grep cannot find. The most plausible remaining\n   explanation, and the one the research round should test first, is that an agent READ one of\n   the two context documents that still cite this script as an implementation and ran it by hand.\n\nCONSEQUENCE FOR THIS RECORD'S PLAN. Deletion stays the deliverable and is now better supported,\nnot worse: a script with no caller that is nevertheless being executed is a stronger argument for\nremoving it than an unused one. But step 3 below changes character. Re-pointing\ncontext/patterns/ref-plumbing-landing.md and context/standards/git-workflow-narrative.md is NOT\ncosmetic cleanup trailing the deletion -- on the hypothesis above those documents ARE the\ninvocation vector, so the plan must treat them as part of the fix and say so. Decide explicitly,\nas the step already requires, whether the ref-plumbing document retains the TECHNIQUE\n(compare-and-swap update-ref, commit-tree) while ceasing to name this script as its\nimplementation.\n\nALREADY DONE, NOT THIS RECORD'S WORK. The eight existing milestone/<id> refs (M1, M2, M4, M5 here;\nL1, P1, S1, S7 in the consumer repository) were deleted by hand on 2026-11-23 after proving each\ntip's tree byte-identical to a commit already reachable on that repository's work branch, and\nthat none had an upstream. No ref cleanup belongs in this plan. The tree-equality check used --\nresolving each tip's tree and searching the work branch's history for a commit with the identical\ntree -- is the cheap durable test for whether such a ref carries unique content, and is worth\nstating wherever the plan discusses what the refs were for.\n\nTHE CONSUMER-REPOSITORY FOLLOW-UP IS NOT THIS RECORD'S. Identifying that live writer and unwiring\nit is work in that repository, whose own tree is the edit target; the siting rule puts the task\nthere, not here. This record's \"Check before deleting\" clause below is satisfied for the purpose\nof deleting from THIS source store: no caller exists in either tree, so nothing here depends on\nthe file. Say so in the plan rather than blocking on the consumer repository.\n\n=== ORIGINAL DESCRIPTION BELOW, UNCHANGED ===\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in this repository, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). No task-number references and no record-versioning language under agent-system/**.\n\n=== PREMISE CORRECTED BEFORE PLANNING; RE-VERIFY, DO NOT TRUST THIS PARAGRAPH BLIND ===\n\nThis record was written as a defect in milestone-ref-land.sh's first-landing logic: a missing refs/heads/milestone/<id> is treated as a first landing, so an empty-oldvalue three-argument update-ref re-creates a ref that was deliberately retired.\n\nMeasured in the source store on 2026-11-23, the script has NO lifecycle caller left. grep over scripts/ and hooks/ finds references only in the file itself, its own suite (tests/test-milestone-ref-land.sh), tests/test-milestone-review-handoff.sh, two manifest rows, and two documents (context/patterns/ref-plumbing-landing.md, context/standards/git-workflow-narrative.md). In particular orchestrate-cycle-postflight.sh, orchestrator-postflight.sh, update-task-status.sh and reconcile-task-status.sh do not call it.\n\nspecs/decisions/isolation-off-landing-verification-and-review-time-squash.md's L5 retired it as a landing mechanism and its retirement order steps 3 and 4 removed the postflight calls. That retirement is COMPLETE at the wiring level in this repository. The same record's \"The script file stays\" clarification left the file on disk and assigned the delete-or-reuse decision to two records that have both since finished, so nobody owns it now.\n\nCONSEQUENCE FOR THE REMEDY: if the ref is still being re-created by member-task landings in a consumer repository, that repository is running a STALE deployed .claude/ tree that still wires the script. The first thing the research round must establish is which it is -- a stale deploy, or a caller this grep missed. Re-run the grep; do not take the paragraph above as settled.\n\n- If stale deploy: the remedy is a redeploy in that repository plus a mechanism that makes the staleness visible, NOT a code change here. dispatch_redeploy_clears_staleness_verdict (688) is the open record in that territory; say so rather than duplicating it.\n- If a live caller exists: unwire it per the retirement order, then proceed to the deletion below.\n\n=== WHAT THIS RECORD NOW OWNS: DELETION, NOT REPAIR ===\n\nFixing retirement-marker representation inside a script nothing calls buys nothing. Remove it instead:\n\n1. Delete scripts/milestone-ref-land.sh and scripts/tests/test-milestone-ref-land.sh.\n2. Remove both manifest.json rows (the script row and the test row).\n3. Re-point or remove the references in context/patterns/ref-plumbing-landing.md and context/standards/git-workflow-narrative.md. The ref-plumbing pattern document may retain the TECHNIQUE (compare-and-swap update-ref, commit-tree) while ceasing to cite this script as its implementation; decide which, and say which in the plan.\n4. Audit tests/test-milestone-review-handoff.sh's reference and remove or retarget it. That suite is also edited by the record that owns handoff printing of the review stack; declare the shared territory and order behind it rather than racing it.\n5. Reconcile index-entries.json line counts via generate-context-line-counts.sh --check.\n\n=== WHY DELETION IS SAFE TO PROPOSE, AND WHAT WOULD MAKE IT UNSAFE ===\n\nspecs/decisions/review-slices-are-declared-tasks.md rules that a review slice lands by an ordinary scoped commit from a working tree (S4), so no future route reinstates ref-plumbing landing as a lifecycle mechanism. That removes the standing reason to keep the file as a utility.\n\nIt would be UNSAFE if a consumer repository calls the script directly from its own non-core extension or an operator script. Check before deleting; a consumer-repo caller means unwiring there first, which is that repository's work and not this record's.\n\n=== VERIFY BY ===\n\ngrep over scripts/, hooks/ and the manifest finding no remaining reference to the script or its suite; the two documents no longer citing it as an implementation; the handoff suite green; generate-context-line-counts.sh --check clean; deploy-headless.sh reporting a clean verify. If the research round instead finds a live caller, the verification is that caller unwired and the suite covering its absence.",
@@ -22428,7 +22662,8 @@
         },
         "degradations_count": 47
       },
-      "last_updated": "2026-11-24T02:12:12Z"
+      "last_updated": "2026-11-24T02:21:59Z",
+      "session_id": "sess_1795484837_9a6a6b_690"
     }
   ],
   "completed_projects": [],
