@@ -1,11 +1,90 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 18,
   "task_number": 697,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/697_case_h_assertion_review_stack_refusal_arm/summaries/01_case-h-refusal-arm-fix-summary.md",
+      "summary": "Retargeted Case H's third assertion to the refusal-arm shape (remedy a), redeployed, both named suites green, batch-deferred scoped gate discharged with 0 NEW failures."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Retargeted Case H's third assertion in test-orchestrate-conclusion-roadmap.sh to the refusal-arm shape it actually exercises (REFUSED reason + /please push present, /merge absent), redeployed via deploy-headless.sh with a clean verify, and confirmed both test-orchestrate-conclusion-roadmap.sh (35/0) and test-milestone-review-handoff.sh (19/0) green in the deployed tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When retargeting a shell-suite assertion to negate an invocation line (e.g. 'no /merge line should appear'), reuse the anchored negative regex shape '^  ?/merge( |$)' (match a 2-or-fewer-space-indented invocation line, not prose mentioning the command) already proven in test-milestone-review-handoff.sh Case 3, rather than inventing a bare substring negation that would also pass for the wrong reason (e.g. if the whole producing call stopped firing).",
+      "category": "PATTERN",
+      "source_artifact": "specs/697_case_h_assertion_review_stack_refusal_arm/summaries/01_case-h-refusal-arm-fix-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["test assertion", "anchored regex", "negative assertion", "shell suite", "regression guard"]
+    },
+    {
+      "content": "verify-touched.sh / run-all.sh's default exit-code semantics are 'exit 1 if any suite failed, EXPECTED or not' (--fail-on-new is required to exit 0 on an all-expected failure set). When a batch-deferred scoped gate discharge exits 1, check the tally's own '(N expected, M NEW)' clause and known-failures.txt before treating it as a regression: an exit 1 with 0 NEW and the sole failure listed in known-failures.txt is a satisfied discharge, not a blocker, and should be recorded via issue-record.sh rather than re-run or escalated.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/697_case_h_assertion_review_stack_refusal_arm/summaries/01_case-h-refusal-arm-fix-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-touched.sh", "run-all.sh", "known-failures", "exit code", "batch gate deferral"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh Case H",
+      "value": "Case H's third assertion was retargeted to assert the refusal arm's real output (REFUSED: review-stack-prepare.sh: reason + /please push <branch> present, /merge absent) because review-stack-prepare.sh is not installed in Case H's sandbox, making the refusal arm the only arm that can run there.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh:486-519"
+    },
+    {
+      "subject": "run-all.sh default exit-code semantics",
+      "value": "Without --fail-on-new, run-all.sh exits 1 on any failed suite, expected or not; only --fail-on-new restricts the nonzero exit to NEW failures. verify-touched.sh does not pass --fail-on-new, so a scoped discharge can exit 1 purely from a pre-existing, already-catalogued known-failure with zero new regressions.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.9,
+      "source_loc": ".claude/scripts/tests/run-all.sh:1162-1171"
+    },
+    {
+      "subject": "test-gate-cache-equivalence.sh",
+      "value": "Documented in known-failures.txt (line 33) as a load-sensitive, pre-existing known-failure: its cold-baseline case invokes gate10 (validate-state.sh --deep) inside a fresh git worktree fixture and is prone to failing under concurrent load independent of any particular source edit.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.85,
+      "source_loc": ".claude/scripts/tests/known-failures.txt:33"
+    },
+    {
+      "subject": "Harness auto-backgrounding of a piped Bash call",
+      "value": "A foreground Bash call piped into `tail` (e.g. `cmd | tail -60`) that exceeds the tool's inner timeout gets auto-backgrounded by the harness, but the captured output file stays empty until the ENTIRE pipeline (including the downstream tail) finishes, because the pipe buffers. Polling that output file mid-run is useless; the only reliable mid-run signal is checking the underlying process's liveness directly (e.g. via /proc cmdline matching) when no PID was captured ahead of time.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85
+    },
+    {
+      "subject": "specs/decisions/slice-command-one-path-to-review.md",
+      "value": "This accepted decision record rules that review-stack-prepare.sh and its suite are scheduled for deletion, and that milestone-review-handoff.sh is to be kept-but-narrowed (one /slice line, no push/merge line, no longer writing review.ref) -- but as of this task, that narrowing has not been dispatched as a task; it exists only as a roadmap_annotation on the already-completed task that wired the current behavior.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/slice-command-one-path-to-review.md"
+    },
+    {
+      "subject": "verify-touched.sh OWED-fallback for an unmappable scope entry",
+      "value": "Declaring a non-real path like __WHOLE_TREE__ in a plan phase's Files to modify causes verify-touched.sh to run a second, broader run-all.sh pass (the OWED fallback set, --cost-class free) in addition to the narrowed root-level suite run for the real touched paths -- both passes run, and a failure in either contributes to the overall nonzero exit.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.8
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795494587_0fa3fc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
   }
 }
