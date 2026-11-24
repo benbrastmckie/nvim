@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795484837_9a6a6b_690",
-  "dispatch_seq": 7,
-  "findings_count": 8,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/690_milestone_ref_land_recreates_retired_ref/reports/01_milestone-ref-land-deletion-scope.md",
-      "summary": "Confirms milestone-ref-land.sh has no lifecycle caller; enumerates the exact 8-item reference set (script, suite, a stale suite-classification.data row not in the dispatch's named list, a comment-only credit in test-milestone-review-handoff.sh, two manifest rows, two context docs); finds review-stack-prepare.sh already implements the identical ref-plumbing idiom and should become the re-pointed worked-implementation citation; and confirms tasks 691/692/693 (the handoff-printing territory) are already completed, so no ordering edge is needed."
+      "type": "plan",
+      "path": "specs/690_milestone_ref_land_recreates_retired_ref/plans/01_milestone-ref-land-deletion.md",
+      "summary": "3-phase, ~2-hour plan deleting milestone-ref-land.sh and its 8 reference sites, re-pointing the ref-plumbing pattern's implementation citation to review-stack-prepare.sh, and closing with a line-count reconcile plus redeploy."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1795484837_9a6a6b_690",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 2,
+    "dependency_waves": [[1], [2], [3]]
+  },
   "memory_candidates": [
     {
-      "content": "ref-plumbing-landing.md's Audience-line 'worked implementation' citation can go stale silently when the actual call site migrates: review-stack-prepare.sh (commit-tree + compare-and-swap update-ref at the review-ref build/restack sites) superseded milestone-ref-land.sh as the pattern's live use-site, discovered only by grepping for the idiom's two primitives across scripts/, not by any existing lint. When retiring a script that a pattern doc names as its 'worked implementation', grep for the same primitives elsewhere in the codebase before concluding the pattern itself is now unanchored.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/690_milestone_ref_land_recreates_retired_ref/reports/01_milestone-ref-land-deletion-scope.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["ref-plumbing", "pattern-doc-staleness", "worked-implementation-citation", "review-stack-prepare", "commit-tree-update-ref"]
-    },
-    {
-      "content": "scripts/tests/suite-classification.data (core extension) is NOT checked for stale rows by lint-unit-integration-boundary.sh in a way that fails the exit code -- a row naming a suite no longer discovered under tests/ logs as an [INFO] 'stale classification row' and does not affect the 0/1 exit verdict. So deleting a test file without also removing its classification row will not break CI/lint verification, but leaves dead data the file's own header discipline (every discovered suite gets a row, kept in sync) argues against leaving.",
-      "category": "PATTERN",
-      "source_artifact": "specs/690_milestone_ref_land_recreates_retired_ref/reports/01_milestone-ref-land-deletion-scope.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["suite-classification", "lint-unit-integration-boundary", "stale-row", "test-deletion-checklist"]
-    }
+      "content": "validate-artifact.sh's Tier Justification measurement check extracts a phase's suite-name CLAIM by grepping the whole justification block for 'test-[A-Za-z0-9_-]+\\.sh'. A justification that inlines the phase's declared file paths therefore turns any declared test-suite PATH into a phantom suitelist claim, flipping claim_kind from empty (out of scope, silently passed over) to suitelist and emitting a false 'under-verifies' warning naming every other suite the selector returns. The authoring fix is to reference the phase's `Files to modify` set by name in the justification rather than inlining paths -- which also keeps the field to the one sentence the standard asks for. Applies to any phase whose declared paths include a test file.",
+    "category": "PATTERN",
+    "source_artifact": "specs/690_milestone_ref_land_recreates_retired_ref/plans/01_milestone-ref-land-deletion.md",
+    "confidence": 0.85,
+    "suggested_keywords": ["tier-justification", "validate-artifact", "suite-selection", "plan-authoring", "false-positive"]
+  }
   ],
-  "next_steps": "Run /orchestrate 690 to create implementation plan"
+  "next_steps": "Run /orchestrate 690 to execute the plan",
+  "dispatch_seq": 8
 }
