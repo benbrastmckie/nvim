@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Regression Cases for the Argument-Shaped Refusal",
+  "started_at": "2026-11-24T05:03:00Z",
+  "last_updated": "2026-11-24T05:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-issue-record.sh before editing; append after case (v)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Case (w): mistyped flag under documented non-fatal form", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-issue-record.sh"]},
+    {"id": 3, "description": "Case (x): exit-code discrimination 2 vs 1", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-issue-record.sh"]},
+    {"id": 4, "description": "Case (y): refusal mode not derailed by concurrent optional-field error", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-issue-record.sh"]},
+    {"id": 5, "description": "Case (z): unresolvable-task-directory residual", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-issue-record.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "source_store_mode": "31 passed, 0 failed (27 baseline + exactly 4 new: w, x, y, z)",
+    "default_mode_negative_control": "27 passed, 4 failed -- all four new cases (w,x,y,z) fail against the stale deployed (pre-Phase-1) copy, proving non-vacuous regression coverage; deployed tree not permanently modified by this check"
+  }
+}

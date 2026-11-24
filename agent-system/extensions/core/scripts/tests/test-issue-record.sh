@@ -591,6 +591,119 @@ EOF
   fi
 }
 
+# =====================================================================================
+# Case (w): mistyped flag under the documented non-fatal form -- an argument-shaped
+# refusal self-records exactly one attributable entry while the caller's exit stays 0
+# (criteria 1-3; mirrors the exact flag-order task-275 scenario: the mistyped flag comes
+# after --what-happened).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$ISSUES_REL"
+  caller_exit=0
+  (
+    run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
+      --kind issue --class "tooling bug or gap" --severity minor \
+      --what-happened "case w caller prose" --session-id sess_x \
+      >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+    exit 0
+  ) || caller_exit=$?
+  line_count=0
+  [ -f "$doc" ] && line_count="$(wc -l < "$doc" | tr -d ' ')"
+  entry="$(tail -1 "$doc" 2>/dev/null)"
+  if [ "$caller_exit" -eq 0 ] && [ "$line_count" -eq 1 ] \
+    && jq -e '.tags.issue_record_refusal.flag == "--session-id"' <<<"$entry" >/dev/null 2>&1 \
+    && jq -e '.what_happened | contains("case w caller prose")' <<<"$entry" >/dev/null 2>&1; then
+    common_test_pass "(w) mistyped-flag-non-fatal: caller exit 0, exactly one refusal entry naming --session-id, caller prose preserved"
+  else
+    common_test_fail "(w) mistyped-flag-non-fatal: caller_exit=$caller_exit line_count=$line_count entry=$entry"
+  fi
+}
+
+# =====================================================================================
+# Case (x): exit-code discrimination -- an argument-shaped refusal (mistyped flag)
+# exits exactly 2 directly, while a content-shaped refusal (an unresolvable --task-dir,
+# reusing case (i)'s scenario) still exits exactly 1 and still writes nothing.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  arg_exit=0
+  run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
+    --kind issue --class "tooling bug or gap" --severity minor \
+    --what-happened "case x argument-shaped" --session-id sess_x \
+    >/dev/null 2>&1 || arg_exit=$?
+
+  scratch2="$(build_scratch)"
+  content_exit=0
+  run_ir "$scratch2" --task-dir "$scratch2/specs/999_nonexistent_task" \
+    --kind issue --class "environment" --severity minor --what-happened "case x content-shaped" \
+    >/dev/null 2>&1 || content_exit=$?
+
+  if [ "$arg_exit" -eq 2 ] && [ "$content_exit" -eq 1 ] \
+    && [ ! -f "$scratch2/specs/999_nonexistent_task/issues.jsonl" ]; then
+    common_test_pass "(x) exit-code-discrimination: argument-shaped exits 2, content-shaped exits 1 and writes nothing"
+  else
+    common_test_fail "(x) exit-code-discrimination: arg_exit=$arg_exit content_exit=$content_exit"
+  fi
+}
+
+# =====================================================================================
+# Case (y): refusal mode is not derailed by an unrelated optional-field error -- a
+# malformed --tags-json and a non-integer --dispatch-seq, both parsed before the
+# mistyped flag, are forcibly cleared by refusal mode, so exactly one refusal entry
+# still appends and the call still exits 2 (rather than refusing with nothing written
+# on the unrelated field, as a non-refusal invocation would -- see case (d)).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$ISSUES_REL"
+  exit_code=0
+  run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
+    --kind issue --class "tooling bug or gap" --severity minor \
+    --what-happened "case y caller prose" --tags-json '{not valid json' \
+    --dispatch-seq notanumber --session-id sess_x \
+    >/dev/null 2>&1 || exit_code=$?
+  line_count=0
+  [ -f "$doc" ] && line_count="$(wc -l < "$doc" | tr -d ' ')"
+  entry="$(tail -1 "$doc" 2>/dev/null)"
+  if [ "$exit_code" -eq 2 ] && [ "$line_count" -eq 1 ] \
+    && jq -e '.tags.issue_record_refusal.flag == "--session-id"' <<<"$entry" >/dev/null 2>&1; then
+    common_test_pass "(y) refusal-mode-not-derailed: malformed --tags-json/--dispatch-seq parsed before the mistyped flag does not prevent the refusal entry; exits 2"
+  else
+    common_test_fail "(y) refusal-mode-not-derailed: exit_code=$exit_code line_count=$line_count entry=$entry"
+  fi
+}
+
+# =====================================================================================
+# Case (z): stated residual -- a mistyped flag that IS the caller's only task-resolution
+# attempt (e.g. --task-dirr) prevents --task-dir/--task from ever being parsed, so no
+# task directory resolves and nothing can be appended; this still exits 2 (argument-
+# shaped), and the documented non-fatal form still leaves the caller at exit 0.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  direct_exit=0
+  run_ir "$scratch" --task-dirr "$scratch/specs/001_demo_task" \
+    --kind issue --class "tooling bug or gap" --severity minor \
+    --what-happened "case z residual" >/dev/null 2>&1 || direct_exit=$?
+
+  caller_exit=0
+  (
+    run_ir "$scratch" --task-dirr "$scratch/specs/001_demo_task" \
+      --kind issue --class "tooling bug or gap" --severity minor \
+      --what-happened "case z residual" \
+      >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+    exit 0
+  ) || caller_exit=$?
+
+  if [ "$direct_exit" -eq 2 ] && [ "$caller_exit" -eq 0 ] \
+    && [ ! -f "$scratch/$ISSUES_REL" ]; then
+    common_test_pass "(z) unresolvable-task-residual: exits 2, appends nothing, documented-form caller stays exit 0"
+  else
+    common_test_fail "(z) unresolvable-task-residual: direct_exit=$direct_exit caller_exit=$caller_exit"
+  fi
+}
+
 echo ""
 echo "=== Results: $PASSED passed, $FAILED failed ==="
 if [ "$FAILED" -gt 0 ]; then

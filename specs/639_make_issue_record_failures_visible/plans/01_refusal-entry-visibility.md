@@ -260,7 +260,7 @@ in the phase's verification notes.
 
 ---
 
-### Phase 2: Regression Cases for the Argument-Shaped Refusal [NOT STARTED]
+### Phase 2: Regression Cases for the Argument-Shaped Refusal [COMPLETED]
 
 **Goal**: `test-issue-record.sh` proves mechanically that a mistyped flag under the documented
 redirected form is non-fatal to the caller *and* leaves an attributable record, and that the new
@@ -268,24 +268,27 @@ exit code is distinct from the content-shaped one.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-issue-record.sh` immediately
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-issue-record.sh` immediately
       before editing, and append new cases after case (v) without modifying any existing case.
-- [ ] Case (w) — mistyped flag under the documented non-fatal form (criteria 1-3): invoke
+      *(completed)*
+- [x] Case (w) — mistyped flag under the documented non-fatal form (criteria 1-3): invoke
       `run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" … --session-id sess_x` wrapped
       in the exact documented form; assert the caller's exit stays 0, that `issues.jsonl` gained
       exactly one line, that the line's `tags.issue_record_refusal` names `--session-id`, and
-      that its `what_happened` carries the caller's own prose.
-- [ ] Case (x) — exit-code discrimination: the same mistyped-flag invocation called directly
+      that its `what_happened` carries the caller's own prose. *(completed)*
+- [x] Case (x) — exit-code discrimination: the same mistyped-flag invocation called directly
       exits exactly 2, while a content-shaped refusal (reuse case (i)'s nonexistent `--task-dir`,
-      or an invalid `--severity`) still exits exactly 1 and still writes nothing.
-- [ ] Case (y) — refusal mode is not derailed by an unrelated optional-field error: a mistyped
+      or an invalid `--severity`) still exits exactly 1 and still writes nothing. *(completed:
+      reused case (i)'s nonexistent-task-dir scenario)*
+- [x] Case (y) — refusal mode is not derailed by an unrelated optional-field error: a mistyped
       flag given alongside a malformed `--tags-json` (or a non-integer `--dispatch-seq`) parsed
-      *before* it still appends exactly one refusal entry and still exits 2.
-- [ ] Case (z) — stated residual: a mistyped flag that prevents task resolution (e.g.
+      *before* it still appends exactly one refusal entry and still exits 2. *(completed: both
+      a malformed --tags-json and a non-integer --dispatch-seq were combined in one case)*
+- [x] Case (z) — stated residual: a mistyped flag that prevents task resolution (e.g.
       `--task-dirr <path>` as the only task-resolution attempt) exits 2, appends nothing, and
-      still leaves a documented-form caller at exit 0.
-- [ ] Keep every assertion inside the per-case scratch tree; write nothing to a live task's
-      `issues.jsonl`.
+      still leaves a documented-form caller at exit 0. *(completed)*
+- [x] Keep every assertion inside the per-case scratch tree; write nothing to a live task's
+      `issues.jsonl`. *(completed)*
 
 **Timing**: 1 hour
 
