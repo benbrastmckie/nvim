@@ -1,7 +1,7 @@
 # Implementation Plan: Task #693
 
 - **Task**: 693 - Merge command stack mode
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.3 hours
 - **Dependencies**: None declared. Design-dependent on the stack-PR-submission record's Phases
   1-3 (landed) and Phase 5 (body files), which this mode consumes read-only through

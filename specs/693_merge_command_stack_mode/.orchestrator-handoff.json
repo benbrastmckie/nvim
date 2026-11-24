@@ -1,15 +1,18 @@
 {
-  "status": "planned",
+  "status": "blocked",
   "phases_completed": 0,
   "phases_total": 2,
-  "summary": "Wrote a 2-phase plan for adding --stack/--only/--retarget stack mode to agent-system/extensions/core/commands/merge.md. Phase 1 (1h, tier local) is the whole-file documented-contract edit: frontmatter argument-hint, three options rows, a STEP 1 dispatch branch, a new ## Stack Mode section with the five ordered steps and the per-entry bottom-up loop, an examples block, and one Agent Restrictions sentence. Phase 2 (20m, tier full) redeploys via deploy-headless.sh and declares the __WHOLE_TREE__ sentinel. skill-git-workflow/SKILL.md is declared as needing no edit rather than silently skipped; the duplicated Phase 4 restack paragraph is confirmed out of scope and ignored.",
-  "blockers": [],
-  "artifacts": [
+  "summary": "Halted before any edit. specs/decisions/slice-command-one-path-to-review.md (task 695, completed 2026-11-24 UTC) rules this task's verdict Abandon: '/merge is removed and --stack is never built. Nothing of its deliverable survives.' Its operator worklist says 'Abandon 693: /task --abandon 693' and states dispatches in flight against this task 'must not be implemented as written.' commands/merge.md is untouched by this dispatch.",
+  "blockers": [
     {
-      "type": "plan",
-      "path": "specs/693_merge_command_stack_mode/plans/01_merge-stack-mode.md",
-      "summary": "Two-phase plan for /merge stack mode in commands/merge.md plus redeploy; verification via verify-deploy.sh --only-gate 3,4."
+      "phase": 1,
+      "target": "Implement Phase 1 of plans/01_merge-stack-mode.md: add --stack/--only/--retarget stack mode to commands/merge.md",
+      "verbatim_goal": "Re-read agent-system/extensions/core/commands/merge.md in full immediately before editing ... Extend the frontmatter argument-hint ... Add three rows to the ## Options table ... Add a new top-level ## Stack Mode section ...",
+      "what_was_tried": "Read the dispatch file, the task's own plan, its state.json entry, and the decision-record cross-reference the task description names, before writing any edit.",
+      "why_it_failed": "specs/decisions/slice-command-one-path-to-review.md (task 695, completed) rules this deliverable Abandon/Never-built and rules commands/merge.md itself Deleted; implementing it would build what the authoritative, most-recent decision record says must never be built."
     }
   ],
-  "dispatch_seq": 6
+  "artifacts": [],
+  "dispatch_seq": 7,
+  "continuation_path": "specs/693_merge_command_stack_mode/handoffs/phase-1-handoff-20261124T043305Z.md"
 }
