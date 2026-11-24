@@ -1,12 +1,15 @@
 # Implementation Plan: Task #693
 
 - **Task**: 693 - Merge command stack mode
-- **Status**: [IMPLEMENTING]
-- **Effort**: 1.3 hours
-- **Dependencies**: None declared. Design-dependent on the stack-PR-submission record's Phases
-  1-3 (landed) and Phase 5 (body files), which this mode consumes read-only through
-  `review-stack-prepare.sh show --json`.
-- **Research Inputs**: specs/693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md
+- **Status**: [BLOCKED]
+- **Effort**: 0.2 hours (recording and hand-off only; no deliverable remains to build)
+- **Dependencies**: 695 (`slice_command_design_and_consolidation`, completed). That record's
+  ruling is what empties this one; no other edge matters now.
+- **Research Inputs**:
+  - specs/693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md
+  - specs/decisions/slice-command-one-path-to-review.md (the ruling; decided 2026-11-24 UTC)
+  - specs/decisions/review-slices-are-declared-tasks.md (the earlier, narrower amendment named in
+    this record's own description, now itself superseded in the parts quoted below)
 - **Artifacts**: plans/01_merge-stack-mode.md (this file)
 - **Standards**: plan-format.md, status-markers.md, artifact-management.md, tasks.md
 - **Type**: meta
@@ -14,157 +17,136 @@
 
 ## Overview
 
-Add a stack mode to the `/merge` command's documented contract: `--stack <stack id>`, `--only NN`
-and `--retarget` alongside the existing `--draft`, driving PR creation from a prepared review
-stack's manifest instead of from the current branch. The whole deliverable is one markdown file
-in the core extension's source store (`commands/merge.md`), authored as a new `## Stack Mode`
-section gated behind `--stack` in argument parsing, leaving every line of the existing
-single-branch STEP 1-7 flow untouched. A second phase redeploys the source store so the deployed
-`.claude/commands/merge.md` reflects it.
+**This record has no deliverable left to build, and this plan instructs no edit to any file under
+`agent-system/**` or `.claude/**`.** `specs/decisions/slice-command-one-path-to-review.md` rules
+`/merge` removed rather than fixed and `/merge --stack` never built, deletes
+`commands/merge.md` (485 lines) outright, and sends this record to Abandon by name. The whole of
+the prior plan — a `## Stack Mode` section with `--stack`/`--only`/`--retarget` in
+`commands/merge.md`, plus a redeploy phase — would build, into a file the same record deletes,
+a mode the same record says is never built.
+
+The single phase below exists so that an implement dispatch landing on this plan reads an
+instruction to stop, rather than an instruction to build. Its whole content is: change nothing,
+record the supersession, and return the operator's own worklist line.
 
 ### Research Integration
 
-The research report settled four questions that would otherwise have been implementation-time
-guesses, and each shapes a task below:
+Newly integrated inputs for this revision:
 
-- **The platform refusal is not a separate step.** `review-stack-prepare.sh`'s fixed RESOLUTION
-  phase (integration branch -> review base -> remote -> platform, exit codes 10-13, 20, 30-32)
-  runs before any subcommand body, so one `show --stack-id NAME --json` call checked for a
-  non-zero exit discharges both "read the manifest" and "refuse a platform PD9 does not support".
-  The step list below collapses them into one step rather than inventing a hand-rolled platform
-  check in `merge.md`.
-- **The grant revocation is already proven in this very file.** The parent record's Phase 6 Scope
-  Hypothesis (can the command revoke the prompt-minted grant, perhaps by sourcing
-  `scripts/lib/push-grant-lib.sh` and calling `pg_grant_revoke`?) resolves affirmatively and more
-  cheaply than the hypothesis assumed: `merge.md`'s existing STEP 4 Cancel branch already runs
-  `bash .claude/scripts/git-push-granted.sh --revoke`, and that wrapper calls `pg_grant_revoke`
-  and exits 0 unconditionally. Stack mode calls the identical wrapper. No `allowed-tools` change,
-  no library sourcing, and the hypothesis's fallback ("leave the grant to expire, and state in
-  `merge.md` that stack mode leaves an unused grant live") is not needed and must not be written.
-- **`entries[]` is already bottom-up.** The manifest writer emits entries in final stack order
-  (ordinal 1 is the bottom), so stack mode iterates the array as given; it derives no ordering of
-  its own.
-- **`ordinal` is a bare JSON integer, but the user types a zero-padded `NN`.** The zero padding
-  exists only inside the `branch`/`body_path` strings. `--only 02` must therefore be compared to
-  `ordinal: 2` numerically, never as a string.
+- **`specs/decisions/slice-command-one-path-to-review.md`** (decided 2026-11-24 UTC by
+  `slice_command_design_and_consolidation`, 695, since completed; session
+  `sess_1795478339_253676`). Lines verified live in that file for this revision:
+  - Line 5 of its six-line ruling: "`/merge` is removed, not fixed. `/merge --stack` is never
+    built."
+  - Its "One survivor, and what is deleted" table: row 4 marks `commands/merge.md` **Deleted**,
+    and the next row marks "`/merge --stack` (planned by `merge_command_stack_mode`, 693)"
+    **Never built**.
+  - Its "Verdict on each open record" table: `merge_command_stack_mode` (693), status read
+    `planned`, verdict **Abandon**, reason "`/merge` is removed and `--stack` is never built.
+    Nothing of its deliverable survives."
+  - Its "Operator worklist": "Abandon 693 | `/task --abandon 693`", and "Two dispatches in
+    flight | 692 and 693 are `planned` against the overturned ruling and depend on 695. Their
+    plans must not be implemented as written."
+  - Its "What is discarded" section, under "Planned, and now not to be built": "`/merge --stack`
+    (693)."
+  - Its "Assertions amended" table overturns the clause this record's own description leaned on:
+    "What is retained from the inference route | The resolvers, the manifest, `show`,
+    `record-request` and `restack` are retained and still wired | **Overturned.** Nothing of
+    `review-stack-prepare.sh` is retained."
+- **The prior research report** (`reports/01_merge-command-stack-mode.md`) is not contradicted on
+  its own terms — the manifest schema it documented, the already-proven grant revocation, the
+  bottom-up `entries[]` ordering and the integer-`ordinal` comparison were all correct findings
+  about the live tree at the time. They are simply findings about a script and a command file that
+  are now both scheduled for deletion, so none of them yields a task.
 
-Verified independently against live state for this plan: the manifest object is written at
-`review-stack-prepare.sh:1048`/`:1052` with exactly the fields the report names
-(`{stack_id, remote, integration_branch, review_base, entries:[{ordinal, tasks, branch, base,
-commit, parent_commit, title, body_path, state, request}]}`); `git-push-granted.sh` carries
-`--revoke` and calls `pg_grant_revoke`; `show` and `record-request NN URL --stack-id NAME` are
-live subcommands; `suite_selection_select "agent-system/extensions/core/commands/merge.md"`
-returns `__FULL_SWEEP__` alone.
+Both phases of the prior plan are covered by the ruling, not only the `/merge` phase:
+
+- The description's second ownership paragraph (Phase 4, `restack`) was already an expansion
+  artifact — the prior plan's own Premise Re-Validation item 2 confirmed it was out of
+  `file_scope` and ignored it. It is doubly moot now: `restack` was built by
+  `restack_review_stack_when_parent_merges` (691, completed), and the ruling deletes
+  `review-stack-prepare.sh` including that subcommand.
+- The Phase 6 (`/merge` stack mode) deliverable is the one the ruling names explicitly.
 
 ### Premise Re-Validation (Carried-Figure Discipline)
 
-Each flagged description line, checked against live state rather than assumed:
+Each figure this revision rests on, checked against live state rather than carried:
 
-1. **"SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/\*\*"** — CONFIRMED
-   unchanged. `jq -r '.extensions.core.source_dir' .claude-extensions.json` resolves to
-   `/home/benjamin/.config/nvim/agent-system/extensions/core`. Both file_scope paths mirror
-   deployed paths under it.
-2. **The duplicated "THIS RECORD OWNS PHASE 4 ONLY" (restack) paragraph** — CONFIRMED an
-   expansion artifact, and ignored in full. This task's `file_scope` in `specs/state.json` is
-   exactly `agent-system/extensions/core/commands/merge.md` and
-   `agent-system/extensions/core/skills/skill-git-workflow/SKILL.md` — no script path. The
-   dispatch Territory block assigns `scripts/review-stack-prepare.sh` and its suite to a
-   concurrent sibling's exclusive scope. Nothing in this plan touches that script.
-3. **"USER-ONLY, AND THE PROHIBITION STILL BINDS"** — CONFIRMED unchanged. `rules/pr-prohibition.md`
-   prohibits agent `gh pr create`, agent `git push`, and autonomous `/merge` invocation, with the
-   single user-invoked `/please` push exception. Stack mode adds no agent-reachable path: it is
-   documented prose in a user-only command, it pushes nothing, and its tip-mismatch branch stops
-   and names the `/please push` for the operator to type rather than running it.
-
-Additionally checked, because the parent plan's own figures are load-bearing here: the
-`--only-gate 3,4` Tier Justification invocation. `verify-deploy.sh`'s TARGET_REPO contract states
-that a source-store directory can never be TARGET (gate0 exits 2 before gate selection), and that
-the repo root is the only directory that is simultaneously deploy consumer and source store. The
-parent plan's invocation already passes `"$(git rev-parse --show-toplevel)"`, so it is correct as
-written and is reproduced verbatim below. Gate 3 is the doc-lint
-(`check-extension-docs.sh --quiet`); gate 4 is the task-reference lint
-(`check-task-references.sh --quiet`).
+1. **The ruling file exists and says what is quoted above** — CONFIRMED by reading
+   `specs/decisions/slice-command-one-path-to-review.md` directly for this revision; the quoted
+   rows were located in its "One survivor, and what is deleted", "Verdict on each open record",
+   "Operator worklist" and "What is discarded" sections.
+2. **693's status is still live, not already abandoned** — CONFIRMED: `specs/state.json`'s entry
+   for `project_number: 693` reads `status: "implementing"` with `task_type: "meta"`. The
+   operator's `/task --abandon 693` has not been run. This plan therefore still has to instruct a
+   stop; it cannot assume the task is already closed.
+3. **No edit has landed from the prior plan** — CONFIRMED: the preceding implement dispatch's
+   `.return-meta.json` records `status: "blocked"`, `modified_files: []`, `phases_completed: 0`,
+   and both phases of the prior plan stood at `[NOT STARTED]`. There is nothing to preserve and
+   nothing to revert.
+4. **The description's own superseding note is stale** — CONFIRMED and important. That note points
+   only at `review-slices-are-declared-tasks.md` and asserts "This record's own deliverable
+   SURVIVES the amendment intact", citing that record's "What is retained from the inference
+   route" section. The later ruling overturns exactly that section by name (see the amended-
+   assertions quote above). The description's survival claim is void; this plan supersedes it.
 
 ### Prior Plan Reference
 
-No prior plan for this record. The stack-PR-submission record's plan at
-`specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md` is the
-authoritative design record (PD1-PD12) and its Phase 6 section was read in full; its task list,
-timing (1 hour), verification tier (`local`) and Tier Justification are carried forward here
-rather than re-derived. Effort calibration from that record: its closed phases ran at roughly one
-phase per dispatch, so a 2-phase shape for a one-file deliverable is deliberately conservative.
+The prior plan at this same path proposed two phases: a `## Stack Mode` section plus three flags
+in `agent-system/extensions/core/commands/merge.md` (Phase 1, `local` tier, 1 hour), and a
+`deploy-headless.sh` redeploy (Phase 2, `full` tier, 20 minutes). Both stood at `[NOT STARTED]`.
+Neither is carried forward: the file Phase 1 would edit is deleted by the ruling, and Phase 2
+existed only to deploy Phase 1's edit.
+
+`specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md` remains
+readable as the design history of the inference route, but it is no longer an authoritative design
+record for anything to be built: 685 is `expanded` and the ruling deletes the script its
+PD1-PD12 govern.
 
 ### Roadmap Alignment
 
-No `roadmap_path` was provided in this dispatch's delegation context and no `roadmap_flag` is
-set, so no roadmap consultation applies.
-
-### Domain Plan-Authoring Gotchas
-
-Queried `.claude/context/index.json` for a `project/**` entry whose `load_when.task_types[]`
-contains `meta` and whose keywords/topics name `plan-authoring`: zero hits (the only two
-`plan-authoring` entries are scoped to `task_types: ["lean4"]`). This is the normal case for this
-task type, not a gap.
+No `roadmap_path` was provided in this dispatch's delegation context and no `roadmap_flag` is set,
+so no roadmap consultation applies.
 
 ## Goals & Non-Goals
 
 **Goals**:
 
-- `commands/merge.md` documents `--stack <stack id>`, `--only NN` and `--retarget` in its
-  frontmatter `argument-hint` and its `## Options` table.
-- A new `## Stack Mode` section documents the mode's steps in the dispatch's own order: revoke the
-  prompt-minted grant; read and platform-gate the manifest in one `show --json` call; one approval
-  prompt listing every PR with its head and base; then per entry bottom-up, remote-tip
-  confirmation, open-PR lookup, creation from the manifest's head/base/title/body file, and URL
-  recording.
-- Stack mode states that the remote and every branch name come from the manifest alone, never from
-  a default — concretely: the words `origin` and `main` do not appear anywhere in the stack-mode
-  steps.
-- Stack mode contains no push step, and its tip-mismatch branch names the `/please push` for the
-  operator to type.
-- `## Agent Restrictions` states that stack mode is user-only on the same ground as single-branch
-  mode.
-- The single-branch mode's text (STEP 1-7's bodies, `## Platform Flag Mapping`, the existing
-  `## Options` rows, `## Output`, `## Troubleshooting`) is unchanged.
-- The source store's change is deployed, so `.claude/commands/merge.md` reflects it.
+- An implement dispatch reading this plan changes no file under `agent-system/**` or `.claude/**`
+  and opens no edit to `commands/merge.md`.
+- The supersession is recorded where the next reader will find it: an issue-log entry, the return
+  metadata, and the dispatch's own returned text, each naming
+  `specs/decisions/slice-command-one-path-to-review.md` and its Abandon verdict.
+- The operator is handed the exact worklist line the ruling specifies — `/task --abandon 693` —
+  and told that it is theirs to run, not an agent's.
 
 **Non-Goals**:
 
-- Any edit to `scripts/review-stack-prepare.sh` or its test suite. That script is a concurrent
-  sibling's exclusive territory and is consumed here strictly as a read-only, already-landed API
-  (`show --json`, `record-request`, its exit codes). The description's duplicated Phase 4
-  (restack) paragraph is out of scope entirely.
-- Any edit to `skills/skill-git-workflow/SKILL.md`. It is in this task's declared `file_scope`,
-  so it is declared here rather than silently skipped: research found it carries no merge-mode
-  wiring at all (its sole "merge" occurrence is an unrelated bullet, "Implementation completed -
-  Final verification before merge"), and the Phase 6 deliverable needs no hook there —
-  `record-request` writes a gitignored `specs/.orchestration/` file that the script performs
-  itself, not a commit this skill stages. The scope entry is retained defensively; no edit is
-  planned. If implementation discovers a genuine hook, it is declared before editing, not widened
-  into mid-dispatch.
-- Any edit to `agent-system/extensions/core/README.md` (line 43's command table) or
-  `agent-system/extensions/core/merge-sources/claudemd.md` (line 116's command table). Both are
-  outside this task's declared `file_scope`. Neither blocks a gate: gate 3's
-  `check_readme_vs_manifest()` requires only that each `provides.commands` name appear as
-  `/<name>` in the extension README, and `/merge` already does (README line 43) — no new command
-  is added, only a mode. A one-line usage-column refresh in those two tables is a legitimate
-  follow-up for a record whose scope includes them.
-- Making stack mode work on GitLab. PD9 scopes the whole stack flow to GitHub, and
-  `review-stack-prepare.sh`'s own resolution refuses GitLab (exit 30). `## Platform Flag Mapping`
-  stays single-branch-only and untouched.
-- Implementing the behaviour as a script. The deliverable is the command's documented contract;
-  its live behaviour is operator-owed (PD11) and cannot be agent-verified.
+- Building `--stack`, `--only` or `--retarget`, in `commands/merge.md` or anywhere else. Ruled
+  never built.
+- Deleting `commands/merge.md`, `scripts/review-stack-prepare.sh`, or its suite. Those deletions
+  are real, but they belong to the ruling's successors 3 and 5 — successor 5 is explicitly ordered
+  "only after `/slice` has opened one real pull request". Doing them here would widen a record
+  that is being emptied into a record that destroys 2,000+ lines ahead of its gate.
+- Building any part of `/slice` (the ruling's successor 1). That is a new record for the operator
+  to create, not a redirection of this one.
+- Editing `skills/skill-git-workflow/SKILL.md`. It is in this record's `file_scope`, and the prior
+  plan already established it carries no merge-mode wiring; the ruling assigns its `/merge` mention
+  to the `/merge` removal successor regardless.
+- Abandoning the task from inside a dispatch. `[ABANDONED]` is a terminal state and the ruling puts
+  `/task --abandon 693` on the *operator* worklist. An agent that abandons its own record removes
+  the operator's decision point.
+- Editing any other task's record, plan, description or dependency edges. The ruling's `/revise 692`,
+  `/revise 694`, `/revise 655` and the edge replacement on 694 are separate operator lines.
 
 ## Risks & Mitigations
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| A partial edit leaves the argument hint, options table and step list disagreeing — which is precisely this phase's own verification criterion | M | M | Phase 1 is one green sub-step covering all four edit sites in the file; the phase is not committed at an intermediate state where the table names a flag no section documents |
-| A concurrent sibling edits `commands/merge.md` between the read and the write | H | L | Siblings' declared scopes are `review-stack-prepare.sh` / `milestone-review-handoff.sh` and their suites — disjoint from this file. Still: re-read `commands/merge.md` immediately before editing, stage only this file, never a directory or glob add, never `git-snapshot.sh` in its reverting default mode |
-| `verify-touched.sh` on a prose-only `.md` path escalates to the whole free-cost-class battery (`suite_selection_select` returns `__FULL_SWEEP__`), costing minutes and risking an auto-backgrounded call | M | H | Use the narrow `verify-deploy.sh --skip-slow --only-gate 3,4 <repo root>` invocation as Phase 1's covering check, and leave the complete gate set to the orchestration close rather than paying a full sweep twice |
-| `--only NN` naively string-matched against the manifest's integer `ordinal` silently selects nothing | M | M | Phase 1 task list requires the step text to state the numeric comparison explicitly (strip leading zeros, e.g. `$((10#$only))`, or an `--argjson` numeric jq compare) |
-| The words `origin` or `main` leak into the stack-mode steps by copy-paste from the single-branch flow | M | M | Phase 1's own verification is a literal `grep` for both words bounded to the new section |
-| Redeploy regenerates the whole `.claude/` tree while siblings are in flight | M | M | Phase 2 declares `` `__WHOLE_TREE__` `` so the admission dimension can serialize it against a sibling's own regeneration; the deployed tree is gitignored and produces no commit of its own |
+| An implement dispatch reads a stale excerpt of the prior plan and starts editing `commands/merge.md` anyway | H | M | The revision sentinel at `specs/693_merge_command_stack_mode/.plan-revised.json` is written by this revision; the reader obligation in `context/patterns/plan-revision-notification.md` is a phase-section re-read immediately before the first edit of a phase. The single phase below leads with the stop instruction so a partial read still hits it |
+| The emptied record is left `implementing` forever, re-admitted every cycle and re-dispatched to no purpose | M | H | The phase's own completion condition is the hand-off of `/task --abandon 693` to the operator, stated in the returned text and the return metadata, not buried in an artifact |
+| Scope creep into the ruling's successors — deleting the files, or starting `/slice` | H | M | Named as Non-Goals above, with the ruling's own ordering constraint quoted (successor 5 is gated on `/slice` having opened one real pull request) |
+| A future reader treats the description's "deliverable SURVIVES the amendment intact" note as still binding | M | M | Premise Re-Validation item 4 above records that the note is stale and names the clause the later ruling overturns |
 
 ## Implementation Phases
 
@@ -173,195 +155,93 @@ task type, not a gap.
 | Wave | Phases | Blocked by |
 |------|--------|------------|
 | 1 | 1 | -- |
-| 2 | 2 | 1 |
 
-Phases within the same wave can execute in parallel.
+Single phase; no parallelism applies.
 
-### Phase 1: Stack mode in `commands/merge.md` [NOT STARTED]
+### Phase 1: Record the supersession and hand the abandonment to the operator [NOT STARTED]
 
-**Goal**: `commands/merge.md` documents a complete, internally consistent `--stack` mode that
-pushes nothing and takes every ref from the manifest, with the single-branch mode's text
-untouched.
+**Goal**: No file under `agent-system/**` or `.claude/**` is changed, and the supersession plus the
+operator's abandonment line are recorded in the issue log, the return metadata and the returned
+text.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/commands/merge.md` in full immediately before
-      editing (sibling concurrency; see Risks). Treat the whole-file edit below as this phase's
-      single green sub-step under the default per-substep commit mode: any narrower split would
-      commit a state where the options table names a flag no section documents, which is exactly
-      what this phase's own verification criterion forbids.
-- [ ] Extend the frontmatter `argument-hint` to
-      `"[--draft] [--stack STACK_ID] [--only NN] [--retarget] [--assignee USER] [--label LABEL] [--reviewer USER]"`.
-      Leave `description`, `allowed-tools` and `model` as they are — `Bash(git:*), Bash(gh:*),
-      Bash(glab:*), AskUserQuestion` already covers `git ls-remote`, `gh pr list`, `gh pr create`,
-      `gh pr edit` and the approval prompt, so no widening is needed.
-- [ ] Add three rows to the `## Options` table, after `--draft` and before `--assignee USER`:
-      `--stack <stack id>` (run stack mode against a prepared review stack's manifest; default
-      none), `--only NN` (stack mode: act on that one entry's ordinal only; default all entries),
-      `--retarget` (stack mode: change an open PR's base when it differs from the manifest's;
-      default false). Do not touch the existing seven rows and do not touch
-      `## Platform Flag Mapping` — stack mode is GitHub-only by PD9 and uses no GitLab column.
-- [ ] In STEP 1 (Parse Arguments), add the three flags to the tracked-flag list and add an early
-      dispatch line: when `--stack` is present, skip STEP 2-7 entirely and run `## Stack Mode`
-      instead. State that `--only` and `--retarget` are meaningful only with `--stack`.
-- [ ] Add a new top-level `## Stack Mode` section after STEP 7 and before `## Examples`, opening
-      with a statement that the remote, the review base and every branch name come from the
-      manifest alone and never from a default, and that this mode pushes nothing.
-- [ ] Write its steps in this order. (1) Revoke the prompt-minted grant first, before anything
-      else: `bash .claude/scripts/git-push-granted.sh --revoke` — the same wrapper STEP 4's Cancel
-      branch already uses; this mode pushes nothing, so the grant must not linger for its expiry
-      window. (2) Read and platform-gate the manifest in ONE call:
-      `bash .claude/scripts/review-stack-prepare.sh show --stack-id <stack id> --json`; on a
-      non-zero exit, surface that script's own named refusal (its review-base, remote and platform
-      exit codes) and STOP — no retry, no fallback to a default remote or base. Note that this one
-      call also discharges "refuse a platform PD9 does not support", because that script's
-      resolution phase runs before any subcommand body. (3) Show ONE approval prompt via
-      `AskUserQuestion` listing every entry's head (`branch`) and base (`base`) before touching
-      any entry, with a Cancel option that stops without creating anything.
-- [ ] Write the per-entry loop: iterate `entries[]` in array order (already bottom-up — ordinal 1
-      is the bottom of the stack — so derive no ordering of your own). When `--only NN` was given,
-      skip entries whose `ordinal` does not match numerically; state explicitly that the user's
-      `NN` may be zero-padded while `ordinal` is a bare integer, so the comparison strips leading
-      zeros (`$((10#$only))`) or uses a numeric jq compare, never a string match.
-- [ ] For each selected entry, in order: confirm the remote tip with
-      `git ls-remote <remote from manifest> refs/heads/<branch from manifest>` and compare it to
-      that entry's `commit`; on mismatch or absence, STOP and print the exact `/please push` line
-      for the operator to type, and never push. Then look for an open PR on that head with
-      `gh pr list --state open --head <branch> --json number,baseRefName,url`. When there is none,
-      create one with `gh pr create --head <branch> --base <base> --title <title> --body-file
-      <body_path>`, taking all four values from the manifest entry. Record the URL with
-      `bash .claude/scripts/review-stack-prepare.sh record-request <ordinal> <url> --stack-id <stack id>`.
-- [ ] Document `--retarget`: for each entry with an open PR whose live `baseRefName` differs from
-      the manifest's `base`, run `gh pr edit <number> --base <base from manifest>`; state that the
-      forge may already have retargeted it itself when the parent's branch was deleted, so a
-      no-op is an expected outcome rather than an error.
-- [ ] Add a short `### Stack Mode` example block under `## Examples` (`/merge --stack <stack id>`,
-      `/merge --stack <stack id> --only 02`, `/merge --stack <stack id> --retarget`) for
-      discoverability. Leave every existing example, and all of `## Output` and
-      `## Troubleshooting`, exactly as they are — those document single-branch mode.
-- [ ] Append one sentence to `## Agent Restrictions`: stack mode is user-only on the same ground
-      as single-branch mode, and no agent may invoke `/merge --stack` either.
-- [ ] Confirm no task-number reference and no record-versioning language entered the file
-      (`rules/no-task-references-in-deliverables.md`,
-      `rules/no-record-versioning-in-deliverables.md`): refer to the stack flow by its command and
-      script names, never by a task number, and describe the mode as it now is, never as a change
-      from an earlier state of the file.
+- [ ] Change nothing under `agent-system/**` or `.claude/**`. This phase has no edit site. If any
+      instruction elsewhere in this record's description still reads as a build order for
+      `--stack`/`--only`/`--retarget`, it is superseded by this plan and by
+      `specs/decisions/slice-command-one-path-to-review.md`; do not act on it.
+- [ ] Re-read `specs/decisions/slice-command-one-path-to-review.md`'s "Verdict on each open
+      record" table and its "Operator worklist" before reporting, to confirm the Abandon verdict
+      and the `/task --abandon 693` line still read as quoted in this plan's Research Integration
+      section. If either has since changed, report the difference instead of the quote.
+- [ ] Record one issue-log entry via `bash .claude/scripts/issue-record.sh` naming the ruling file,
+      the Abandon verdict, and the fact that no edit was made. If the preceding blocked implement
+      dispatch already recorded an equivalent entry (its return metadata says it did), confirm that
+      entry is present in `specs/693_merge_command_stack_mode/issues.jsonl` and do not duplicate it.
+- [ ] Write return metadata recording `blocked`, `modified_files: []`, and a blocker entry whose
+      `why_it_failed` names `specs/decisions/slice-command-one-path-to-review.md` and its verdict.
+- [ ] Return, as the dispatch's own text, the operator line verbatim: `/task --abandon 693`, with
+      one sentence of ground (the ruling's reason column: "`/merge` is removed and `--stack` is
+      never built. Nothing of its deliverable survives"). State plainly that the line is the
+      operator's to type and was not run by the dispatch.
 
-**Timing**: 1 hour
+**Timing**: 10 minutes
 
 **Depends on**: none
 
-**Verification Tier**: local
+**Verification Tier**: prose
 
-**Scope Hypothesis**: Three asserted figures, each a hypothesis to confirm against the live file
-immediately before editing, not a fact to act on: `commands/merge.md` stands at 485 lines; its
-`## Options` table carries 7 rows and its `## Execution` section carries STEP 1-7, with
-`## Agent Restrictions` near the end; and `commands/merge.md` is the only file this phase touches
-— `skills/skill-git-workflow/SKILL.md` (in `file_scope`), the core `README.md` command table and
-`merge-sources/claudemd.md`'s command table are all deliberately EXCLUDED, and no task above
-requires any of them. Confirm by re-reading the file and by `grep -c '^| ' ` on the options table
-before the first edit; if the live shape differs, adapt the insertion points rather than the
-scope.
-
-**Tier Justification**: `suite_selection_select` returns `__FULL_SWEEP__` alone for
-`agent-system/extensions/core/commands/merge.md` (verified live), so no dedicated suite exists and
-the specific covering check is the doc-lint and task-reference gates:
-`bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 "$(git rev-parse --show-toplevel)"`.
+**Tier Justification**: The phase's whole deliverable is a recorded report and an unchanged tree;
+there is no code path, no deployed artifact and no suite to exercise. The specific covering check
+is the emptiness of `git status --short` over `agent-system/**` and `.claude/**` for this dispatch,
+which is a direct observation rather than a test invocation.
 
 **Files to modify**:
 
-- `agent-system/extensions/core/commands/merge.md` - frontmatter `argument-hint`; three
-  `## Options` rows; STEP 1's flag list and stack-mode dispatch line; a new `## Stack Mode`
-  section; a `### Stack Mode` example block; one appended sentence in `## Agent Restrictions`
+- None under `agent-system/**` or `.claude/**`. Writes are confined to this record's own
+  `specs/693_merge_command_stack_mode/` directory (`issues.jsonl`, `.return-meta.json`), which is
+  this task's own metadata, not a deliverable.
 
 **Verification**:
 
-- `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 "$(git rev-parse --show-toplevel)"`
-  exits 0. (Treat exit 2 and exit 3 as not-a-pass: exit 2 means the selection attested to nothing,
-  exit 3 means the complete gate set is already owed to a batch-gate stage.)
-- A read-through confirms the documented contract is internally consistent: every flag in the
-  frontmatter `argument-hint` has an `## Options` row, and every stack-mode flag has a step that
-  uses it.
-- Stack mode contains no push step, and every `gh` call takes its head and base from the manifest.
-- `grep -nE '\borigin\b|\bmain\b'` bounded to the `## Stack Mode` section returns nothing.
-- `git diff` on the file shows no change inside STEP 1's body beyond the added flags and the
-  dispatch line, and no change at all to STEP 2-7, `## Platform Flag Mapping`, the pre-existing
-  `## Options` rows, `## Output` or `## Troubleshooting`.
-- `bash .claude/scripts/check-task-references.sh` reports no finding for this file.
-
----
-
-### Phase 2: Redeploy and close [NOT STARTED]
-
-**Goal**: The deployed `.claude/commands/merge.md` reflects the source store, and this record's
-verification obligation is discharged or explicitly deferred.
-
-**Tasks**:
-
-- [ ] Redeploy the source store: `bash .claude/scripts/deploy-headless.sh` from the repository
-      root (resync, the bootstrap-safe non-destructive default — not `--wipe`).
-- [ ] Confirm the deployed copy matches: diff `.claude/commands/merge.md` against
-      `agent-system/extensions/core/commands/merge.md`, or read the redeploy's own inline
-      verification result. The deployed tree is gitignored, so this produces no commit of its own.
-- [ ] Run the scoped touched-path check over this record's one touched path and record its result.
-      Prefer the narrow gate invocation (`verify-deploy.sh --skip-slow --only-gate 3,4
-      "$(git rev-parse --show-toplevel)"`) over a bare `verify-touched.sh` run on this path: a
-      prose-only `.md` path with no mapped suite triggers that script's OWED-NOT-PAID fallback and
-      escalates to the entire free-cost-class battery, which costs minutes and may auto-background
-      the call.
-- [ ] Under `/orchestrate`, defer the complete gate set explicitly to the orchestration close
-      (Move 4) rather than invoking the full battery here; state that deferral in the handoff.
-      Outside an orchestration, run the complete set directly instead.
-- [ ] Record this record's issue-log entries for the dispatch, or attest explicitly that there was
-      nothing to record.
-
-**Timing**: 20 minutes
-
-**Depends on**: 1
-
-**Verification Tier**: full
-
-**Files to modify**:
-
-- `__WHOLE_TREE__` - this phase runs `deploy-headless.sh`, which regenerates the entire deployed
-  `.claude/` tree; the sentinel is declared so the admission dimension can serialize it against a
-  concurrent sibling's own regeneration
-
-**Verification**:
-
-- `deploy-headless.sh` exits 0 and `.claude/commands/merge.md` is byte-identical to the source
-  store's copy.
-- The scoped touched-path check over `agent-system/extensions/core/commands/merge.md` passes
-  (equivalently, the gate 3,4 invocation above exits 0).
-- The complete gate set is explicitly deferred to the orchestration close and that deferral is
-  stated in the handoff — the full battery is owed once per orchestration invocation and is not
-  forgiven, only deferred.
+- `git status --short -- agent-system/ .claude/` shows nothing attributable to this dispatch.
+- `git diff -- agent-system/extensions/core/commands/merge.md` is empty, and that file contains no
+  occurrence of `--stack`, `--only` or `--retarget`
+  (`grep -nE -- '--stack|--only|--retarget' agent-system/extensions/core/commands/merge.md`
+  returns nothing).
+- `specs/693_merge_command_stack_mode/issues.jsonl` carries an entry naming
+  `specs/decisions/slice-command-one-path-to-review.md`.
+- The returned text contains the literal string `/task --abandon 693` and attributes it to the
+  operator.
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 "$(git rev-parse --show-toplevel)"`
-      exits 0 (gate 3 doc-lint, gate 4 task-reference lint).
-- [ ] The documented contract is internally consistent: frontmatter `argument-hint`, `## Options`
-      table and the stack-mode step list name the same flags.
-- [ ] The single-branch mode's text is unchanged, confirmed by reading `git diff`.
-- [ ] `origin` and `main` appear nowhere in the stack-mode steps.
-- [ ] No push step and no agent-reachable PR-creation path is introduced; `/merge` remains
-      user-only and `rules/pr-prohibition.md` continues to bind unchanged.
-- [ ] `.claude/commands/merge.md` matches the source store after redeploy.
+- [ ] No file under `agent-system/**` or `.claude/**` was changed by the dispatch
+      (`git status --short -- agent-system/ .claude/`).
+- [ ] `agent-system/extensions/core/commands/merge.md` still contains no stack-mode flag.
+- [ ] The ruling's Abandon verdict and its `/task --abandon 693` worklist line were re-read live
+      and confirmed, or any divergence reported.
+- [ ] The supersession appears in the issue log and in the return metadata, each naming the ruling
+      file by path.
+- [ ] `/task --abandon 693` is present in the returned text as an operator action, and was not run
+      by an agent.
 
 ## Artifacts & Outputs
 
-- `agent-system/extensions/core/commands/merge.md` with a `## Stack Mode` section and the three
-  new flags documented.
-- A regenerated deployed `.claude/` tree (gitignored; no commit).
-- This record's summary artifact at completion.
+- This revised plan, which is the record's substantive output: it replaces a build plan with a
+  stop instruction and preserves the evidence for why.
+- One issue-log entry in `specs/693_merge_command_stack_mode/issues.jsonl`.
+- Return metadata recording `blocked` with an empty `modified_files`.
+- No source-store change, no deployed-tree change, and no commit touching `agent-system/**`.
 
 ## Rollback/Contingency
 
-The whole deliverable is one markdown file's content. To revert: `git revert` the phase-1 commit
-(or `git checkout HEAD~1 -- agent-system/extensions/core/commands/merge.md` if nothing has landed
-on top of it), then redeploy with `bash .claude/scripts/deploy-headless.sh`. No script, schema,
-state file or test suite is modified, so nothing else can be left half-applied. If a concurrent
-sibling has touched the file in the meantime — which their declared scopes say they will not —
-stop and report the foreign modification rather than reverting over it, per the dispatch's
-concurrency note.
+Nothing to roll back: the plan instructs no edit, and the preceding dispatch made none
+(`modified_files: []`, both prior phases `[NOT STARTED]`).
+
+Contingency, if the ruling itself is later reversed: this plan's Research Integration section
+quotes the exact rows that empty the record, so a reversal can be checked against them line by
+line. A reversal would not revive this plan — it would require a fresh record against whatever
+command then exists, since `commands/merge.md` is scheduled for deletion by the ruling's successor
+5 and the prior plan's insertion points (STEP 1-7, the `## Options` table, `## Agent Restrictions`)
+would no longer be there to edit.
