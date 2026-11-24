@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Created a 2-phase plan implementing remedy (a): retarget Case H's third assertion in test-orchestrate-conclusion-roadmap.sh to the refusal-arm shape (/please push <branch> present, /merge absent, anchored as in test-milestone-review-handoff.sh Case 3), then redeploy and close verification. Every premise figure was corroborated live: the suite is red with exactly one failure (34 passed, 1 failed), that failure is Case H's third assertion, and test-milestone-review-handoff.sh is green at 19/0. The adjacent review.state/review.ref assertion was checked and ruled still correct -- it passes in the live red run and the ruling that would retire the review.ref write has not been dispatched -- so the plan leaves it untouched.",
+  "blockers": [],
+  "phases_completed": 0,
+  "phases_total": 2,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/697_case_h_assertion_review_stack_refusal_arm/plans/01_case-h-refusal-arm-fix.md",
+      "summary": "2-phase plan: retarget Case H's third assertion to the refusal-arm shape (remedy (a)), then redeploy with a clean verify."
+    }
+  ],
+  "dispatch_seq": 12
+}
