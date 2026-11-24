@@ -6,24 +6,46 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M5: Integration-branch landing and the PR stack](#milestone-m5) | active | 4/4 | none |
+| [M5: /slice: the one path from a work branch to a stack of review pull requests](#milestone-m5) | active | 3/7 | prepared |
 | [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 9/21 | none |
-| [M3: Batch worktree isolation and generated-path collapse](#milestone-m3) | planned | 0/1 | none |
+| [M3: Batch worktree isolation off a per-batch branch](#milestone-m3) | planned | - | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
 | [M1: Current work](#milestone-m1) | active | 15/106 | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
 
 <a id="milestone-m5"></a>
-## M5: Integration-branch landing and the PR stack
+## M5: /slice: the one path from a work branch to a stack of review pull requests
 
-Make a completed task land as one reviewable commit on an admitted integration branch, verified before its status write, then cut review branches so that landed work reaches review as a stack of pull requests the branch-strategy docs describe.
+Make /slice the single user-invoked path from a work-branch tip to a reviewable stack of pull requests on a chosen target, refuse a slice too large to review, and delete every other route to review.
 
-- **Progress**: active -- 1/1 batches, 4/4 tasks done -- Ready to dispatch; the worktree-isolation half is held by operator direction and sited in no batch.
-- **Review**: none
-- **Gate**: Integration-branch admission and the isolation declaration are in place; every completed task leaves one reviewable commit on the integration branch, verified before the status write; a stack of pull requests is cut from that landed work; and the branch-strategy documentation states the contract as implemented.
+- **Progress**: active -- 1/4 batches, 3/7 tasks done -- Landing half landed and ruled; the /slice build, size bar, deletions and grant-binding successors are not task records yet.
+- **Review**: prepared on `refs/heads/master` (updated 2026-11-24)
+- **Gate**: /slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.
 
-**Batch 1** (done) -- Admit the integration branch, land one reviewable commit per task, then stack the PRs
+**Batch 1** (done) -- Landed: integration-branch admission, one reviewable commit per task, and the branch docs
+
+**Batch 2** -- Retire the old review exits: the handoff prints /slice, and the retired ref-land script goes
+
+```
+/orchestrate 692, 690
+690 blocked:692     milestone-ref-land.sh re-creates a deliberately retired milestone ref
+692 ready           handoff_prints_review_stack   <- plan predates the /slice ruling: revise before dispatch, to print /slice and drop the review.ref write
+```
+
+**Batch 3** -- Declare generated paths, so a slice diff reads and its size bar counts hand-written lines
+
+```
+/orchestrate 655
+655 blocked:513,553 Declare generated paths so they collapse in review   <- until this lands the size bar miscounts wherever generated files ride in a slice
+```
+
+**Batch 4** -- Last: doc parity, redeploy and the operator runbook, once /slice has opened a real stack
+
+```
+/orchestrate 694
+694 blocked:692,693 stack_pr_redeploy_and_second_repo_demo   <- revise first: its edges onto the handoff and the /merge record belong on the /slice build record
+```
 
 <a id="milestone-m4"></a>
 ## M4: Clear the path to isolated batch landing: measurement, commit layer, detectors
@@ -71,20 +93,13 @@ Close everything standing in front of the batch-worktree landing work: measure t
 ```
 
 <a id="milestone-m3"></a>
-## M3: Batch worktree isolation and generated-path collapse
+## M3: Batch worktree isolation off a per-batch branch
 
-Run each batch in its own worktree off its own batch branch so concurrent dispatches cannot collide over one working tree, and declare machine-written paths so a reviewer's diff collapses them by default.
+Run each batch in its own worktree off its own batch branch so concurrent dispatches cannot collide over one working tree.
 
-- **Progress**: planned -- 0/1 batches, 0/1 tasks done -- Worktree isolation is held by operator direction and sited in no batch; the declaration batch waits on the detectors in M4.
+- **Progress**: planned -- no batches yet -- Every member is held and sited in no batch; the /slice ruling finds isolation irrelevant to review, pending an operator decision.
 - **Review**: none
-- **Gate**: A batch runs in an isolated worktree off its batch branch; a partial batch retains its worktree and /refresh reports it as an orphan; every remaining project-root consumer is classified code-root, state-root or both, and the write-time and git-guard hooks honour that split; declared generated paths render collapsed in review.
-
-**Batch 1** -- Declare machine-written paths so a reviewer's diff collapses them by default
-
-```
-/orchestrate 655
-655 blocked:513,553 Declare generated paths so they collapse in review   <- raise: generated-file collapse is what makes a declared review slice diff readable; site earlier than current position
-```
+- **Gate**: A batch runs in an isolated worktree off its batch branch; a partial batch retains its worktree and /refresh reports it as an orphan; and every remaining project-root consumer is classified code-root, state-root or both, with the write-time and git-guard hooks honouring that split.
 
 <a id="milestone-m2"></a>
 ## M2: Sapience linked projects, capture activation and collaborator access
@@ -428,14 +443,11 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 674 HOLD            Build batch worktree cleanup, retention on partial batches, and orphan report...
 686 HOLD            Create the per-batch worktree and batch branch when isolation is declared on
 688 blocked:501     dispatch_redeploy_clears_staleness_verdict
-690 blocked:692     milestone-ref-land.sh re-creates a deliberately retired milestone ref
-694 blocked:692,693 stack_pr_redeploy_and_second_repo_demo
 664 ready           Add a /tmp sweep pass to /refresh for dead scratchpad sessions and agent-test...
 665 ready           Record the last dispatching orchestration batch in a displaced Previous work ...
 680 ready           gate_cache_key_in_deployed_repos
 684 ready           Sweep and fix stale command and sub-mode references across the source store
 689 ready           oversized_plan_phase_count_advisory
-692 ready           handoff_prints_review_stack
-693 ready           merge_command_stack_mode
+693 ready           merge_command_stack_mode   <- ruled abandon: /merge is removed and --stack is never built
 696 ready           narrow_batch_gate_stage_verify_deploy_invocation
 ```

@@ -440,7 +440,8 @@
           "semantic": true
         },
         "degradations_count": 47
-      }
+      },
+      "roadmap_annotation": "revise first: its edges onto the handoff and the /merge record belong on the /slice build record"
     },
     {
       "project_number": 693,
@@ -667,7 +668,8 @@
           "summary": "Two-phase plan for /merge stack mode in commands/merge.md plus redeploy; verification via verify-deploy.sh --only-gate 3,4."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "roadmap_annotation": "ruled abandon: /merge is removed and --stack is never built"
     },
     {
       "project_number": 692,
@@ -918,7 +920,8 @@
           "summary": "Three-phase plan: cut/show wiring plus refusal arm, success-arm fixture and case, redeploy and scoped verification."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "roadmap_annotation": "plan predates the /slice ruling: revise before dispatch, to print /slice and drop the review.ref write"
     },
     {
       "project_number": 691,
@@ -21729,7 +21732,7 @@
         "degradations_count": 43
       },
       "title": "Declare generated paths so they collapse in review",
-      "roadmap_annotation": "raise: generated-file collapse is what makes a declared review slice diff readable; site earlier than current position"
+      "roadmap_annotation": "until this lands the size bar miscounts wherever generated files ride in a slice"
     },
     {
       "project_number": 664,
@@ -22502,27 +22505,49 @@
   "roadmap_milestones": [
     {
       "id": "M5",
-      "title": "Integration-branch landing and the PR stack",
-      "aim": "Make a completed task land as one reviewable commit on an admitted integration branch, verified before its status write, then cut review branches so that landed work reaches review as a stack of pull requests the branch-strategy docs describe.",
-      "gate": "Integration-branch admission and the isolation declaration are in place; every completed task leaves one reviewable commit on the integration branch, verified before the status write; a stack of pull requests is cut from that landed work; and the branch-strategy documentation states the contract as implemented.",
+      "title": "/slice: the one path from a work branch to a stack of review pull requests",
+      "aim": "Make /slice the single user-invoked path from a work-branch tip to a reviewable stack of pull requests on a chosen target, refuse a slice too large to review, and delete every other route to review.",
+      "gate": "/slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.",
       "progress": {
         "status": "active",
-        "note": "Ready to dispatch; the worktree-isolation half is held by operator direction and sited in no batch."
+        "note": "Landing half landed and ruled; the /slice build, size bar, deletions and grant-binding successors are not task records yet."
       },
       "review": {
-        "state": "none"
+        "state": "prepared",
+        "ref": "refs/heads/master",
+        "updated": "2026-11-24"
       },
       "batches": [
         {
           "task_ids": [
             669,
             673,
-            685,
             675
           ],
-          "description": "Admit the integration branch, land one reviewable commit per task, then stack the PRs",
-          "flags": "--hard",
-          "rationale": "The whole branch-and-PR path, sited as one dependency-ordered batch so /orchestrate's waves do the sequencing: 669 admits the integration branch and writes the isolation declaration; 673 lands one reviewable commit per completed task and verifies it before the status write; 685 and 675 then run alongside each other off 673. 669 -> 673 -> 685 is a strict chain and 675 only needs 673, so the batch resolves to three waves, not four.\n\nWhy one batch rather than three: the four share the branch-topology territory and the same ruling. 673's first obligation is to RULE how a reviewable unit is produced when no batch branch exists -- the worktree half that would have supplied one is held -- and to write that ruling as a decision record. 685 cuts review branches from whatever 673 rules the unit to be, and 675 states the resulting contract in the branch-strategy documentation. Splitting them would strand that ruling across dispatches.\n\nNo member carries an open dependency outside this batch: 669's four predecessors (517, 541, 667, 668) are all terminal, which is why this milestone sits first and is dispatchable from its authored position.\n\n--hard is kept from the entries these four replace: 669 and 673 each settle a contract the rest of the topology reads, and 685 works against the push/PR prohibition boundary, where an unexamined move is expensive.\n\nThe five held worktree tasks (670, 671, 672, 674, 686) are deliberately absent. /orchestrate refuses a held task, so naming one here would render a command line an operator cannot run as printed."
+          "description": "Landed: integration-branch admission, one reviewable commit per task, and the branch docs",
+          "rationale": "The landed substrate /slice stacks onto: 669 admitted the integration branch and the isolation declaration, 673 lands one reviewable commit per completed task and verifies it before the status write, 675 states the contract in the branch-strategy documentation. Kept in the milestone so its done-count reports the half that is actually built. The expanded 685 is dropped from the member list: its subject -- cutting review branches from a landed commit range -- is the mechanism the /slice ruling overturns, and its successors are 692, 693 and 694, which carry it under their own ids."
+        },
+        {
+          "task_ids": [
+            692,
+            690
+          ],
+          "description": "Retire the old review exits: the handoff prints /slice, and the retired ref-land script goes",
+          "rationale": "The two surviving removals that already exist as records. 692 narrows scripts/milestone-review-handoff.sh to print one line, /slice, and to stop writing review.ref; 690 deletes milestone-ref-land.sh, whose deletion the ruling confirms now that the script has no lifecycle caller. 690 already depends on 692 and the two share the handoff's suite, so the batch resolves to two waves on its own edges.\n\nDispatch hazard, not an ordering one: 692 is planned against the overturned ruling and must be revised before it is implemented as written. Its annotation says so on the member line."
+        },
+        {
+          "task_ids": [
+            655
+          ],
+          "description": "Declare generated paths, so a slice diff reads and its size bar counts hand-written lines",
+          "rationale": "Raised out of the worktree milestone into this one. The /slice ruling gives the generated-path declaration a second consumer: the size bar's line count is wrong in any repository where generated files ride in a slice, so the declaration is what makes both the diff readable and the bar accurate. Its own predecessors (513 and 553) sit in the commit-layer and detector milestone and are an ordering constraint, not grounds to drop it from this milestone."
+        },
+        {
+          "task_ids": [
+            694
+          ],
+          "description": "Last: doc parity, redeploy and the operator runbook, once /slice has opened a real stack",
+          "rationale": "The ruling orders this after the build, the handoff narrowing and the /merge removal, and makes its acceptance one real slice pushed and opened by the operator in a second repository. Sited last in the milestone for that reason. It still carries edges onto 692 and the abandoned 693; those are the operator's to replace with one edge onto the /slice build record once that record exists."
         }
       ]
     },
@@ -22600,25 +22625,17 @@
     },
     {
       "id": "M3",
-      "title": "Batch worktree isolation and generated-path collapse",
-      "aim": "Run each batch in its own worktree off its own batch branch so concurrent dispatches cannot collide over one working tree, and declare machine-written paths so a reviewer's diff collapses them by default.",
-      "gate": "A batch runs in an isolated worktree off its batch branch; a partial batch retains its worktree and /refresh reports it as an orphan; every remaining project-root consumer is classified code-root, state-root or both, and the write-time and git-guard hooks honour that split; declared generated paths render collapsed in review.",
+      "title": "Batch worktree isolation off a per-batch branch",
+      "aim": "Run each batch in its own worktree off its own batch branch so concurrent dispatches cannot collide over one working tree.",
+      "gate": "A batch runs in an isolated worktree off its batch branch; a partial batch retains its worktree and /refresh reports it as an orphan; and every remaining project-root consumer is classified code-root, state-root or both, with the write-time and git-guard hooks honouring that split.",
       "progress": {
         "status": "planned",
-        "note": "Worktree isolation is held by operator direction and sited in no batch; the declaration batch waits on the detectors in M4."
+        "note": "Every member is held and sited in no batch; the /slice ruling finds isolation irrelevant to review, pending an operator decision."
       },
       "review": {
         "state": "none"
       },
-      "batches": [
-        {
-          "task_ids": [
-            655
-          ],
-          "description": "Declare machine-written paths so a reviewer's diff collapses them by default",
-          "rationale": "Stays a batch of one. Its file_scope still lists the seven files of its superseded scope, so it shows mechanical overlaps with 669, 670, 673 and 675 that are not real claims; the isolation record directs that it be re-declared at plan time and that no edge be written onto it.\n\nPosition re-judged this pass against the narrowed scope. This batch stays under M3 and M3 stays after M4 in milestone order, because 513 and 553 are M4 members and a batch whose one member is blocked renders a command that cannot be dispatched from its own position. The --hard flag authored for the superseded scope is already dropped. The branch-topology elements that were once part of this record's scope now sit in M5."
-        }
-      ]
+      "batches": []
     },
     {
       "id": "M2",
