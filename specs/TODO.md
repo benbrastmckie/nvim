@@ -1,5 +1,5 @@
 ---
-next_project_number: 699
+next_project_number: 705
 ---
 
 # TODO
@@ -13,15 +13,15 @@ next_project_number: 699
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,640,646,663,664,665,671,674,679,680,684,686,689,694,696 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
-| 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 5 | 524,571,596,642,688 | 501,518,595,641 | core-agent-system, orchestrator, agent-system |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,579,580,586,590,599,613,618,629,631,632,640,646,663,664,665,671,674,679,680,684,686,689,696,699,700 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,577,583,592,593,605,630,701,702 | 383,390,399,410,431,438,452,453,511,519,539,542,551,563,586,599,629,699 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,472,480,492,513,561,576,588,594,609,703 | 439,479,491,509,533,552,556,570,577,593,701,702 | core-agent-system, orchestrator, agent-system |
+| 4 | 473,501,518,581,595,641,704 | 454,472,492,539,561,580,594,700,703 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 5 | 524,571,596,642,688,694 | 501,518,595,641,704 | core-agent-system, orchestrator, agent-system |
 | 6 | 536 | 524 | agent-system |
 | 7 | 548 | 536 | agent-system |
 | 8 | 553,598 | 548 | agent-system |
-| 9 | 655,670 | 513,553 | orchestrator |
+| 9 | 655,670 | 513,553,701 | orchestrator |
 | 10 | 672 | 670 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -63,6 +63,14 @@ next_project_number: 699
 664 [NOT STARTED] — Add a /tmp sweep pass to /refresh for dead scratchpad...
 680 [NOT STARTED] — Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged...
 684 [NOT STARTED] — Sweep and fix stale command and sub-mode references across...
+699 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 701 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+    └─ 703 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+      └─ 704 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 702 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+    └─ 703 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
+700 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 704 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
@@ -111,7 +119,6 @@ next_project_number: 699
 674 [HOLD] — Build batch worktree cleanup, retention on partial batches,...
 686 [HOLD] — Create the per-batch worktree and batch branch when isolation...
 689 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 696 [NOT STARTED] — Narrow the orchestration batch-gate stage's own verify-deploy...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
@@ -120,6 +127,7 @@ next_project_number: 699
   └─ 670 [HOLD] — Build the two-root contract in the dispatch composer and the...
     └─ 672 [HOLD] — Classify every remaining project-root consumer as code-root,...
 688 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Agent System
 
@@ -144,12 +152,11 @@ next_project_number: 699
 545 [NOT STARTED] — Report a reversed validate-artifact.sh invocation as an...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
+  └─ 577 [NOT STARTED] — Make a blocker-triggered aux plan-revision consumable by...
+    └─ 609 [NOT STARTED] — Stop a pending user question from charging its own task into...
 556 [NOT STARTED] — Fix validate-handoff.sh crash-as-false-negative and settle...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
-576 [NOT STARTED] — Record the Lean verification-tier gate-naming rule, the...
-577 [NOT STARTED] — Make a blocker-triggered aux plan-revision consumable by...
-  └─ 609 [NOT STARTED] — Stop a pending user question from charging its own task into...
 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
   └─ 592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
@@ -161,6 +168,7 @@ next_project_number: 699
 632 [NOT STARTED] — Stop orchestrator-context-budget.json's derivation log from...
 640 [NOT STARTED] — Add a derived-percentage bug class to the census methodology...
 533 [NOT STARTED] — lake-build-guard replays stale result for env lean FILE
+  └─ 576 [NOT STARTED] — Record the Lean verification-tier gate-naming rule, the...
 536 [NOT STARTED] — Source-store-aware commit path and plan-time...
   └─ 548 [NOT STARTED] — Harvest a plan's declared contingency files into file\_scope,...
     └─ 553 [NOT STARTED] — Name the typst-sync gate as the cause when...
@@ -174,6 +182,202 @@ next_project_number: 699
 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 
 ## Tasks
+
+### 704. Remove merge command
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 699, Task 700, Task 702, Task 703
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.
+
+RULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.
+
+=== DISPATCH PRECONDITION, CHECKED BEFORE ANY EDIT ===
+
+A pull request opened by /slice exists. "One survivor, and what is deleted", closing paragraph: /merge is removed after /slice has opened one real pull request, not before; "Risks", first item, gives the reason. No dependency edge can express an operator action, so the edge onto slice_command_build is necessary and not sufficient. Before editing anything, read specs/.orchestration/slices/ for a series file whose slice carries state `open` or `merged` and a request_url. If none exists, STOP: return blocked, naming the operator step owed (one slice pushed by a typed grant, then /slice), and change nothing.
+
+=== WHAT THIS RECORD OWNS: REMOVE /merge ===
+
+"One survivor, and what is deleted", rows 4; "Constraints held", first item; E7; "Successors", row 5. /merge is removed, not fixed, and its stack mode is never built.
+
+DELETE commands/merge.md (485 lines) and its manifest.json row. REMOVE the `merge` minting branch of hooks/please-grant.sh (the prefix case near line 64 and the mint-from-repo-state arm near lines 82 to 88), leaving /please, /tag and /pr; update the header comment's count of recognised prefixes and the suite. bind_push_grant_to_pushed_ref edits the same hook and is ordered before this record.
+
+REWRITE every remaining reference to name /slice. rules/pr-prohibition.md: the rule binds unamended in substance; change the name /merge to /slice and change nothing else in it. Likewise rules/state-management.md, merge-sources/claudemd.md and templates/claudemd-header.md. The ruling also names skills/skill-git-workflow/SKILL.md; the 2026-11-24 search finds no mention of the command in that file, so confirm at research time and drop it from the list if that still holds. The single-branch case is /slice with a one-slice proposal; do not document a second way to open a pull request.
+
+THE WORK-LIST IS TO BE RE-ENUMERATED BY THIS RECORD'S OWN RESEARCH. The ruling's search (files mentioning the command preceded by a non-path character) returned 27 files on 2026-11-24: 24 under extensions/core, 2 under extensions/cslib (context/project/cslib/pr-command-workflow.md, skills/skill-pr-implementation/SKILL.md) and 1 under extensions/approvals (README.md). That count comes from one pattern and was not cross-checked with a second, differently shaped one (ENUMERATION-UNVERIFIED). Two of the 27 are deleted by delete_review_stack_inference_route and four more are edited by narrow_handoff_to_print_slice, both ordered before this record, so re-run the search at research time and build the list from what remains. The three files in other extensions are in scope for the rename; extensions/cslib/commands/pr.md is outside the ruling and is not changed. Extend file_scope from the re-enumerated list.
+
+=== TERRITORY ===
+
+commands/merge.md; manifest.json; hooks/please-grant.sh; scripts/tests/test-please-grant.sh; rules/pr-prohibition.md; rules/state-management.md; merge-sources/claudemd.md; templates/claudemd-header.md; and the remaining files of the re-enumerated list, of which the 2026-11-24 search names those in file_scope. Ordered after slice_command_build, bind_push_grant_to_pushed_ref, narrow_handoff_to_print_slice and delete_review_stack_inference_route. stack_pr_redeploy_and_second_repo_demo (doc parity and the operator runbook) is ordered after this record and re-reads README.md, merge-sources/claudemd.md and docs/guides/user-guide.md; make the rename there and leave the runbook to it.
+
+=== VERIFY BY ===
+
+The ruling's search, and a second differently shaped one, returning no file that names /merge as a command; a typed /merge minting no grant (suite case); /please, /tag and /pr minting as before; the rule's prohibitions textually unchanged apart from the name; generate-context-line-counts.sh --check clean; deploy-headless.sh reporting a clean verify with commands/merge.md absent from the deployed tree.
+
+---
+
+### 703. Delete review stack inference route
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 701, Task 702
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.
+
+RULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.
+
+=== WHAT THIS RECORD OWNS: DELETE THE INFERENCE ROUTE ===
+
+"One survivor, and what is deleted", rows 2; "Basis" (builder A is deleted); "Review base" (the key, the flag, the four refusals and the documentation section are removed); "What is discarded"; "Successors", row 3. Expect a backlog-audit match against restack_review_stack_when_parent_merges, whose restack subcommand is deleted with the rest of the script; the match is the reversal of a closed deliverable, not a duplicate.
+
+THE RULING'S ORDERING FOR THIS RECORD IS OVERTURNED BY THE TREE. It is carried there as "ordered after nothing; it has no caller". It has a caller now: scripts/milestone-review-handoff.sh calls the script, and two context documents cite it as the live implementation of the ref-plumbing idiom. A search for the script's name over the source store returns eleven files. This record is therefore ordered after narrow_handoff_to_print_slice, which removes the call, and after slice_bar_measurement_and_declaration, which edits the same declarations document. Deleting before the handoff is narrowed would pin a live caller to its refusal arm and leave two suites asserting behaviour that no longer exists.
+
+DELETE. scripts/review-stack-prepare.sh (1,572 lines, 74,125 bytes), all four subcommands; scripts/tests/test-review-stack-prepare.sh (1,136 lines); their rows in manifest.json (two rows) and scripts/tests/suite-classification.data (one row).
+
+EDIT. context/standards/repo-level-declarations.md: delete the section "The `review_base` Declaration" AND the two Overview sentences that introduce the key (ten lines name review_base in that file: two in the Overview near lines 16 and 19, eight in the section; the ruling's line range covers only the section). context/standards/orchestrator-runtime-files.md: delete the row for the review-stack manifest. context/patterns/ref-plumbing-landing.md and context/standards/git-workflow-narrative.md: re-point every citation of the deleted script to the /slice script as the live implementation of the technique (compare-and-swap ref move, commit-tree), keeping the technique; the second file also carries a review.ref mention left for this record by narrow_handoff_to_print_slice. Confirm at research time that the handoff, its suite and test-orchestrate-conclusion-roadmap.sh no longer name the script; if any still does, that is the predecessor's unfinished work, not a reason to widen this record.
+
+NOT THIS RECORD'S. Consumer-repository builders are retired by their own repositories ("Basis", closing paragraph). The /merge mentions inside the two deleted files disappear with them; every other /merge reference is remove_merge_command's.
+
+=== TERRITORY ===
+
+scripts/review-stack-prepare.sh; scripts/tests/test-review-stack-prepare.sh; manifest.json; scripts/tests/suite-classification.data; context/standards/repo-level-declarations.md; context/standards/orchestrator-runtime-files.md; context/patterns/ref-plumbing-landing.md; context/standards/git-workflow-narrative.md; index-entries.json. Ordered after narrow_handoff_to_print_slice and slice_bar_measurement_and_declaration. The second edge exists for one shared document and may be reversed with no other change if deleting first is preferred.
+
+=== VERIFY BY ===
+
+A search of the source store for the script's name, for review_base and for --review-base returning nothing; the manifest and classification rows gone and their own lints green; generate-context-line-counts.sh --check clean; deploy-headless.sh reporting a clean verify with the two files absent from the deployed tree.
+
+---
+
+### 702. Narrow handoff to print slice
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 699
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.
+
+RULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.
+
+=== WHAT THIS RECORD OWNS: NARROW THE MILESTONE HANDOFF TO PRINT /slice ===
+
+"One survivor, and what is deleted", row 3, and "Successors", row 4. THIS IS A NEW RECORD THAT REVERSES A CLOSED DELIVERABLE. The ruling assigned this work to handoff_prints_review_stack, revised; that record instead closed as written and is terminal, so its deliverable is now live in the tree and is what this record undoes. Expect a backlog-audit match against it; the match is the reversal, not a duplicate.
+
+WHAT THE HANDOFF DOES TODAY (scripts/milestone-review-handoff.sh, 366 lines; suite 399 lines). It writes review.state and review.ref on the milestone entry, calls review-stack-prepare.sh (`cut`, then `show`), and on the refusal arm prints `/please push <integration branch>` lines and a line about the grant binding to HEAD.
+
+WHAT IT DOES AFTER THIS RECORD. It still detects a finished milestone once and drafts the review summary. It prints one line, `/slice`, and no push line and no merge line. It no longer calls review-stack-prepare.sh, so both arms that hang off that call go, with their cases. It stops writing review.ref; review.state stays as its own fired-once marker and means nothing about slices. It never pushes and never calls a forge, as now.
+
+FILES BEYOND THE RULING'S ROW. review.ref is named in seven files: context/contracts/conclusion-stage.md, context/formats/roadmap-entry-template.md, context/formats/roadmap-format.md, context/standards/git-workflow-narrative.md, the handoff, its suite, and scripts/tests/test-orchestrate-conclusion-roadmap.sh. Case H of that last suite asserts the handoff's refusal arm (it was retargeted there by case_h_assertion_review_stack_refusal_arm) and is retargeted again, to the one-line /slice output. scripts/orchestrate-conclusion-roadmap.sh names none of these and needs no edit. The git-workflow-narrative.md mention is left to delete_review_stack_inference_route, which rewrites that passage and is ordered after this record; say so in the plan rather than editing it twice.
+
+=== TERRITORY ===
+
+scripts/milestone-review-handoff.sh; scripts/tests/test-milestone-review-handoff.sh; scripts/tests/test-orchestrate-conclusion-roadmap.sh; context/contracts/conclusion-stage.md; context/formats/roadmap-format.md; context/formats/roadmap-entry-template.md; index-entries.json for the line-count reconciliation. Ordered after slice_command_build, so the line it prints names a command that exists, and after slice_bar_measurement_and_declaration for territory only (both reconcile index-entries.json; the edge may be reversed with no other change). delete_review_stack_inference_route and remove_merge_command are ordered after this record.
+
+=== VERIFY BY ===
+
+Both suites green; a search of the handoff for review-stack-prepare, review.ref, `/please push` and the old merge command returning nothing; review.state still written exactly once per finished milestone; generate-context-line-counts.sh --check clean; deploy-headless.sh reporting a clean verify.
+
+---
+
+### 701. Slice bar measurement and declaration
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 699
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.
+
+RULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.
+
+=== WHAT THIS RECORD OWNS: BAR MEASUREMENT AND THE slice_bar DECLARATION ===
+
+"The size bar" and "Successors", row 2. slice_command_build ships only the default bar. This record adds the other two sources, in the ruling's order: (1) a declared `slice_bar` object, `{lines, files}`, in .claude-extensions.json; (2) otherwise the 75th percentile, nearest-rank, of added lines and of changed files over merged pull requests on the chosen target, when there are at least five; (3) otherwise the shipped default, printed as `default, unmeasured`. The bar line names its source and, when measured, its n. A bar replaced at prompt 2 is recorded as `chosen at prompt`.
+
+WHERE THE MEASUREMENT LIVES. The script contains no forge invocation ("Constraints held"), and merged pull requests are a forge fact. Settle in research whether the population is read by the command file and handed to the script, or derived from history without a forge call; do not put a forge call in the script. The median is rejected by the ruling and is not offered.
+
+WHAT IS COUNTED. Added lines over the slice's paths (the first numstat column of the difference between target and work ref) and the number of paths. Paths declared generated are excluded from the line count and still listed. That declaration is owned by branch_aware_orchestration_and_squash_landing; UNTIL IT EXISTS EVERY PATH COUNTS AND PROMPT 2 SAYS SO. This record is buildable and correct as specified without it: the ruling's edge is from the accuracy of the bar onto that record, not from the bar's existence, so that record is ordered after this one and wires its declaration into the count this record builds. Leave a single, named place in the count where an exclusion list is read.
+
+THE DECLARATION DOCUMENT. Add a `slice_bar` section to context/standards/repo-level-declarations.md. delete_review_stack_inference_route removes the `review_base` section of the same document and is ordered after this record. No number appears in any deliverable as a property of the system: the measured figures in the ruling's E5 are evidence about three repositories and are not copied.
+
+=== TERRITORY ===
+
+The /slice script and its suite (named by slice_command_build); commands/slice.md where the bar line and prompt 2 print the source; context/standards/repo-level-declarations.md; index-entries.json for the line-count reconciliation (generate-context-line-counts.sh --check). Ordered after slice_command_build.
+
+=== VERIFY BY ===
+
+Suite cases for each source in order, for fewer than five merged requests falling through to the default, for nearest-rank on a known population, and for a declared bar winning over a measurable one; the prompt text stating that every path counts; generate-context-line-counts.sh --check clean; deploy-headless.sh reporting a clean verify.
+
+---
+
+### 700. Bind push grant to pushed ref
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.
+
+RULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.
+
+=== WHAT THIS RECORD OWNS: BIND A PUSH GRANT TO THE PUSHED REF ===
+
+"Grants", numbered item 1, and "Successors", row 6. Today a grant is matched against `git rev-parse HEAD` at consume time (scripts/lib/push-grant-lib.sh, near line 453; hooks/please-grant.sh records HEAD near line 211) and lives PG_EXPIRY_WINDOW seconds, default 600. For a ref built by plumbing, HEAD is not the commit being pushed. Two consequences the ruling states: (a) any commit by any session inside the window kills the grant although the pushed ref is untouched, which is routine in a repository with live orchestration; (b) the grant does not pin what is pushed, because the ref can be rebuilt between the typed line and the push without the match noticing.
+
+THE CHANGE. A grant for a ref other than the checked-out branch binds to that ref's commit at mint time and is matched against that ref's commit at consume time, instead of HEAD. A grant for the checked-out branch keeps its present behaviour. `/please push <remote> <branch>` already names any branch, checked out or not (hooks/please-grant.sh); this record changes what such a grant is bound to, not who can mint one. One grant at a time, the expiry window and the default-branch force bar are unchanged.
+
+NOT THIS RECORD'S. Items 2 and 3 of "Grants" (a typed `/slice push <id>` minting for a slice ref; a batch grant) are not built here and the ruling does not recommend the third. The `/merge` minting branch of hooks/please-grant.sh is removed by remove_merge_command, which is ordered after this record because both edit that hook; do not touch that branch here.
+
+=== TERRITORY ===
+
+hooks/please-grant.sh; hooks/guard-git-push.sh; scripts/lib/push-grant-lib.sh; scripts/tests/test-please-grant.sh; scripts/tests/test-guard-git-push.sh. Research confirms whether scripts/git-push-granted.sh or any document stating the HEAD binding needs the same change, and extends file_scope if so. Ordered after nothing and independent of /slice; it lowers the cost of slice_command_build's acceptance step in a repository with live orchestration, so it is worth dispatching alongside it.
+
+=== VERIFY BY ===
+
+Suite cases for: a grant for a non-checked-out ref survives an unrelated commit on HEAD inside the window; the same grant is refused once the granted ref itself moves; a grant for the checked-out branch behaves as before; deploy-headless.sh reporting a clean verify. No push is performed by an agent (rules/pr-prohibition.md); every case runs against fixture repositories.
+
+---
+
+### 699. Slice command build
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.
+
+RULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.
+
+=== WHAT THIS RECORD OWNS: THE /slice BUILD ===
+
+Build the one mechanism the ruling keeps ("The ruling in six lines", line 1; "One survivor, and what is deleted", row "new"; "Successors", row 1): a user-invoked command over one small script and one series file. Nothing in the source store names /slice today (commands/slice.md is absent; a search for the command name and for slice_bar returns no file).
+
+THE SCRIPT ("The mechanism"). Three subcommands and no other entry point: check, build, status. check: the target is an ancestor of the work ref; every path in the difference is in exactly one slice or on not_landing; no glob matches nothing; depends_on names real slices and has no cycle; every slice is at or under the bar or carries a reason. build: private index, base tree, overlay of the slice's paths at the work ref, write-tree, commit-tree, compare-and-swap move of refs/heads/slice/<series>/<id>, with HEAD, the index and the working tree untouched; a slice with two or more unmerged dependencies waits, so no slice commit has two parents; build refuses whatever check refuses. status: local ref and remote ref against the recorded commit, and the content-based merged test. No inference code is written: no union-find, no topological sort, no overlap analysis. The script contains no push, checkout, merge or forge invocation, and its suite asserts that statically ("Basis", carried from builder A; "Constraints held").
+
+THE SERIES FILE ("The mechanism"). specs/.orchestration/slices/<series id>.json is the single home of slice state, with the fields that section lists, and the pull-request body beside it as <series id>/<slice id>.md. It is a runtime file: decide in the plan whether context/standards/orchestrator-runtime-files.md gains a row for it, and if so add that file to this record's territory.
+
+THE COMMAND FILE ("The command surface"). commands/slice.md owns what a script must not: resolution, prompt 1 (the target, each candidate shown with its measured difference; a non-ancestor candidate shown and not choosable; an empty difference shown as nothing to slice), the bar line, prompt 2 (the proposal table and its four fixed lines; approve / revise / cancel; nothing written before approve), the per-slice typed push lines printed on approval, the continue step of a later invocation, and the open step (the forge call lives here and nowhere else). User-invoked only, in the same class as /tag. "Re-derive, never rebase": no restack, no three-way merge, no conflict resolution.
+
+THE BAR IN THIS RECORD. Only the shipped default (1,500 lines and 30 files, printed as `default, unmeasured`), the refusal with its two accepted reasons, and the bar being revisable at prompt 2 ("The size bar"). The declared slice_bar key and the measured 75th percentile belong to slice_bar_measurement_and_declaration and are not built here. Every path counts toward the bar and prompt 2 says so.
+
+NOT THIS RECORD'S. Deleting review-stack-prepare.sh (delete_review_stack_inference_route), narrowing the handoff (narrow_handoff_to_print_slice), removing /merge (remove_merge_command), the grant binding (bind_push_grant_to_pushed_ref), and doc parity plus the operator runbook (stack_pr_redeploy_and_second_repo_demo). Do not base the script on review-stack-prepare.sh ("Basis": no existing code is the basis).
+
+=== ACCEPTANCE IS NOT A SUITE COUNT ===
+
+"Successors", closing paragraph, and "Risks", first item: this record ends with one real slice of a real difference, pushed by a typed grant and opened as a pull request by the operator typing /slice. Two builders with green suites and no pull request are what the ruling deletes. An agent can neither push nor open a pull request (rules/pr-prohibition.md), so the IMPLEMENTING AGENT STOPS SHORT: it builds, tests, redeploys, and returns with the record NOT closed, naming the exact lines the operator types. The record closes only after the operator has pushed one slice and opened its pull request with /slice, and the request URL is recorded in the series file. remove_merge_command reads that as its precondition. A real difference exists to cut: this repository's work branch is several hundred commits ahead of its remote default branch.
+
+=== TERRITORY ===
+
+New commands/slice.md; one new script and its suite (filenames are settled by the plan; add them to file_scope then); manifest.json and scripts/tests/suite-classification.data rows for the three new files. Ordered after nothing. Dispatchable alongside bind_push_grant_to_pushed_ref, with which it shares no file.
+
+=== CONSTRAINTS ===
+
+Repo-agnostic: no branch name, remote name or consumer path in any deliverable; the target, the remote and the bar are resolved or chosen at run time. No number appears in a deliverable as a property of the system beyond the default labelled unmeasured. The commit-containment scripts are not edited and not depended on; completed tasks' modified_files is a grouping hint only.
+
+=== VERIFY BY ===
+
+The suite green, including the static no-push / no-forge assertion and a union check (target tree overlaid with every slice equals the work ref's tree on every assigned path); deploy-headless.sh reporting a clean verify; then, by the operator, one slice pushed by a typed grant and opened by /slice, its URL recorded.
+
+---
 
 ### 698. Slice build task set
 - **Status**: [COMPLETED]
@@ -383,7 +587,7 @@ Every claim about either implementation re-derived from the live files, with lin
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 691, Task 692, Task 693, Task 695
+- **Dependencies**: Task 691, Task 695, Task 699, Task 700, Task 701, Task 702, Task 703, Task 704
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -1275,7 +1479,7 @@ DONE WHEN. No load, unload, reload or resync path can write .claude-extensions.j
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 513, Task 517, Task 553, Task 654, Task 657
+- **Dependencies**: Task 513, Task 517, Task 553, Task 654, Task 657, Task 701
 
 **Description**: RE-GROUNDED 2026-11-24 ON THE /slice RULING. specs/decisions/slice-command-one-path-to-review.md gives this record's generated-path declaration a second consumer and overturns the ground it was last given ("Verdict on each open record", this record's row). A slice is a declared set of paths cut from the work-branch tip, and it is refused when it is over a size bar ("The size bar"). That bar counts added lines over the slice's paths, and "What is counted" in the same section excludes paths declared generated from the line count while still listing them. The declaration of generated paths is this record's. Until it exists every path counts toward the bar and the /slice proposal prompt says so, which makes the bar wrong, on the high side, in any repository that commits generated files: the ruling calls this a hard edge from the accuracy of the bar onto this record, not from the bar's existence.
 
@@ -3289,7 +3493,7 @@ VERIFY, bearing in mind this is a pure-guidance markdown change with no executab
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 543, Task 547
+- **Dependencies**: Task 543, Task 547, Task 551
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -3339,7 +3543,7 @@ DURABLE EVIDENCE (in the BimodalLogic repo, /home/benjamin/Projects/BimodalLogic
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 549
+- **Dependencies**: Task 533, Task 549
 
 **Description**: Add three new conditions to the Lean plan-authoring gate-collisions checklist, each one a fact a
 plan can enumerate in advance rather than discover when a phase's verification turns out not to
@@ -5777,7 +5981,7 @@ surface, and that rationale does not survive into this repository.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 539
+- **Dependencies**: Task 399, Task 539
 
 **Description**: Record three measured Lean authoring and probe-guard facts from one evidence-probe implementation round: the working form for a `Decidable` instance under nested `Finset` binders, the axiom-free `set_option maxRecDepth` remedy and its first precedent in this probe collection, and the arithmetic behind the evidence-probe guard's printed probe total.
 
