@@ -177,38 +177,51 @@ criterion 2 names.
 
 ---
 
-### Phase 2: Redeploy and Hand the Complete Gate Set to the Orchestration Close [NOT STARTED]
+### Phase 2: Redeploy and Hand the Complete Gate Set to the Orchestration Close [COMPLETED]
 
 **Goal**: Close acceptance criterion 5 with a clean redeploy, and discharge acceptance criterion 1
 the way a dispatch inside a batch is permitted to — a scoped check now, the complete set deferred
 to the orchestration close and recorded as deferred.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` and capture its `RESULT=` marker and exit code
+- [x] Run `bash .claude/scripts/deploy-headless.sh` and capture its `RESULT=` marker and exit code
       verbatim. `RESULT=landed_verify_clean` (exit 0) satisfies acceptance criterion 5. Note that
       this script supplies `--skip-slow --override-batch-gate-deferral` to its own inline
       verification pass, so the pending batch-gate marker cannot be misreported here as drift.
-- [ ] On `RESULT=landed_verify_red` (exit 3): capture the findings verbatim, record via
+      *(completed: `[deploy-headless] RESULT=landed_verify_clean`, exit 0; inline pass reported
+      `[verify-deploy] PASS -- 41 check(s), 0 failure(s)`)*
+- [x] On `RESULT=landed_verify_red` (exit 3): capture the findings verbatim, record via
       `issue-record.sh`, mark this phase [PARTIAL], and report. Do not re-run the full gate set to
-      clear it, and do not force the deferral override.
-- [ ] On `RESULT=not_landed` (exit 1 or 2): the deploy itself did not land — report it as a
+      clear it, and do not force the deferral override. *(completed: result was
+      landed_verify_clean, so this branch did not trigger)*
+- [x] On `RESULT=not_landed` (exit 1 or 2): the deploy itself did not land — report it as a
       blocker; it is a different failure class from a verification red and must not be conflated.
-- [ ] Run the scoped Gate 8 check that this phase's in-dispatch obligation actually is:
+      *(completed: not triggered)*
+- [x] Run the scoped Gate 8 check that this phase's in-dispatch obligation actually is:
       `bash .claude/scripts/verify-deploy.sh --only-gate 8 --gate8-touched lua/neotex/plugins/ai/shared/extensions/merge.lua`.
       Capture its verdict. This is the scoped tier, not a substitute for the complete set.
-- [ ] Record in the phase's verification notes, and in the summary, that the complete gate set was
+      *(completed: `[verify-deploy] PASS -- 1 check(s), 0 failure(s)`, exit 0; run-all.sh reported
+      "1 selected suite(s) passed (narrowed by --gate8-touched -- NOT a full-battery pass)")*
+- [x] Record in the phase's verification notes, and in the summary, that the complete gate set was
       **deferred to the once-per-invocation batch-gate stage** rather than independently run, and
       why: a non-stale `batch-gate-pending` marker exists for this session, an unfiltered
       `verify-deploy.sh` refuses with `DEFERRED`, and `--override-batch-gate-deferral` belongs to
-      that stage's own discharger. Acceptance criterion 1 is closed there, not here.
-- [ ] Ensure the summary states, in plain terms: the merge code was the wrong side (not the test's
+      that stage's own discharger. Acceptance criterion 1 is closed there, not here. *(completed:
+      confirmed live -- `specs/.orchestration/batch-gate-pending-sess_1795494587_0fa3fc.json` is
+      present and non-stale for this session (task_numbers 693/694/697/645/639), and an unfiltered
+      `verify-deploy.sh` run in this dispatch returned the exact `DEFERRED` message verbatim.
+      Acceptance criterion 1 is deferred to the batch-gate stage, not satisfied here.)*
+- [x] Ensure the summary states, in plain terms: the merge code was the wrong side (not the test's
       expectation); the root cause is `remove_tracked` treating a tracked `"new_object"` like a
       `"new_array"`/`"new_value"` and removing it wholesale, destroying a hand-written sibling key
       inside it; the fix recurses into tracked children and prunes only when empty; and Assertions
-      C and E are one fault, not two. Quote the Phase 1 pass/fail counts verbatim.
-- [ ] Ensure the summary also carries the corrected framing for a future reader: the defect was
+      C and E are one fault, not two. Quote the Phase 1 pass/fail counts verbatim. *(completed:
+      see summaries/01_mcp-merge-closure-confirmation-summary.md "Root Cause and Which Side Was
+      Wrong")*
+- [x] Ensure the summary also carries the corrected framing for a future reader: the defect was
       already closed before this task's implementation phase, and the description's
-      `agent-system/extensions/core/**` edit-target line does not apply to it.
+      `agent-system/extensions/core/**` edit-target line does not apply to it. *(completed: see
+      summary's "Corrected Framing for a Future Reader" section)*
 
 **Timing**: 0.5 hours
 
@@ -233,16 +246,16 @@ to the orchestration close and recorded as deferred.
 
 ## Testing & Validation
 
-- [ ] `test-mcp-merge-target.sh`: 7 passed, 0 failed, exit 0, with Assertions C and E both PASS
+- [x] `test-mcp-merge-target.sh`: 7 passed, 0 failed, exit 0, with Assertions C and E both PASS
       (acceptance criterion 2, counts quoted verbatim).
-- [ ] `known-failures.txt` data-row count is 4 or lower, never higher (acceptance criterion 4).
-- [ ] `deploy-headless.sh` reports `RESULT=landed_verify_clean` (acceptance criterion 5).
-- [ ] Scoped `verify-deploy.sh --only-gate 8 --gate8-touched` check green.
-- [ ] Summary names the wrong side, the root cause, and the one-fault verdict (acceptance
+- [x] `known-failures.txt` data-row count is 4 or lower, never higher (acceptance criterion 4).
+- [x] `deploy-headless.sh` reports `RESULT=landed_verify_clean` (acceptance criterion 5).
+- [x] Scoped `verify-deploy.sh --only-gate 8 --gate8-touched` check green.
+- [x] Summary names the wrong side, the root cause, and the one-fault verdict (acceptance
       criterion 3).
-- [ ] Complete gate set exit 0 — deferred to the orchestration close's batch-gate stage
+- [x] Complete gate set exit 0 — deferred to the orchestration close's batch-gate stage
       (acceptance criterion 1), recorded as deferred.
-- [ ] No assertion loosened, skipped, or deleted; no `known-failures.txt` row added.
+- [x] No assertion loosened, skipped, or deleted; no `known-failures.txt` row added.
 
 ## Artifacts & Outputs
 
