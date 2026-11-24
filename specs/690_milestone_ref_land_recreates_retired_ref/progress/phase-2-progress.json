@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Re-point the documentation and the sandbox-convention credit",
+  "started_at": "2026-11-23T01:05:00Z",
+  "last_updated": "2026-11-23T01:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-point ref-plumbing-landing.md's Audience line and Landing Mechanism sentence to review-stack-prepare.sh", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/ref-plumbing-landing.md"]},
+    {"id": 2, "description": "Restate git-workflow-narrative.md's landing-section sentence against the current design", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-workflow-narrative.md"]},
+    {"id": 3, "description": "Reword test-milestone-review-handoff.sh's header comment to credit no file", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh"]},
+    {"id": 4, "description": "Re-read all four edited regions for task-number refs and record-versioning phrasing", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "grep -rn milestone-ref-land agent-system/ returns nothing. git diff on all three edited files confirmed scoped to exactly the intended hunks. verify-touched.sh (118 suites) exit 1 but only pre-existing/unrelated failures (test-gate-cache-equivalence.sh timeout, test-orchestrate-conclusion-roadmap.sh Case H) plus the expected deployed-vs-source drift for the 4 edited files and a Rule R line_count mismatch for ref-plumbing-landing.md (98 declared vs 99 actual) -- both resolved by Phase 3's redeploy + generate-context-line-counts.sh --write. Recorded via issue-record.sh."
+}

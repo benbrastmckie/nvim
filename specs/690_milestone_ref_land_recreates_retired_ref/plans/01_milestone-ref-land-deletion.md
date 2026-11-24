@@ -223,33 +223,36 @@ dependents of the removed declaration, and runs that narrowed pass itself, which
 
 ---
 
-### Phase 2: Re-point the documentation and the sandbox-convention credit [NOT STARTED]
+### Phase 2: Re-point the documentation and the sandbox-convention credit [COMPLETED]
 
 **Goal**: Leave no instruction anywhere in this source store naming the deleted script as
 something to run, while keeping the ref-plumbing technique fully documented behind a live
 implementation.
 
 **Tasks**:
-- [ ] `context/patterns/ref-plumbing-landing.md`, Audience line: replace the named worked
+- [x] `context/patterns/ref-plumbing-landing.md`, Audience line: replace the named worked
       implementation with `agent-system/extensions/core/scripts/review-stack-prepare.sh`.
-- [ ] `context/patterns/ref-plumbing-landing.md`, "The Landing Mechanism" section: replace the
+      *(completed)*
+- [x] `context/patterns/ref-plumbing-landing.md`, "The Landing Mechanism" section: replace the
       sentence citing the deleted script with one naming `scripts/review-stack-prepare.sh` as
       where the idiom is exercised today (it builds and restacks the review ref with
       `git commit-tree` and three-argument compare-and-swap `git update-ref`). Confirm the Idiom,
       Concurrency-Safety Property, Compare-And-Swap Obligation, and Prohibition sections are
-      byte-unchanged afterward.
-- [ ] `context/standards/git-workflow-narrative.md`, "Landing Is a Verification" section: replace
+      byte-unchanged afterward. *(completed: `git diff` confirms those four sections are
+      untouched)*
+- [x] `context/standards/git-workflow-narrative.md`, "Landing Is a Verification" section: replace
       the sentence that describes the script as retired-but-on-disk with one stating the current
       design plainly — that the idiom's compare-and-swap property is exercised by
       `scripts/review-stack-prepare.sh`, which builds and restacks the review ref using the same
-      primitives.
-- [ ] `scripts/tests/test-milestone-review-handoff.sh`, header comment: reword to describe the
+      primitives. *(completed)*
+- [x] `scripts/tests/test-milestone-review-handoff.sh`, header comment: reword to describe the
       sandbox convention on its own terms (`deploy-root-guard.sh`'s default structural check
       requires the script's own directory to end in `/.claude` or `/.opencode`), crediting no
-      file. Comment-only; no behavior change.
-- [ ] Re-read all four edited regions for the two prohibited classes under `agent-system/**`: no
+      file. Comment-only; no behavior change. *(completed: `git diff` shows a single comment-only
+      hunk)*
+- [x] Re-read all four edited regions for the two prohibited classes under `agent-system/**`: no
       task-number references, and no record-versioning phrasing ("no longer", "previously",
-      "used to", "stays on disk", "retired as").
+      "used to", "stays on disk", "retired as"). *(completed: none found)*
 
 **Timing**: 0.75 hours
 

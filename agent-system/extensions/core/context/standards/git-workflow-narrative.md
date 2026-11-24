@@ -269,9 +269,9 @@ writes no state, rather than skipping the check. See `context/patterns/ref-plumb
 "The Landing Mechanism" section for where the `git commit-tree`/compare-and-swap `git update-ref`
 idiom is actually used today — building a review ref on demand from recorded landing proofs, not
 the integration branch itself — and for the concurrency-safety property that idiom rests on, kept
-there rather than repeated here. `scripts/milestone-ref-land.sh` is retired as a landing
-mechanism, confirmed by its own header, and stays on disk as a hand-run snapshot utility whose
-ref is a parallel history.
+there rather than repeated here. The idiom's compare-and-swap property is exercised today by
+`scripts/review-stack-prepare.sh`, which builds and restacks the review ref using the same
+`git commit-tree` and three-argument compare-and-swap `git update-ref` primitives.
 
 ### Merge Strategy
 

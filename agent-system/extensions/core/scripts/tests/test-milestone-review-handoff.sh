@@ -5,9 +5,9 @@
 # flag, integration-branch resolution, the review field writes, the untouched progress.status,
 # the literal-command output, and the absence of every push-shaped call.
 #
-# Follows the deployed-shape sandbox convention established by test-milestone-ref-land.sh
-# (deploy-root-guard.sh's default structural check requires the script's own directory to end
-# in /.claude or /.opencode).
+# Follows the deployed-shape sandbox convention: deploy-root-guard.sh's default structural check
+# requires the script's own directory to end in /.claude or /.opencode, so fixtures copy the
+# script under test into a tree shaped that way.
 
 set -uo pipefail
 

@@ -6,7 +6,7 @@ tree, the index, or `HEAD` — and the prohibition on reaching for `checkout` to
 in a shared tree. It also states where the idiom is used and where it is not: see "The Landing
 Mechanism".
 **Audience**: any script that needs to build or advance a ref representing completed work, and
-`agent-system/extensions/core/scripts/milestone-ref-land.sh`, the worked implementation.
+`agent-system/extensions/core/scripts/review-stack-prepare.sh`, the worked implementation.
 **Related**: `specs/decisions/isolation-off-landing-verification-and-review-time-squash.md` (how
 a task's work lands, and its "Interface to review submission" section for where a review ref is
 built), `specs/decisions/branch-topology-and-landing-strategy.md` (the ruling the idiom was
@@ -29,8 +29,9 @@ record (`../standards/orchestrator-runtime-files.md`, "The batch record").
 The idiom is used where a ref has to be built without a checkout. The case the ruling record
 names is the review ref: one commit per task, built at review time from the landing proofs by
 overlaying each proof's path set at its end commit, with the integration branch as the source
-and never rewritten. `scripts/milestone-ref-land.sh` implements the idiom as a snapshot utility;
-no lifecycle script calls it.
+and never rewritten. `scripts/review-stack-prepare.sh` exercises the idiom at its review-ref
+build and restack sites, using `git commit-tree` to construct each commit and the three-argument
+compare-and-swap `git update-ref` to advance the review ref.
 
 ---
 
