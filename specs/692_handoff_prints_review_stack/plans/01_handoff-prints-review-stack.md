@@ -261,7 +261,7 @@ suite passing, not by inspection.
 
 ---
 
-### Phase 2: The success arm, with its own fixture [NOT STARTED]
+### Phase 2: The success arm, with its own fixture [COMPLETED]
 
 **Goal**: The suite installs `review-stack-prepare.sh` into its sandbox and proves the
 cut-succeeds arm: `show`'s per-PR output lands in the summary file and on stderr, with the
@@ -269,39 +269,50 @@ cut-succeeds arm: `show`'s per-PR output lands in the summary file and on stderr
 
 **Tasks**:
 
-- [ ] Re-read `scripts/tests/test-milestone-review-handoff.sh` immediately before editing.
-- [ ] Extend `install_scripts` (lines 38-47) with one `cp` of `../review-stack-prepare.sh` into
+- [x] Re-read `scripts/tests/test-milestone-review-handoff.sh` immediately before editing.
+      *(completed)*
+- [x] Extend `install_scripts` (lines 38-47) with one `cp` of `../review-stack-prepare.sh` into
       `$d/.claude/scripts/`. Its four dependencies (`lib/common.sh`,
       `lib/batch-admission-lib.sh`, `lib/task-lookup-lib.sh`, `deploy-root-guard.sh`) are already
       installed by the existing wholesale `cp -r ../lib/.` and explicit guard copy -- confirm that
       claim by running the suite, and add only what a real failure proves missing. Do not
       introduce a `require_file` call: the suite is currently outside
       `lint-fixture-dependency-declaration.sh`'s population (no `require_file`, no `REQUIRED_*`
-      array) and adding one would pull it in and demand a full declaration list.
-- [ ] Add a new fixture builder wrapping `make_fixture_repo "yes"` (leave the base builder
+      array) and adding one would pull it in and demand a full declaration list. *(completed:
+      confirmed by the green suite run with no further dependency copies needed;
+      lint-fixture-dependency-declaration.sh confirms the suite stays outside its population)*
+- [x] Add a new fixture builder wrapping `make_fixture_repo "yes"` (leave the base builder
       declaring no `review_base`, so every existing case keeps its refusal-arm behaviour):
       tag the seed commit `basepoint`, write
       `.claude-extensions.json` carrying `{"review_base": "basepoint"}` alongside whatever else
       that case needs, and add a `file://` remote whose path embeds `github.com/...`, following
-      `test-review-stack-prepare.sh`'s `make_fixture_repo` (lines 49-75).
-- [ ] Run the handoff against that fixture once and read the real output before writing
+      `test-review-stack-prepare.sh`'s `make_fixture_repo` (lines 49-75). *(completed:
+      `make_success_fixture_repo`)*
+- [x] Run the handoff against that fixture once and read the real output before writing
       assertions. Confirm `cut --milestone M1` exits 0 there. If it refuses
       `task_unattributable` (43) because task 932 has no landing proof, add a landing proof for
       932 to the new builder rather than weakening the case. Record the resolved
       `integration_branch` / `review_base` / `remote` / `platform` values the run reports, so a
       disagreement between the handoff's own branch resolver and
-      `rsp_resolve_integration_branch` would be visible.
-- [ ] Add the success-arm case asserting, against the observed output: a `PR N: branch=... base=...
+      `rsp_resolve_integration_branch` would be visible. *(completed: a scratchpad probe
+      confirmed `cut` exits 0 with no `task_unattributable` refusal -- task 932's fallback
+      attribution succeeds via its "task 932 phase 1: b" commit, bounded by its created time,
+      same convention the handoff's own fallback uses. Observed: integration_branch=trunk (both
+      resolvers agree), review_base=basepoint, remote=origin, platform=github, 2 independent
+      units)*
+- [x] Add the success-arm case asserting, against the observed output: a `PR N: branch=... base=...
       title=... body_path=...` line per manifest entry, a `  /please push <remote> <branch>` line
       per entry, one trailing `/merge --stack M1` line, the `HEAD`-binding line, and the absence
       of both the old bare `^  /merge$` line and the old standalone
       `/please push ${BRANCH}`-with-no-remote pair. Assert on the entry count the run actually
-      produces, not an assumed one.
-- [ ] Tighten Phase 1's rewritten Case 3 to assert the `review_base_undeclared` reason line
+      produces, not an assumed one. *(completed: Case 3b asserts exactly 2 PR entries, matching
+      the observed count)*
+- [x] Tighten Phase 1's rewritten Case 3 to assert the `review_base_undeclared` reason line
       specifically, now that the sandbox installs the script and the missing-script arm no longer
-      fires there.
-- [ ] Keep Case 1's `refs_before = refs_after` assertion on the default fixture only; add no ref
+      fires there. *(completed)*
+- [x] Keep Case 1's `refs_before = refs_after` assertion on the default fixture only; add no ref
       assertion to the success-arm case, where `cut` legitimately creates review branches.
+      *(completed: Case 1 is untouched; Case 3b adds no ref assertion)*
 
 **Timing**: 0.75 hours
 

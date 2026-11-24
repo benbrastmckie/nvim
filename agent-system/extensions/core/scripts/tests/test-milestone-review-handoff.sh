@@ -17,6 +17,7 @@ HANDOFF="$SCRIPT_DIR/../milestone-review-handoff.sh"
 TASKLOCK="$SCRIPT_DIR/../task-lock.sh"
 STATEWRITE="$SCRIPT_DIR/../state-write.sh"
 GUARD="$SCRIPT_DIR/../deploy-root-guard.sh"
+RSP="$SCRIPT_DIR/../review-stack-prepare.sh"
 
 PASSED=0
 FAILED=0
@@ -48,6 +49,7 @@ install_scripts() {
   cp "$GUARD" "$d/.claude/scripts/deploy-root-guard.sh"
   cp "$STATEWRITE" "$d/.claude/scripts/state-write.sh"
   cp "$HANDOFF" "$d/.claude/scripts/milestone-review-handoff.sh"
+  cp "$RSP" "$d/.claude/scripts/review-stack-prepare.sh"
   chmod +x "$d"/.claude/scripts/*.sh
 }
 
@@ -106,6 +108,26 @@ EOF
         source_store_commits: []}]}' \
     > "$d/specs/.orchestration/batch/sess_batch.json"
   echo "$d"
+}
+
+# make_success_fixture_repo -- wraps make_fixture_repo "yes" with a declared review_base and a
+# file:// remote whose path embeds github.com/..., so review-stack-prepare.sh's resolver chain
+# (review_base/remote/platform) and `cut --milestone M1` can succeed, following
+# test-review-stack-prepare.sh's own make_fixture_repo (lines 49-75): tags the root ("seed")
+# commit "basepoint", declares {"review_base": "basepoint"} in .claude-extensions.json, and adds
+# a bare remote reachable over file:// at a path containing "github.com/...". Leaves
+# make_fixture_repo itself declaring no review_base, so every other case keeps the refusal arm.
+make_success_fixture_repo() {
+  local d bare root
+  d="$(make_fixture_repo "yes")"
+  root="$(git -C "$d" rev-list --max-parents=0 HEAD)"
+  git -C "$d" tag basepoint "$root"
+  bare="$(mktemp -d -p "$WORKDIR")/github.com/fixture/repo.git"
+  mkdir -p "$(dirname "$bare")"
+  git init -q --bare "$bare"
+  git -C "$d" remote add origin "file://${bare}"
+  printf '{"review_base": "basepoint"}' > "$d/.claude-extensions.json"
+  printf '%s' "$d"
 }
 
 LAST_OUTPUT=""
@@ -184,21 +206,47 @@ else
 fi
 
 # =====================================================================
-# Case 3: refusal-arm output -- review-stack-prepare.sh is not yet installed in this suite's
-# sandbox (that lands in a later fixture change), so the default fixture's cut/show call takes
-# the refusal arm: a REFUSED: review-stack-prepare.sh: ... reason line is printed, the /please
-# push request for the integration branch is printed alone, the HEAD-binding line is printed,
-# the system states it will not run any of these on its own, and no bare /merge line appears
-# anywhere in the output.
+# Case 3: refusal-arm output -- the default fixture declares no review_base, so cut refuses
+# review_base_undeclared: a REFUSED: review-stack-prepare.sh: review_base_undeclared: ... reason
+# line is printed, the /please push request for the integration branch is printed alone, the
+# HEAD-binding line is printed, the system states it will not run any of these on its own, and
+# no bare /merge line appears anywhere in the output.
 # =====================================================================
-if grep -qE "^REFUSED: review-stack-prepare\.sh: " <<< "$first_output" \
+if grep -qE "^REFUSED: review-stack-prepare\.sh: review_base_undeclared: " <<< "$first_output" \
    && grep -q "^  /please push ${BRANCH}$" <<< "$first_output" \
    && grep -qi "bound to the commit at HEAD" <<< "$first_output" \
    && grep -qi "will not run" <<< "$first_output" \
    && ! grep -qE "^  ?/merge( |$)" <<< "$first_output"; then
-  common_test_pass "refusal-arm output: REFUSED reason, /please push alone, HEAD-binding line, will-not-run statement, and no /merge line"
+  common_test_pass "refusal-arm output: REFUSED review_base_undeclared reason, /please push alone, HEAD-binding line, will-not-run statement, and no /merge line"
 else
-  common_test_fail "refusal-arm output: expected a REFUSED: review-stack-prepare.sh: line, /please push ${BRANCH} alone, the HEAD-binding line, a will-not-run statement, and no /merge line -- got: $first_output"
+  common_test_fail "refusal-arm output: expected a REFUSED: review-stack-prepare.sh: review_base_undeclared: line, /please push ${BRANCH} alone, the HEAD-binding line, a will-not-run statement, and no /merge line -- got: $first_output"
+fi
+
+# =====================================================================
+# Case 3b: success-arm output -- a milestone fixture with a declared review_base and a
+# github-shaped remote lets `cut --milestone M1` succeed; `show`'s per-entry stack (observed:
+# two independent units, one per task, since 931/932 share no path and no dependency edge)
+# lands in both the summary file and on stderr, with the HEAD-binding line, and neither the old
+# bare `/merge` line nor the old no-remote `/please push ${BRANCH}` pair appears.
+# =====================================================================
+success_repo="$(make_success_fixture_repo)"
+run_handoff "$success_repo"
+success_output="$LAST_OUTPUT"
+success_summary="$(summary_of "$success_repo")"
+rm -rf "$success_repo"
+success_pr_count="$(grep -cE '^PR [0-9]+: branch=.* base=.* title=.* body_path=' <<< "$success_output")"
+if [ "$success_pr_count" -eq 2 ] \
+   && grep -qE '^  /please push origin review/M1/01-' <<< "$success_output" \
+   && grep -qE '^  /please push origin review/M1/02-' <<< "$success_output" \
+   && grep -q '^/merge --stack M1$' <<< "$success_output" \
+   && grep -qi "bound to the commit at HEAD" <<< "$success_output" \
+   && grep -q "## Review Stack" <<< "$success_summary" \
+   && grep -qE '^PR [0-9]+: branch=' <<< "$success_summary" \
+   && ! grep -qE '^  ?/merge$' <<< "$success_output" \
+   && ! grep -q "/please push ${BRANCH}\$" <<< "$success_output"; then
+  common_test_pass "success-arm output: show's per-entry stack (2 PR entries) in the summary and on stderr, with the HEAD-binding line and no stale /merge or no-remote /please line"
+else
+  common_test_fail "success-arm output: expected 2 PR entries, two /please push origin lines, one /merge --stack M1 line, the HEAD-binding line, and a ## Review Stack summary section -- got output: $success_output -- summary: $success_summary"
 fi
 
 # =====================================================================

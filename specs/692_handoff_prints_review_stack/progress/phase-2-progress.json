@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "The success arm, with its own fixture",
+  "started_at": "2026-11-24T02:00:00Z",
+  "last_updated": "2026-11-24T02:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-milestone-review-handoff.sh immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend install_scripts with a cp of review-stack-prepare.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh"]},
+    {"id": 3, "description": "Add success-arm fixture builder wrapping make_fixture_repo yes with a declared review_base and github-shaped remote", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh"]},
+    {"id": 4, "description": "Run the handoff against the new fixture once and read real output before writing assertions", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Add the success-arm case asserting observed output", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh"]},
+    {"id": 6, "description": "Tighten Case 3 to assert review_base_undeclared specifically", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh"]},
+    {"id": 7, "description": "Confirm Case 1 ref assertion unaffected; no ref assertion added to success-arm case", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
