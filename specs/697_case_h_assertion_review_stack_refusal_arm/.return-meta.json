@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795494587_0fa3fc_697",
+  "dispatch_seq": 8,
+  "findings_count": 4,
+  "task_number": 697,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/697_case_h_assertion_review_stack_refusal_arm/reports/01_case-h-refusal-arm-fix.md",
+      "summary": "Confirms Case H's third assertion breaks because its sandbox never installs review-stack-prepare.sh, recommends remedy (a) (retarget to the refusal-arm shape), and rules the adjacent review.state/review.ref assertion still correct against live code -- the /slice ruling's narrowing of milestone-review-handoff.sh has not been dispatched as a task yet."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a decision record (e.g. specs/decisions/slice-command-one-path-to-review.md) rules a future narrowing of a script's behavior, check specs/state.json for the completed task that implemented the CURRENT behavior and any roadmap_annotation noting the pending revision, rather than assuming the ruling already took effect in the live file. A ruling record builds nothing itself; only a dispatched successor task changes code.",
+      "category": "PATTERN",
+      "source_artifact": "specs/697_case_h_assertion_review_stack_refusal_arm/reports/01_case-h-refusal-arm-fix.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["decision-record", "roadmap_annotation", "not-yet-dispatched", "state.json", "ruling-vs-implementation"]
+    },
+    {
+      "content": "Before choosing between a smaller test-fix remedy and a larger one that builds new fixture coverage for an existing success-arm code path, check whether an accepted decision record already schedules that code path for deletion -- building fixture investment around soon-to-be-removed machinery is wasted effort even if it is technically feasible (a reusable success fixture existed in test-milestone-review-handoff.sh's make_success_fixture_repo()).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/697_case_h_assertion_review_stack_refusal_arm/reports/01_case-h-refusal-arm-fix.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["test-remedy-selection", "decision-record-cross-check", "fixture-investment", "obsolescence"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 697 to create implementation plan"
+}
