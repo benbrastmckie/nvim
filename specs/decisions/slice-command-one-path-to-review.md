@@ -652,3 +652,161 @@ is complete without them.
   until one is.
 - **Asking nothing and using the default branch.** It is what `/merge` does and what produced
   a 1,619-file pull request against the wrong base.
+
+## Verdict on each open record
+
+Status and edges are as read from `specs/state.json` at `fbdccb9dd`. Each row has exactly one
+disposition. Nothing in this table was applied by this record; see "Operator worklist".
+
+| Record | Status read | Verdict | Reason, and for "revised" what changes |
+|---|---|---|---|
+| `handoff_prints_review_stack` (692) | planned; depends on 695 | **Survives revised** | The handoff prints `/slice`, not a stack and not `/please` or `/merge` lines. It stops writing `review.ref`. Its existing plan, written to print a stack cut by `review-stack-prepare.sh`, is replaced |
+| `merge_command_stack_mode` (693) | planned; depends on 695 | **Abandon** | `/merge` is removed and `--stack` is never built. Nothing of its deliverable survives |
+| `stack_pr_redeploy_and_second_repo_demo` (694) | not started; depends on 691, 692, 693, 695 | **Survives revised** | It becomes doc parity, redeploy and the operator runbook for `/slice`. Its acceptance becomes one real slice pushed and opened by the operator in a second repository. Its edges onto 692 and 693 are replaced by an edge onto the `/slice` build successor; 691 is completed |
+| `milestone_ref_land_recreates_retired_ref` (690) | not started; depends on 692 | **Survives unchanged** | The deletion it owns is confirmed: the script has no lifecycle caller (E8) |
+| `branch_aware_orchestration_and_squash_landing` (655) | not started; depends on 513, 517, 553, 654, 657 | **Survives revised** | Its generated-path declaration gains a second consumer, the bar's line count. Its description is re-grounded on that, since the ground it was last given (S4 of the slices record) is overturned here |
+| `two_root_contract_dispatch_and_commit_scripts` (670) | hold | **Abandon** | See below |
+| `two_root_contract_in_hooks` (671) | hold | **Abandon** | See below |
+| `two_root_classification_of_remaining_consumers` (672) | hold | **Abandon** | See below |
+| `batch_worktree_cleanup_retention_orphan_report` (674) | hold | **Abandon** | See below |
+| `batch_worktree_creation_when_isolation_on` (686) | hold | **Abandon** | See below |
+| `redeploy_phase_declaration_and_gate_criterion` (509) | not started; not on the task's list | **Unaffected** | One obligation the slices record laid on it lapses; see "The lapsed obligation" |
+
+`stack_pr_submission_from_integration_branch` (685) is `expanded` and
+`restack_review_stack_when_parent_merges` (691) is `completed`; both are terminal and get no
+verdict. What 691 built is the restack subcommand of `review-stack-prepare.sh`, which this
+record deletes with the rest of that script.
+
+### The five held records: declared slices make isolation irrelevant to review
+
+The question the task asked is whether declared slices make isolation attractive, irrelevant or
+abandonable. Each held record's own hold reason asks it in the same terms: "first answer
+whether a slice task needs an isolated tree at all ... If the answer is no, this record may be
+abandonable rather than resumable" (`specs/state.json`, 670 and 686, re-judged 2026-11-23).
+
+The answer is no, on three readings.
+
+1. **A slice needs no working tree.** Under this record a slice is not a task and is not
+   committed from a tree. It is built by a private index and `commit-tree` with `HEAD`, the
+   index and the working tree untouched ("The mechanism"). The hold reasons' premise, that "a
+   slice task is a natural fit for its own worktree", rested on S4 and S6 of the slices record,
+   which are overturned.
+2. **The one thing isolation was built to deliver is no longer wanted.**
+   `specs/decisions/batch-worktree-isolation-and-task-squash-landing.md` opens by stating its
+   purpose: it "reinstates working-tree isolation at one granularity only ... and rules how a
+   task's work lands on the long-lived integration branch as one squash commit" (lines 3 to 7).
+   Its isolation-off section states the whole price of not having it: "**What it loses.** The
+   per-task squash. Nothing else." (line 353). The sf1-engine record says the same from the
+   consumer's side: "a forward milestone becomes a clean commit range. That is the real loss of
+   `off`" (E2). A path set cut from the work-ref tip does not read a commit range and does not
+   need one commit per task. The loss is no longer a loss.
+3. **Nothing else argues for it.** The landing record states that isolation off "is the only
+   path being built" by operator direction (its lines 3 to 5).
+   `specs/decisions/worktree-isolation-removal-verdict.md` ("The Verdict", lines 17 to 30) and
+   its reaffirmation already rule against per-dispatch isolation on concurrency grounds, and
+   the batch record does not withdraw them (its "R5, amended"). Any future case for isolation
+   has to be made on dispatch concurrency alone, against those two records, and is not a case
+   about review.
+
+So the five are abandonable. The fallback, if the operator prefers not to abandon, is that they
+stay held with their hold reason rewritten to say that review no longer bears on them; nothing
+in this ruling depends on which is chosen. The declared `worktree_isolation` key and its
+reader are not ruled on here: they are built and belong to the completed
+`integration_branch_admission_and_batch_worktree` (669).
+
+### The lapsed obligation
+
+The slices record, under "Obligations on the implementing plan", required a plan to "site the
+redeploy once per batch at the close rather than once per slice", and named 509 as the owner of
+the gate criterion. The obligation existed only because S6 made each slice a task with its own
+redeploy phase. A slice is no longer a task, so no slice declares a redeploy and the obligation
+lapses. 509's own subject, the redeploy declaration and gate criterion for ordinary tasks, is
+untouched.
+
+## Successors
+
+Each is a separate piece of work, proposed as a task record that the operator creates. None is
+created by this record. Territory is relative to `agent-system/extensions/core/`.
+
+| # | Successor | Territory | Ordered after |
+|---|---|---|---|
+| 1 | **`/slice` build.** The script (`check`, `build`, `status`), the series file, the command with both prompts, the open step, the suite | new `commands/slice.md`, one new script and suite, `manifest.json`, `suite-classification.data` | nothing |
+| 2 | **Bar measurement and the `slice_bar` declaration** | the script; `context/standards/repo-level-declarations.md` | 1. The line count is wrong in any repository with generated files until 655's declaration exists: a hard edge from the *accuracy* of the bar onto 655, not from its existence |
+| 3 | **Delete the inference route**: `review-stack-prepare.sh`, its suite, the `review_base` section, the review-manifest row | the files of "One survivor, and what is deleted", rows 2 | nothing; it has no caller. Independent of 1 |
+| 4 | **Narrow the handoff** (692, revised) | `scripts/milestone-review-handoff.sh`, its suite, `context/contracts/conclusion-stage.md` | 1, so the line it prints names a command that exists |
+| 5 | **Remove `/merge`** and rewrite its references, including the `merge` minting branch and the rule text that names it | `commands/merge.md`, `hooks/please-grant.sh`, and the other files of E7's 27 | 1, and only after `/slice` has opened one real pull request |
+| 6 | **Bind a grant to the pushed ref** ("Grants", item 1) | `hooks/please-grant.sh`, `hooks/guard-git-push.sh`, `scripts/lib/push-grant-lib.sh` | nothing; independent. Shares `hooks/please-grant.sh` with 5 and is sequenced against it |
+
+Doc parity, redeploy and the runbook are 694, revised, after 1, 4 and 5.
+
+**The acceptance bar for successor 1** is not a suite count. It ends with one real slice of a
+real difference, pushed by a typed grant and opened as a pull request by the operator typing
+`/slice`. Two builders with green suites and no pull request are what this record deletes.
+
+## Operator worklist
+
+Nothing below was run by this record's author. Each line is what the operator runs to apply a
+verdict.
+
+| Verdict | Command |
+|---|---|
+| Abandon 693 | `/task --abandon 693` |
+| Abandon the five held records | `/task --abandon 670,671,672,674,686` (or leave held and rewrite the hold reason) |
+| Revise 692 | `/revise 692`, with this record named as the ruling; its plan is rewritten to successor 4 |
+| Revise 694 | `/revise 694`; then replace its edges onto 692 and 693 with one onto successor 1's record. `update-task-status.sh` carries `--depends-on-add`; no edge-removal flag was found in it, so the removal is by whatever means the operator already uses |
+| Revise 655 | `/revise 655`, re-grounding its description on the bar's line count |
+| 690 | nothing; it proceeds as written. Its edge onto 692 still holds, since both touch the handoff's suite |
+| Create successors 1, 2, 3, 5, 6 | `/task "<description>"` for each, citing this record by section; 4 is 692 revised |
+| Two dispatches in flight | 692 and 693 are `planned` against the overturned ruling and depend on 695. Their plans must not be implemented as written |
+
+## What is discarded
+
+Built, and now to be deleted:
+
+- `review-stack-prepare.sh`, 1,572 lines, and its 61-case suite, 1,136 lines: unit inference by
+  union-find, component building, topological ordering with a contradiction refusal, the
+  moved-base `merge-tree` recompute, the stack manifest, `show`, `record-request`, and
+  `restack` (the element `restack_review_stack_when_parent_merges` completed).
+- The `review_base` declaration: the key, its documentation section, `--review-base`, and four
+  refusals.
+- `/merge`, 485 lines, and its grant-minting branch.
+- `milestone-ref-land.sh` and its suite (already retired; its deletion is confirmed).
+- The handoff's printed `/please push` and `/merge` lines and its `review.ref` write.
+
+Planned, and now not to be built:
+
+- `/merge --stack` (693).
+- The stack-printing handoff as planned (692's current plan).
+- A second-repository demonstration of the inference route (694 as written).
+- The five held worktree and two-root records.
+
+Ruled, and now overturned:
+
+- Slices as task records (S6), slices landed by a scoped commit from a working tree (S4), the
+  declared and refused review base (S3), restack by forge base edit (S5 in part), and the
+  retention list of the slices record.
+
+## Risks
+
+- **This design has no production evidence either.** Like the three builders it replaces, it
+  has opened no pull request. The mitigation is the acceptance bar above, and the order: `/merge` is not removed
+  until `/slice` has opened a pull request.
+- **Whole-file granularity.** A file that belongs to two slices lands whole in the earlier one.
+  If that proves common the proposal will show it as slices that cannot be separated, and
+  hunk-level cutting is then a case with evidence instead of a guess.
+- **A slice may not stand alone.** The union check proves that all slices together reproduce
+  the work ref. It does not prove that slice `b` builds or passes without slice `c`. Nothing in
+  this design checks that. Prompt 2 and every pull-request body say that no per-slice check
+  ran, until a declared self-check command exists (materialised from `git archive` of the slice
+  commit, which registers no worktree).
+- **Proposal quality rests on a model.** The checks are mechanical and the approver sees the
+  counts, but a proposal can be exhaustive, under the bar and still badly drawn. Only the
+  approver catches that.
+- **The measured bar can be the wrong population** (E5). The mitigation is that the bar is
+  printed with its source and count and is approved, not assumed.
+- **Grants die under live orchestration** ("Grants"). Until successor 6, pushing N slices in a
+  repository with a running orchestration may take more than N typed lines.
+- **A merge-up is a precondition `/slice` does not perform.** After each merge on the target
+  the work branch must merge it before any rebuild. In a repository that declares
+  `integration_branch`, that merge is an ordinary commit on the work branch and is the
+  operator's or an ordinary task's to make.

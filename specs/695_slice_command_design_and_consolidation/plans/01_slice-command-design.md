@@ -276,43 +276,43 @@ suite(s) selected, 2 owed").
 
 ---
 
-### Phase 3: Verdicts, successors and the operator worklist [NOT STARTED]
+### Phase 3: Verdicts, successors and the operator worklist [COMPLETED]
 
 **Goal**: Give every listed open record a stated disposition on evidence actually read, name the
 successors, and tell the operator what to run.
 
 **Tasks**:
-- [ ] Read `specs/decisions/batch-worktree-isolation-and-task-squash-landing.md`,
+- [x] Read `specs/decisions/batch-worktree-isolation-and-task-squash-landing.md`,
       `specs/decisions/worktree-isolation-removal-verdict.md` and
       `specs/decisions/worktree-isolation-removal-reaffirmation.md` before writing the row for
       the five held records. If they support the research report's "abandon, all five" on the
       ground that a path cut from the tip needs no per-task commit range, rule it and cite the
-      passages. If they do not, rule "stays held" and state what would decide it.
-- [ ] Read `agent-system/extensions/cslib/commands/pr.md` far enough to rule on it or to state
+      passages. If they do not, rule "stays held" and state what would decide it. *(completed)*
+- [x] Read `agent-system/extensions/cslib/commands/pr.md` far enough to rule on it or to state
       precisely why it is outside this ruling (a separate extension's user-invoked command for
-      a distinct task type); either way it gets a row rather than a mention.
-- [ ] Read the current description and status of each record in `specs/state.json`:
+      a distinct task type); either way it gets a row rather than a mention. *(completed)*
+- [x] Read the current description and status of each record in `specs/state.json`:
       `handoff_prints_review_stack`, `merge_command_stack_mode`,
       `stack_pr_redeploy_and_second_repo_demo`, `milestone_ref_land_recreates_retired_ref`,
       `branch_aware_orchestration_and_squash_landing`, the five held records, and
       `redeploy_phase_declaration_and_gate_criterion`. Record each one's status and dependency
-      edges as read.
-- [ ] `## Verdict on each open record`: one row per record with exactly one of "survives
+      edges as read. *(completed)*
+- [x] `## Verdict on each open record`: one row per record with exactly one of "survives
       unchanged", "survives revised", "abandon" (or "stays held" under the fallback above), a
-      one-line reason, and for "survives revised" what changes.
-- [ ] State the lapsed obligation: the once-per-batch redeploy siting in
-      `review-slices-are-declared-tasks.md` existed because each slice was a task, and lapses.
-- [ ] `## Successors`: the six named in the research report's R7, each with its territory and
+      one-line reason, and for "survives revised" what changes. *(completed)*
+- [x] State the lapsed obligation: the once-per-batch redeploy siting in
+      `review-slices-are-declared-tasks.md` existed because each slice was a task, and lapses. *(completed)*
+- [x] `## Successors`: the six named in the research report's R7, each with its territory and
       its ordering edge (the `/slice` build first; `/merge` removal after `/slice` works; the
       generated-path declaration as a hard edge for the bar's line count). State the acceptance
-      bar for the first successor: one real slice pushed and opened by the operator.
-- [ ] `## Operator worklist`: per verdict row, the command the operator runs to apply it
+      bar for the first successor: one real slice pushed and opened by the operator. *(completed)*
+- [x] `## Operator worklist`: per verdict row, the command the operator runs to apply it
       (abandon, revise, dependency-edge change, task creation). State that nothing in this list
-      was executed by the record's author.
-- [ ] `## What is discarded`: an explicit list of things built or planned that this ruling
-      discards. It must be non-empty.
-- [ ] `## Risks`: whole-file granularity; a slice that omits a file it needs; proposal quality
-      resting on the model; the design's own lack of production evidence.
+      was executed by the record's author. *(completed)*
+- [x] `## What is discarded`: an explicit list of things built or planned that this ruling
+      discards. It must be non-empty. *(completed)*
+- [x] `## Risks`: whole-file granularity; a slice that omits a file it needs; proposal quality
+      resting on the model; the design's own lack of production evidence. *(completed)*
 
 **Timing**: 1.5 hours
 
