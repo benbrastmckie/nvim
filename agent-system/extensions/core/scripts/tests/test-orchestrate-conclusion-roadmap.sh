@@ -483,8 +483,10 @@ fi
 # =====================================================================================
 # Case H: milestone handoff wiring -- a fully-done milestone produces review.state="prepared"
 # with review.ref naming the integration branch, a specs/milestones/<id>-review-handoff.md file,
-# and the literal /please + /merge commands on stderr -- fired from THIS SUT's own non-fatal
-# call site, not a direct call to milestone-review-handoff.sh.
+# and the refusal-arm's REFUSED reason plus the literal /please push command alone (no /merge
+# line) on stderr -- fired from THIS SUT's own non-fatal call site, not a direct call to
+# milestone-review-handoff.sh. The sandbox below deliberately does not install
+# review-stack-prepare.sh, which is what makes the refusal arm the arm under test here.
 # =====================================================================================
 common_test_info "Case H: milestone handoff fires from orchestrate-conclusion-roadmap.sh after a successful regenerate"
 SCRATCH_H="$(build_sandbox)"
@@ -509,10 +511,12 @@ if grep -q "MILESTONE REVIEW READY: milestone M1" <<< "$LAST_STDERR"; then
 else
   common_test_fail "Case H: expected a MILESTONE REVIEW READY notice. stderr=$LAST_STDERR"
 fi
-if grep -q "/please push ${caseH_branch}\$" <<< "$LAST_STDERR" && grep -q "^  /merge" <<< "$LAST_STDERR"; then
-  common_test_pass "Case H: the literal /please + /merge commands are printed"
+if grep -q "^REFUSED: review-stack-prepare\.sh: " <<< "$LAST_STDERR" \
+   && grep -q "/please push ${caseH_branch}\$" <<< "$LAST_STDERR" \
+   && ! grep -qE "^  ?/merge( |\$)" <<< "$LAST_STDERR"; then
+  common_test_pass "Case H: the refusal-arm reason and literal /please push line are printed, with no /merge line"
 else
-  common_test_fail "Case H: expected literal /please and /merge lines. stderr=$LAST_STDERR"
+  common_test_fail "Case H: expected a REFUSED: review-stack-prepare.sh: line and literal /please push ${caseH_branch} line with no /merge line. stderr=$LAST_STDERR"
 fi
 if [ -f "$SCRATCH_H/specs/milestones/M1-review-handoff.md" ] && grep -q -- "^- task 909" "$SCRATCH_H/specs/milestones/M1-review-handoff.md"; then
   common_test_pass "Case H: specs/milestones/M1-review-handoff.md is written and lists the milestone's task"

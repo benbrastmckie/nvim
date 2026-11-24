@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Retarget Case H's third assertion to the refusal-arm shape",
+  "started_at": "2026-11-24T05:41:37Z",
+  "last_updated": "2026-11-24T05:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-orchestrate-conclusion-roadmap.sh and confirm /merge occurrence count/locations", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace Case H's assertion condition with refusal-arm shape (positive refusal-reason, positive /please, negated anchored /merge)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"]},
+    {"id": 3, "description": "Update pass/fail messages to describe the refusal-arm shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"]},
+    {"id": 4, "description": "Update Case H's header comment block to describe refusal arm", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"]},
+    {"id": 5, "description": "Run test-orchestrate-conclusion-roadmap.sh and confirm green in full", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run test-milestone-review-handoff.sh and confirm still 19 passed/0 failed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

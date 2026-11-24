@@ -1,7 +1,7 @@
 # Implementation Plan: Task #697
 
 - **Task**: 697 - Case H assertion, review-stack refusal arm
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.25 hours
 - **Dependencies**: None (task 665 carries the dependency edge onto this one; this one depends on nothing)
 - **Research Inputs**: specs/697_case_h_assertion_review_stack_refusal_arm/reports/01_case-h-refusal-arm-fix.md
@@ -146,7 +146,7 @@ second time. That is named here so the successor does not re-derive it.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Retarget Case H's third assertion to the refusal-arm shape [NOT STARTED]
+### Phase 1: Retarget Case H's third assertion to the refusal-arm shape [COMPLETED]
 
 **Goal**: Case H's third assertion asserts the refusal arm's real output — the refusal reason and
 `/please push <branch>` present, `/merge` absent — and
@@ -154,34 +154,40 @@ Phases within the same wave can execute in parallel.
 `test-milestone-review-handoff.sh` still green.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh`
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh`
       immediately before editing (shared territory with task 665; a sibling may have touched it
-      since plan time).
-- [ ] Confirm the scope hypothesis below with `grep -n "/merge"` over the file. Expect 4
+      since plan time). *(completed: re-read; no sibling edit since plan time)*
+- [x] Confirm the scope hypothesis below with `grep -n "/merge"` over the file. Expect 4
       occurrences, all inside Case H: the case header comment, the assertion condition, and its
       pass and fail messages. If the count or their locations differ, stop and reconcile against
       the live file before editing — the line numbers in this plan are a plan-time observation,
-      not a guarantee.
-- [ ] Replace the assertion condition so it asserts the refusal arm. Keep the existing positive
+      not a guarantee. *(completed: exactly 4 occurrences at lines 486/512/513/515, all inside
+      Case H, matching the plan's scope hypothesis)*
+- [x] Replace the assertion condition so it asserts the refusal arm. Keep the existing positive
       `/please push ${caseH_branch}$` check unchanged (it already passes), add a positive check
       for the refusal reason line (`^REFUSED: review-stack-prepare\.sh: `), and replace the
       `grep -q "^  /merge"` conjunct with the negated, anchored form
       `! grep -qE "^  ?/merge( |$)"` — the shape already proven in
-      `test-milestone-review-handoff.sh` Case 3.
-- [ ] Update the pass and fail messages so they describe what is now asserted (the refusal arm's
+      `test-milestone-review-handoff.sh` Case 3. *(completed)*
+- [x] Update the pass and fail messages so they describe what is now asserted (the refusal arm's
       `/please`-alone shape with `/merge` suppressed), not a `/please + /merge` pair. A message
       left describing the old pairing is a stale assertion label, not a cosmetic detail.
-- [ ] Update Case H's header comment block so its summary line names the refusal arm's output
+      *(completed)*
+- [x] Update Case H's header comment block so its summary line names the refusal arm's output
       shape instead of "the literal /please + /merge commands on stderr", and note that the
       sandbox deliberately does not install `review-stack-prepare.sh`, which is what makes the
-      refusal arm the arm under test.
-- [ ] Leave the adjacent `review.state`/`review.ref` assertion exactly as it is — it was checked
+      refusal arm the arm under test. *(completed)*
+- [x] Leave the adjacent `review.state`/`review.ref` assertion exactly as it is — it was checked
       and ruled still correct (see the ruling subsection above). Make no edit there.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh`
+      *(completed: left untouched, confirmed still passing)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh`
       and confirm green in full, with Case H's retargeted assertion among the passes.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh` and
+      *(completed: 35 passed, 0 failed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh` and
       confirm it still reports 19 passed, 0 failed — the baseline measured at plan time.
-- [ ] Commit this phase's own hunks only, by explicit file list, never a directory or glob add.
+      *(completed: 19 passed, 0 failed, unregressed)*
+- [x] Commit this phase's own hunks only, by explicit file list, never a directory or glob add.
+      *(completed)*
 
 **Timing**: 0.75 hours
 

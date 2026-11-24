@@ -1,23 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/697_case_h_assertion_review_stack_refusal_arm/plans/01_case-h-refusal-arm-fix.md",
-      "summary": "2-phase plan implementing remedy (a): retarget Case H's third assertion to the refusal-arm shape, then redeploy with a clean verify."
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1795494587_0fa3fc_697",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 2,
-    "estimated_hours": 1.25,
-    "dependency_waves": [[1], [2]]
-  },
+  "status": "in_progress",
+  "dispatch_seq": 18,
   "task_number": 697,
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 697 to execute the plan",
-  "dispatch_seq": 12
+  "metadata": {
+    "session_id": "sess_1795494587_0fa3fc",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
