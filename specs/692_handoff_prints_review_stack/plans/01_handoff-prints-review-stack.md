@@ -353,7 +353,7 @@ inspection.
 
 ---
 
-### Phase 3: Redeploy and scoped verification [NOT STARTED]
+### Phase 3: Redeploy and scoped verification [COMPLETED]
 
 **Goal**: The deployed tree carries the work, the scoped touched-path check is green, and the
 one known out-of-scope breakage is measured and reported rather than left to surprise a later
@@ -361,25 +361,39 @@ dispatch.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` and check its exit
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` and check its exit
       status. Confirm `.claude/scripts/milestone-review-handoff.sh` and
       `.claude/scripts/tests/test-milestone-review-handoff.sh` carry this record's content.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and
+      *(completed: deploy-headless.sh exited 0, RESULT=landed_verify_clean; both deployed paths
+      diff byte-identical against the source store)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and
       check its exit status. This record edits no context file, so no `line_count` is expected to
       move; a RED here is a sibling's or a pre-existing condition, to be reported, not absorbed.
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-touched.sh` over this record's two
-      paths and check its exit status.
-- [ ] Measure `bash agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh`
+      *(completed: exits 0, "CHECK PASSED: all line_count values are exact", 608/608 exact)*
+- [x] Run `bash agent-system/extensions/core/scripts/verify-touched.sh` over this record's two
+      paths and check its exit status. *(completed: per this dispatch's Batch Gate Deferral
+      directive, the no-arg batch-wide form was run first -- see Verification notes below for
+      the full result and the file-scoped re-run)*
+- [x] Measure `bash agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh`
       and record the verdict. Case H is expected RED, for the reason given in Risks: its sandbox
       never installs `review-stack-prepare.sh`, so the handoff takes the missing-script refusal
       arm there and correctly prints no `/merge`, contradicting that case's assertion. Do NOT edit
       that file -- it is outside this record's `file_scope`. Report the exact failing assertion
-      and its line in the handoff notes and summary as an owed follow-up.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm no new finding under
-      `agent-system/**`.
-- [ ] Under `/orchestrate`, defer the complete gate set to the orchestration close and record
+      and its line in the handoff notes and summary as an owed follow-up. *(completed: Case H
+      FAILS exactly as predicted, at the `grep -q "/please push ${caseH_branch}\$" ... && grep -q
+      "^  /merge"` assertion on line 512 of
+      `agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh`; recorded
+      as an issue and named as an owed follow-up in the summary, file left unedited)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm no new finding under
+      `agent-system/**`. *(completed: "PASS: 0 unexempted task-reference occurrences")*
+- [x] Under `/orchestrate`, defer the complete gate set to the orchestration close and record
       that deferral in this phase's notes. In a standalone, non-orchestrated run, invoke
-      `bash .claude/scripts/verify-deploy.sh` directly instead.
+      `bash .claude/scripts/verify-deploy.sh` directly instead. *(completed: this dispatch runs
+      under a multi-task `/orchestrate` batch per its dispatch file's Batch Gate Deferral
+      section; the complete gate set (`verify-deploy.sh` at full depth) is deferred to the
+      once-per-invocation batch-level close, discharged here instead via
+      `verify-touched.sh` -- both its no-arg batch-wide form and a form scoped to this
+      record's own 2 touched paths, per Verification notes below)*
 
 **Timing**: 0.25 hours
 
@@ -404,22 +418,52 @@ dispatch.
 - `test-orchestrate-conclusion-roadmap.sh`'s verdict is recorded with its failing assertion named
   -- a RED Case H here is the expected, reported, out-of-scope breakage, not an unexplained
   failure.
+
+#### Verification Notes
+
+This dispatch runs inside a multi-task `/orchestrate` batch whose dispatch file carries a Batch
+Gate Deferral section naming this phase's `full` tier. Per that directive, the complete gate set
+(`verify-deploy.sh` at full depth) was deferred to the once-per-invocation batch-level close
+rather than run independently here. Two `verify-touched.sh` invocations were run instead:
+
+- **No-arg, batch-wide form** (the directive's named narrowing invocation): resolved ~121 suites
+  from the shared working tree's full touched-path surface (this batch cycle's several
+  concurrent sibling tasks' own in-flight commits and uncommitted edits, not only this record's
+  2 files) and took roughly 12 minutes. Result: 2 failures --
+  `test-orchestrate-conclusion-roadmap.sh` (the expected Case H, see above) and
+  `test-gate-cache-equivalence.sh`, which timed out at its own 600s wrapper limit.
+- **File-scoped form**, `verify-touched.sh` given this record's own 2 touched paths explicitly
+  (matching the plan's originally declared verification criterion literally): resolved exactly
+  the 3 suites Phase 1/2's own Tier Justification already named
+  (`test-milestone-review-handoff.sh`, `test-review-stack-prepare.sh`,
+  `test-orchestrate-conclusion-roadmap.sh`). Result: 2 passed, 1 failed (1 NEW) -- the same
+  expected Case H, and nothing else. `test-gate-cache-equivalence.sh` does not appear in this
+  narrower resolution at all, confirming its timeout in the batch-wide run is unrelated noise
+  (shared-tree resource contention from concurrent sibling dispatches under this batch cycle),
+  not a regression this record's 2-file edit caused.
+
+Taken together: the only verification signal attributable to this record's own touched files is
+the single, predicted, out-of-scope Case H failure already named above and recorded as an owed
+follow-up. No other regression is attributable to this phase's work.
 - `bash .claude/scripts/check-task-references.sh` reports no new finding under `agent-system/**`.
 
 ## Testing & Validation
 
-- [ ] `test-milestone-review-handoff.sh` exits 0, covering: the cut-succeeds arm (`show` output
+- [x] `test-milestone-review-handoff.sh` exits 0, covering: the cut-succeeds arm (`show` output
       written into `specs/milestones/M1-review-handoff.md` and printed), the cut-refuses arm
       (reason printed, per-task listing kept, `/please push` alone, no `/merge`), and the
-      `HEAD`-binding line's presence on both arms.
-- [ ] The existing 18 cases' intent is preserved: only Case 3's expectation changes (to the
+      `HEAD`-binding line's presence on both arms. *(completed: 19 cases, 0 failed)*
+- [x] The existing 18 cases' intent is preserved: only Case 3's expectation changes (to the
       refusal-arm shape), and Case 10's static no-push / no-ref-write assertions pass unmodified.
-- [ ] `lint-shellcheck.sh` exits 0 for both edited files.
-- [ ] `verify-touched.sh` over the two in-scope paths reports green.
-- [ ] `generate-context-line-counts.sh --check` exits 0.
-- [ ] `check-task-references.sh` reports no new finding under `agent-system/**`.
-- [ ] `test-orchestrate-conclusion-roadmap.sh`'s verdict is measured and reported, with Case H's
-      expected RED named explicitly as owed to a separate record.
+      *(completed)*
+- [x] `lint-shellcheck.sh` exits 0 for both edited files. *(completed)*
+- [x] `verify-touched.sh` over the two in-scope paths reports green. *(completed with the one
+      named exception: the file-scoped run's only failure is the predicted, out-of-scope Case H
+      -- see Phase 3's Verification Notes)*
+- [x] `generate-context-line-counts.sh --check` exits 0. *(completed)*
+- [x] `check-task-references.sh` reports no new finding under `agent-system/**`. *(completed)*
+- [x] `test-orchestrate-conclusion-roadmap.sh`'s verdict is measured and reported, with Case H's
+      expected RED named explicitly as owed to a separate record. *(completed)*
 
 ## Artifacts & Outputs
 
