@@ -1,7 +1,7 @@
 # Implementation Plan: Task #692
 
 - **Task**: 692 - Handoff prints the review stack
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None declared
 - **Research Inputs**: `specs/692_handoff_prints_review_stack/reports/01_handoff-prints-review-stack.md`
@@ -158,7 +158,7 @@ set. No roadmap phases are added.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Wire `cut`/`show` and the refusal arm [NOT STARTED]
+### Phase 1: Wire `cut`/`show` and the refusal arm [COMPLETED]
 
 **Goal**: The handoff calls `cut` non-fatally and `show` on success, prints the stack or the
 refusal reason with `/please push` alone and no `/merge`, prints the `HEAD`-binding line, and the
@@ -166,13 +166,13 @@ suite is green with its refusal-arm coverage rewritten to match.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/milestone-review-handoff.sh` and
+- [x] Re-read `scripts/milestone-review-handoff.sh` and
       `scripts/tests/test-milestone-review-handoff.sh` immediately before editing (concurrent
-      siblings share this tree).
-- [ ] In `scripts/milestone-review-handoff.sh`, add `rsp_script="${SCRIPT_DIR}/review-stack-prepare.sh"`
+      siblings share this tree). *(completed)*
+- [x] In `scripts/milestone-review-handoff.sh`, add `rsp_script="${SCRIPT_DIR}/review-stack-prepare.sh"`
       beside the existing `STATE_WRITE="${SCRIPT_DIR}/state-write.sh"` definition (line 66),
-      following the same co-located-script convention.
-- [ ] Inside the per-milestone loop, after `task_lines` is built and before the summary file is
+      following the same co-located-script convention. *(completed)*
+- [x] Inside the per-milestone loop, after `task_lines` is built and before the summary file is
       written, compute the stack outcome into three locals (`rsp_ok`, `rsp_reason_line`,
       `rsp_show_output`):
       - `[ -x "$rsp_script" ]` false -> `rsp_ok=false`, synthetic reason line naming that
@@ -183,26 +183,29 @@ suite is green with its refusal-arm coverage rewritten to match.
       - on zero, run `show --stack-id "$mid"` capturing stdout; a non-zero `show` also sets
         `rsp_ok=false` with `show`'s own reason line.
       Do not thread the handoff's `--dry-run` into either call. Never print `cut`'s own stdout.
-- [ ] Replace the `## Next Step` block written into `$summary_path` (today lines 266-273) with
+      *(completed)*
+- [x] Replace the `## Next Step` block written into `$summary_path` (today lines 266-273) with
       two arms: on success a `## Review Stack` section carrying `$rsp_show_output` verbatim inside
       a fenced block; on refusal a `## Next Step` section carrying the reason line, then
       `/please push ${integration_branch}` alone inside a fenced block with no `/merge` line.
-- [ ] Append, on both arms and in both the summary file and the stderr output, one line stating
+      *(completed)*
+- [x] Append, on both arms and in both the summary file and the stderr output, one line stating
       that a grant is bound to `HEAD` at the time it is typed, so a commit by another session in
       between means typing the grant again. (Mechanism confirmed in `lib/push-grant-lib.sh`: a
       grant's `HEAD_SHA` is fixed at mint time and must equal current `HEAD` to be consumed.)
-- [ ] Mirror the same two arms in the stderr block, replacing the hardcoded
+      *(completed)*
+- [x] Mirror the same two arms in the stderr block, replacing the hardcoded
       `  /please push ${integration_branch}` / `  /merge` pair at lines 294-295. Keep the
       existing "This system will not run either command on its own." statement (rewording it only
       as far as its "either" no longer fits), since Case 3's `will not run` assertion depends on
-      it.
-- [ ] Update the script's header comment (lines 5, 9, 45) to describe the current printed
+      it. *(completed: reworded to "This system will not run any of these on its own.")*
+- [x] Update the script's header comment (lines 5, 9, 45) to describe the current printed
       behaviour: it prepares and prints the review stack, or the refusal reason plus the
       `/please push` request alone; it still never pushes, never opens a PR/MR and never mints a
       grant. State the current behaviour only -- no draft-history or supersession language
       (`rules/no-record-versioning-in-deliverables.md`), and no task-number reference
-      (`rules/no-task-references-in-deliverables.md`).
-- [ ] Rewrite Case 3 of `scripts/tests/test-milestone-review-handoff.sh` (today lines 189-199)
+      (`rules/no-task-references-in-deliverables.md`). *(completed)*
+- [x] Rewrite Case 3 of `scripts/tests/test-milestone-review-handoff.sh` (today lines 189-199)
       from the `/please` + bare `/merge` pair to the refusal-arm shape: the default fixtures
       declare no `review_base`, so `cut` refuses `review_base_undeclared` there. Assert a
       `REFUSED: review-stack-prepare.sh: review_base_undeclared:` line, `/please push ${BRANCH}`
@@ -210,9 +213,11 @@ suite is green with its refusal-arm coverage rewritten to match.
       bare `/merge` line anywhere in the output. Note: this case's sandbox does not yet install
       `review-stack-prepare.sh` -- Phase 2 adds that `cp`, so until then this case exercises the
       missing-script arm; assert on whichever reason line the run actually produces and tighten
-      it to `review_base_undeclared` once Phase 2's `cp` lands.
-- [ ] Leave Case 10's two static checks untouched: `cut`/`show` invocations contain none of the
-      literal strings they grep for.
+      it to `review_base_undeclared` once Phase 2's `cp` lands. *(completed: asserts the generic
+      `^REFUSED: review-stack-prepare\.sh: ` reason line, since this sandbox still exercises the
+      missing-script arm; Phase 2 tightens it)*
+- [x] Leave Case 10's two static checks untouched: `cut`/`show` invocations contain none of the
+      literal strings they grep for. *(completed: unmodified, both still pass)*
 
 **Timing**: 0.75 hours
 

@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/692_handoff_prints_review_stack/plans/01_handoff-prints-review-stack.md",
-      "summary": "Three-phase plan wiring review-stack-prepare.sh cut/show into milestone-review-handoff.sh, suppressing the unusable /merge on the refusal arm, with both arms covered by the suite."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1795472390_63c292_692",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 1.75,
-    "dependency_waves": 3
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 692 to execute the plan",
-  "dispatch_seq": 5
+    "session_id": "sess_1795484837_9a6a6b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

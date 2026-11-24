@@ -184,15 +184,21 @@ else
 fi
 
 # =====================================================================
-# Case 3: literal-command output -- the exact /please and /merge commands appear, naming the
-# integration branch, with a statement that the system will not run them.
+# Case 3: refusal-arm output -- review-stack-prepare.sh is not yet installed in this suite's
+# sandbox (that lands in a later fixture change), so the default fixture's cut/show call takes
+# the refusal arm: a REFUSED: review-stack-prepare.sh: ... reason line is printed, the /please
+# push request for the integration branch is printed alone, the HEAD-binding line is printed,
+# the system states it will not run any of these on its own, and no bare /merge line appears
+# anywhere in the output.
 # =====================================================================
-if grep -q "^  /please push ${BRANCH}$" <<< "$first_output" \
-   && grep -q "^  /merge$" <<< "$first_output" \
-   && grep -qi "will not run" <<< "$first_output"; then
-  common_test_pass "literal-command output: /please and /merge commands printed for the integration branch, with a will-not-run statement"
+if grep -qE "^REFUSED: review-stack-prepare\.sh: " <<< "$first_output" \
+   && grep -q "^  /please push ${BRANCH}$" <<< "$first_output" \
+   && grep -qi "bound to the commit at HEAD" <<< "$first_output" \
+   && grep -qi "will not run" <<< "$first_output" \
+   && ! grep -qE "^  ?/merge( |$)" <<< "$first_output"; then
+  common_test_pass "refusal-arm output: REFUSED reason, /please push alone, HEAD-binding line, will-not-run statement, and no /merge line"
 else
-  common_test_fail "literal-command output: expected literal /please + /merge lines and a will-not-run statement -- got: $first_output"
+  common_test_fail "refusal-arm output: expected a REFUSED: review-stack-prepare.sh: line, /please push ${BRANCH} alone, the HEAD-binding line, a will-not-run statement, and no /merge line -- got: $first_output"
 fi
 
 # =====================================================================

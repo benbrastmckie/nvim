@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 # milestone-review-handoff.sh - Prepares, and only prepares, the push and review request for a
 # milestone whose derived batch-done count reaches its batch count. It records
-# review.state="prepared" plus review.ref, drafts a review summary, and prints the literal
-# /please + /merge commands for the user to run -- it NEVER pushes, NEVER creates a PR/MR, and
-# NEVER mints a push grant. See specs/decisions/branch-topology-and-landing-strategy.md, ruling
-# R8, for the ruling this implements, and rules/pr-prohibition.md for the prohibition it honors.
+# review.state="prepared" plus review.ref, drafts a review summary, and calls
+# review-stack-prepare.sh to cut and show the milestone's review stack: on success it prints
+# that stack as the final output; on refusal (including a missing or non-executable
+# review-stack-prepare.sh) it prints the refusal reason and the literal /please push-request
+# command for the integration branch alone, with no /merge line -- it NEVER pushes, NEVER
+# creates a PR/MR, and NEVER mints a push grant. See
+# specs/decisions/branch-topology-and-landing-strategy.md, ruling R8, for the ruling this
+# implements, and rules/pr-prohibition.md for the prohibition it honors.
 #
 # THIS SCRIPT NEVER CALLS: git push, git-push-granted.sh, gh, glab, or /merge, and never writes
 # the push-grant store. Grepping this file for any of those (outside this header and this
-# assertion's own strings) should return nothing; the test suite asserts it.
+# assertion's own strings) should return nothing; the test suite asserts it. It shells out to
+# review-stack-prepare.sh to cut and show the stack, which likewise never pushes, never calls a
+# forge, and never touches HEAD, the index or the working tree.
 #
 # WHAT IT REVIEWS
 # ---------------
@@ -42,8 +48,12 @@
 #    review.state="prepared", review.ref="refs/heads/<integration branch>",
 #    review.updated=<YYYY-MM-DD> via state-write.sh. Leaves review.request empty (no PR exists
 #    yet) and leaves progress.status untouched.
-# 6. Prints the literal /please push-request command for the integration branch, then /merge, as
-#    the final output, stating explicitly that this script will not run them.
+# 6. Calls review-stack-prepare.sh to cut and show the milestone's review stack. On success,
+#    prints that stack as the final output. On refusal (including a missing or non-executable
+#    review-stack-prepare.sh), prints the refusal reason and the /please push-request command
+#    for the integration branch alone, with no /merge line. Both arms print a line stating that
+#    a push grant is bound to HEAD at mint time, so a commit by another session in between means
+#    typing the grant again, and that this system will not run any of these on its own.
 #
 # USAGE
 # -----
@@ -68,6 +78,7 @@ STATE_FILE="specs/state.json"
 ARCHIVE_STATE_FILE="specs/archive/state.json"
 SPECS_DIR="${PROJECT_ROOT}/specs"
 STATE_WRITE="${SCRIPT_DIR}/state-write.sh"
+rsp_script="${SCRIPT_DIR}/review-stack-prepare.sh"
 
 session_id=""
 dry_run="false"
@@ -239,6 +250,39 @@ while [ "$i" -lt "$count" ]; do
     fi
   done
 
+  # Cut and show the milestone's review stack, non-fatally. Never threads this script's own
+  # --dry-run into either call (cut --dry-run writes no manifest, so a following show would
+  # refuse manifest_missing even though cut exited 0). rsp_show_output is only ever show's own
+  # stdout -- cut's own "UNIT NN: ..." lines are captured for their exit code alone and never
+  # surfaced.
+  rsp_ok="false"
+  rsp_reason_line=""
+  rsp_show_output=""
+  if [ ! -x "$rsp_script" ]; then
+    rsp_reason_line="REFUSED: review-stack-prepare.sh: script_missing: ${rsp_script} not found or not executable beside milestone-review-handoff.sh"
+  else
+    rsp_cut_output="$(bash "$rsp_script" cut --milestone "$mid" 2>&1)"
+    rsp_cut_code=$?
+    if [ "$rsp_cut_code" -ne 0 ]; then
+      rsp_reason_line="$(printf '%s\n' "$rsp_cut_output" | grep '^REFUSED:' | head -n 1)"
+      [ -n "$rsp_reason_line" ] || rsp_reason_line="REFUSED: review-stack-prepare.sh: cut_failed: exited ${rsp_cut_code} with no REFUSED: line"
+    else
+      rsp_show_err="$(mktemp)"
+      rsp_show_output="$(bash "$rsp_script" show --stack-id "$mid" 2>"$rsp_show_err")"
+      rsp_show_code=$?
+      rsp_show_stderr="$(cat "$rsp_show_err" 2>/dev/null)"
+      rm -f "$rsp_show_err"
+      if [ "$rsp_show_code" -ne 0 ]; then
+        rsp_reason_line="$(printf '%s\n' "$rsp_show_stderr" | grep '^REFUSED:' | head -n 1)"
+        [ -n "$rsp_reason_line" ] || rsp_reason_line="REFUSED: review-stack-prepare.sh: show_failed: exited ${rsp_show_code} with no REFUSED: line"
+        rsp_show_output=""
+      else
+        rsp_ok="true"
+      fi
+    fi
+  fi
+  head_bind_line="A /please push grant is bound to the commit at HEAD when it is typed; a commit by another session in between means typing the grant again."
+
   summary_path="specs/milestones/${mid}-review-handoff.md"
   {
     echo "# Milestone ${mid} Review Handoff"
@@ -263,15 +307,32 @@ while [ "$i" -lt "$count" ]; do
       echo "unit."
     fi
     echo ""
-    echo "## Next Step"
-    echo ""
-    echo "This handoff was PREPARED only -- nothing was pushed and no PR/MR was opened. Run the"
-    echo "commands below yourself when ready:"
-    echo ""
-    echo '```'
-    echo "/please push ${integration_branch}"
-    echo "/merge"
-    echo '```'
+    if [ "$rsp_ok" = "true" ]; then
+      echo "## Review Stack"
+      echo ""
+      echo "This handoff was PREPARED only -- nothing was pushed and no PR/MR was opened. The"
+      echo "review stack below was cut by review-stack-prepare.sh; push and open each entry"
+      echo "yourself when ready:"
+      echo ""
+      echo '```'
+      printf '%s\n' "$rsp_show_output"
+      echo '```'
+      echo ""
+      echo "$head_bind_line"
+    else
+      echo "## Next Step"
+      echo ""
+      echo "This handoff was PREPARED only -- nothing was pushed and no PR/MR was opened."
+      echo "${rsp_reason_line}"
+      echo ""
+      echo "Run the command below yourself when ready:"
+      echo ""
+      echo '```'
+      echo "/please push ${integration_branch}"
+      echo '```'
+      echo ""
+      echo "$head_bind_line"
+    fi
   } > "$summary_path"
 
   if [ "$dry_run" = "true" ]; then
@@ -290,10 +351,16 @@ while [ "$i" -lt "$count" ]; do
   if [ -n "$shared_tasks" ]; then
     echo "NOTE: task(s) ${shared_tasks} share files with another writer; see ${summary_path}." >&2
   fi
-  echo "To push and open the review yourself, run:" >&2
-  echo "  /please push ${integration_branch}" >&2
-  echo "  /merge" >&2
-  echo "This system will not run either command on its own." >&2
+  if [ "$rsp_ok" = "true" ]; then
+    echo "Review stack (push and open each entry yourself when ready):" >&2
+    printf '%s\n' "$rsp_show_output" >&2
+  else
+    echo "${rsp_reason_line}" >&2
+    echo "To push, run:" >&2
+    echo "  /please push ${integration_branch}" >&2
+  fi
+  echo "$head_bind_line" >&2
+  echo "This system will not run any of these on its own." >&2
 done
 
 exit 0
