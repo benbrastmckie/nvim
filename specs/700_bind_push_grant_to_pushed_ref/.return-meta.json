@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795525113_9bbf2b_700",
+  "dispatch_seq": 2,
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/700_bind_push_grant_to_pushed_ref/reports/01_bind-grant-to-pushed-ref.md",
+      "summary": "Locates the HEAD-binding at exactly two call sites (please-grant.sh mint, pg_grant_find_match consume), proposes a single action_class=push_branch-gated refs/heads/${REF} resolution that subsumes the checked-out-branch case for free, confirms guard-git-push.sh and git-push-granted.sh need no change, and confirms no context doc needs a correction."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In a consent-gated push-grant mechanism (mint hook writes a KV grant file with HMAC; a PreToolUse guard matches and consumes it), a 'bind to HEAD' defect for a non-checked-out ref is fixable at exactly the two symmetric call sites (mint-time write, consume-time match) with a single substitution gated on the action class that can ever name a non-checked-out ref -- resolving refs/heads/<name> instead of HEAD. Because a checked-out branch's refs/heads/<name> always equals HEAD by git's own definition, this one substitution reproduces the old behavior for the checked-out case automatically, with no separate 'is this the checked-out branch' conditional needed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/reports/01_bind-grant-to-pushed-ref.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["push-grant", "HEAD binding", "ref resolution", "consent-gated push", "fail-closed"]
+    },
+    {
+      "content": "When a dispatch's territory lists several files for a bugfix (e.g. a hook, a guard, a wrapper, a lib), a call-site survey (grep for every caller of the function being fixed) can establish that some listed files are test-coverage spectators needing zero code change, not oversights -- worth doing explicitly before planning edits to every listed file.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/reports/01_bind-grant-to-pushed-ref.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["call-site survey", "territory", "research efficiency", "scope confirmation"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 700 to create implementation plan"
+}
