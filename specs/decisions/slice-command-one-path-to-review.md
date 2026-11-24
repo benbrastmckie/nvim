@@ -546,6 +546,20 @@ bar by `/slice`, because `/slice` does not exist. sf1-engine's own table passes 
 re-run here). Whether the 75th percentile is the right opening offer is a preference the
 operator can change at no cost before the successor that builds the measurement runs.
 
+**Amended** 2026-11-24, by the operator, exercising the preference the preceding paragraph
+reserves: sources (1) and (2) above are withdrawn from the build. The declared `slice_bar`
+object in `.claude-extensions.json` and the 75th-percentile nearest-rank measurement are not to
+be implemented. The shipped default of 1,500 lines and 30 files stands as the sole source, and
+E5's requirement that the user approve the bar is met by an interactive sign-off folded into the
+proposal prompt -- an `adjust bar` option beside `approve`, asked with the per-slice
+`lines / bar` column visible, recording a replaced bar as `chosen at prompt` exactly as the
+existing `revise` path does. The grounds are in "The user approves it" above: the measurement
+here yields 52 lines and 1 file and would refuse every slice of the operator's own work, so a
+measured opening offer the operator must immediately override serves E5 worse than asking.
+`context/standards/repo-level-declarations.md` is therefore not edited, and the series schema's
+`declared` and `measured` source values remain defined but unused. The successor that owned the
+measurement is abandoned; the sign-off is owned by `slice_size_signoff_at_proposal_prompt`.
+
 ## One survivor, and what is deleted
 
 Paths are relative to `agent-system/extensions/core/` unless stated.
@@ -757,6 +771,14 @@ worked implementation"; line 32, the review-ref build and restack sites) and
 "exercised today by" the script). These are in addition to the two documents E1 lists. Where E1,
 search 2 and "Builder A is deleted" say the script has no caller, this note governs the ordering;
 the deletion verdict itself stands. Evidence: 698, issue entry `iss_1795519330398_fX2q1n`.
+
+**Amended** 2026-11-24, by the operator: successor 2 is withdrawn and its task abandoned. The
+measurement and the `slice_bar` declaration are not built; see the amendment note under "The
+size bar" for the grounds and for what replaces them. `context/standards/repo-level-declarations.md`
+leaves the successor set with this change, and successor 3's ordering edge onto successor 2 --
+which existed only because both edited that document -- is dropped. The replacement successor,
+an interactive size sign-off folded into the proposal prompt, is territorially confined to
+`commands/slice.md` and its suite and is ordered after successor 1 alone.
 
 **The acceptance bar for successor 1** is not a suite count. It ends with one real slice of a
 real difference, pushed by a typed grant and opened as a pull request by the operator typing

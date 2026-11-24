@@ -1,6 +1,248 @@
 {
   "completed_projects": [
     {
+      "project_number": 701,
+      "project_name": "slice_bar_measurement_and_declaration",
+      "status": "abandoned",
+      "task_type": "meta",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.\n\nRULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.\n\n=== WHAT THIS RECORD OWNS: BAR MEASUREMENT AND THE slice_bar DECLARATION ===\n\n\"The size bar\" and \"Successors\", row 2. slice_command_build ships only the default bar. This record adds the other two sources, in the ruling's order: (1) a declared `slice_bar` object, `{lines, files}`, in .claude-extensions.json; (2) otherwise the 75th percentile, nearest-rank, of added lines and of changed files over merged pull requests on the chosen target, when there are at least five; (3) otherwise the shipped default, printed as `default, unmeasured`. The bar line names its source and, when measured, its n. A bar replaced at prompt 2 is recorded as `chosen at prompt`.\n\nWHERE THE MEASUREMENT LIVES. The script contains no forge invocation (\"Constraints held\"), and merged pull requests are a forge fact. Settle in research whether the population is read by the command file and handed to the script, or derived from history without a forge call; do not put a forge call in the script. The median is rejected by the ruling and is not offered.\n\nWHAT IS COUNTED. Added lines over the slice's paths (the first numstat column of the difference between target and work ref) and the number of paths. Paths declared generated are excluded from the line count and still listed. That declaration is owned by branch_aware_orchestration_and_squash_landing; UNTIL IT EXISTS EVERY PATH COUNTS AND PROMPT 2 SAYS SO. This record is buildable and correct as specified without it: the ruling's edge is from the accuracy of the bar onto that record, not from the bar's existence, so that record is ordered after this one and wires its declaration into the count this record builds. Leave a single, named place in the count where an exclusion list is read.\n\nTHE DECLARATION DOCUMENT. Add a `slice_bar` section to context/standards/repo-level-declarations.md. delete_review_stack_inference_route removes the `review_base` section of the same document and is ordered after this record. No number appears in any deliverable as a property of the system: the measured figures in the ruling's E5 are evidence about three repositories and are not copied.\n\n=== TERRITORY ===\n\nThe /slice script and its suite (named by slice_command_build); commands/slice.md where the bar line and prompt 2 print the source; context/standards/repo-level-declarations.md; index-entries.json for the line-count reconciliation (generate-context-line-counts.sh --check). Ordered after slice_command_build.\n\n=== VERIFY BY ===\n\nSuite cases for each source in order, for fewer than five merged requests falling through to the default, for nearest-rank on a known population, and for a declared bar winning over a measurable one; the prompt text stating that every path counts; generate-context-line-counts.sh --check clean; deploy-headless.sh reporting a clean verify.",
+      "topic": "core-agent-system",
+      "file_scope": [
+        "agent-system/extensions/core/commands/slice.md",
+        "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "created": "2026-11-24T12:45:18Z",
+      "last_updated": "2026-11-24T12:45:18Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "slice_bar_measurement_and_declaration",
+          "project_number": null,
+          "title": "Measure the /slice size bar and add the slice_bar declaration"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 139,
+          "duplicate-of-open": 39,
+          "scope-blind": 47
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 694,
+            "project_name": "stack_pr_redeploy_and_second_repo_demo",
+            "shared_paths": [
+              "agent-system/extensions/core/index-entries.json"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.423963133640553
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 684,
+            "project_name": "sweep_stale_command_and_submode_references",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4700460829493088
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 642,
+            "project_name": "repropagate_bounded_wait_agent_bullets",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4147465437788018
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 641,
+            "project_name": "reground_foreground_wait_cap_and_idiom",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4009216589861751
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.511520737327189
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 399,
+            "project_name": "lean4_context_three_measured_gotchas",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41935483870967744
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4700460829493088
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": [
+              "agent-system/extensions/core/index-entries.json"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4976958525345622
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5207373271889401
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 453,
+            "project_name": "degraded_retrieval_zero_result_directive",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42857142857142855
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5161290322580645
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 457,
+            "project_name": "repo_specific_content_in_shared_source_store",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4423963133640553
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4700460829493088
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 479,
+            "project_name": "task_landing_target_requirement",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41935483870967744
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 480,
+            "project_name": "stranded_research_task_detector",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41013824884792627
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47465437788018433
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5069124423963134
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 506,
+            "project_name": "bounded_waiter_hook_fires_on_documenting_prose",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4009216589861751
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45161290322580644
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43317972350230416
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45622119815668205
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 516,
+            "project_name": "lean_compliance_check_end_state_goal_polarity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.423963133640553
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46543778801843316
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 523,
+            "project_name": "gate27_missing_declaration_call_site_counting",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4470046082949309
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.423963133640553
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 47
+      },
+      "dependencies": [
+        699
+      ],
+      "abandoned": "2026-11-24T19:29:43Z"
+    },
+    {
       "project_number": 693,
       "project_name": "merge_command_stack_mode",
       "status": "abandoned",

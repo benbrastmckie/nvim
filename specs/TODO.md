@@ -1,5 +1,5 @@
 ---
-next_project_number: 705
+next_project_number: 706
 ---
 
 # TODO
@@ -14,14 +14,14 @@ next_project_number: 705
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,579,580,586,590,599,613,618,629,631,632,640,646,663,664,665,671,674,679,680,684,686,689,696,699 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,577,583,592,593,605,630,701,702 | 383,390,399,410,431,438,452,453,511,519,539,542,551,563,586,599,629,699 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,472,480,492,513,561,576,588,594,609,703 | 439,479,491,509,533,552,556,570,577,593,701,702 | core-agent-system, orchestrator, agent-system |
+| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,577,583,592,593,605,630,702,705 | 383,390,399,410,431,438,452,453,511,519,539,542,551,563,586,599,629,699 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,472,480,492,513,561,576,588,594,609,703 | 439,479,491,509,533,552,556,570,577,593,702 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641,704 | 454,472,492,539,561,580,594,703 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,571,596,642,688,694 | 501,518,595,641,704 | core-agent-system, orchestrator, agent-system |
 | 6 | 536 | 524 | agent-system |
 | 7 | 548 | 536 | agent-system |
 | 8 | 553,598 | 548 | agent-system |
-| 9 | 655,670 | 513,553,701 | orchestrator |
+| 9 | 655,670 | 513,553 | orchestrator |
 | 10 | 672 | 670 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -64,11 +64,10 @@ next_project_number: 705
 680 [NOT STARTED] — Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged...
 684 [NOT STARTED] — Sweep and fix stale command and sub-mode references across...
 699 [PARTIAL] — SOURCE STORE IS THE EDIT TARGET:...
-  └─ 701 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 702 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
     └─ 703 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
       └─ 704 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-  └─ 702 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-    └─ 703 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
+  └─ 705 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
@@ -181,6 +180,36 @@ next_project_number: 705
 
 ## Tasks
 
+### 705. Slice size signoff at proposal prompt
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 699
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+RULING: specs/decisions/slice-command-one-path-to-review.md, "The size bar". That section's "Where the number comes from, in order" offered three bar sources; the operator has since ruled that only the shipped default plus an interactive sign-off are wanted, and that the declared `slice_bar` object and the 75th-percentile measurement are not to be built. The ruling carries a dated amendment note recording this. Re-measure any figure below against the source store rather than carrying it.
+
+=== WHAT THIS RECORD OWNS: INTERACTIVE SIZE SIGN-OFF AT THE PROPOSAL PROMPT ===
+
+The bar today is printed and never asked about. commands/slice.md's STEP 3 is titled "The bar line (printed, no question)" and prints `bar 1,500 added lines / 30 files   default, unmeasured`, then falls through to STEP 4's proposal prompt, whose three options are approve / revise / cancel. The bar can only be changed by choosing "revise" and saying so in free text, which is recorded as `chosen at prompt`.
+
+WHAT CHANGES. Fold an explicit size sign-off into STEP 4's own AskUserQuestion rather than adding a separate prompt, so the operator judges the bar with the per-slice `lines / bar` column visible instead of signing off blind before any slice exists:
+
+1. Add a fourth option to STEP 4's question, between "approve" and "revise": `adjust bar`, described as setting a different bar and redrawing the table. Its response handler asks for the new lines/files pair as free text, re-runs `check` against the candidate document with the new bar, and returns to the top of STEP 4. A bar set this way is recorded as `chosen at prompt`, exactly as the existing revise path already records it -- this is a more discoverable route to the same recorded outcome, not a new schema value.
+2. Keep STEP 3's printed bar line, but drop `unmeasured` from its source label: with the measurement abandoned there is no measured alternative for it to contrast against, so the label is just `default`. STEP 3 stays a print, not a question.
+3. Leave the series schema's `declared` and `measured` source values in place. They are forward-compatible and unused; removing them is churn that buys nothing and would need a suite change.
+
+WHAT IS EXPLICITLY NOT BUILT. No `slice_bar` object in .claude-extensions.json. No percentile measurement, nearest-rank or otherwise. No forge call anywhere -- the script contains no forge invocation and that constraint is unchanged. context/standards/repo-level-declarations.md is NOT edited; it is absent from this record's file_scope on purpose.
+
+WHY THE MEASUREMENT IS NOT WANTED. The ruling's own "The user approves it" paragraph records that the measured bar in this repository is 52 lines and 1 file, drawn from small outside contributions, and "would refuse every slice of the operator's own work". The same paragraph states that E5 requires the user to approve the bar; an interactive sign-off satisfies that requirement directly, where a measurement the operator must then override does not. The ruling's "Not verified" paragraph states that whether the 75th percentile is the right opening offer "is a preference the operator can change at no cost before the successor that builds the measurement runs", which is the window this record is created in.
+
+=== VERIFICATION ===
+
+The suite for the command surface is scripts/tests/test-slice-series.sh. A command-file change needs the doc/task-reference gate subset (verify-deploy.sh --only-gate 3,4) plus a redeploy; confirm the current gate numbering in research rather than trusting those two numbers. Note that verify-touched.sh resolves run-all.sh from the deployed .claude/ mirror in preference to the source store, so a pre-redeploy gate run silently tests stale code -- run suite files directly against the source store for genuine pre-redeploy verification, or redeploy first.
+
+---
+
 ### 704. Remove merge command
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -219,7 +248,7 @@ The ruling's search, and a second differently shaped one, returning no file that
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 701, Task 702
+- **Dependencies**: Task 702
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.
 
@@ -274,36 +303,6 @@ scripts/milestone-review-handoff.sh; scripts/tests/test-milestone-review-handoff
 === VERIFY BY ===
 
 Both suites green; a search of the handoff for review-stack-prepare, review.ref, `/please push` and the old merge command returning nothing; review.state still written exactly once per finished milestone; generate-context-line-counts.sh --check clean; deploy-headless.sh reporting a clean verify.
-
----
-
-### 701. Slice bar measurement and declaration
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 699
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**. Sibling records are named below by slug, never by number.
-
-RULING: specs/decisions/slice-command-one-path-to-review.md. Read the sections named below before researching; they are cited by heading so they can be found after any renumbering. Figures in this description were measured on 2026-11-24 against the source store and are to be re-measured by this record's own research, not carried.
-
-=== WHAT THIS RECORD OWNS: BAR MEASUREMENT AND THE slice_bar DECLARATION ===
-
-"The size bar" and "Successors", row 2. slice_command_build ships only the default bar. This record adds the other two sources, in the ruling's order: (1) a declared `slice_bar` object, `{lines, files}`, in .claude-extensions.json; (2) otherwise the 75th percentile, nearest-rank, of added lines and of changed files over merged pull requests on the chosen target, when there are at least five; (3) otherwise the shipped default, printed as `default, unmeasured`. The bar line names its source and, when measured, its n. A bar replaced at prompt 2 is recorded as `chosen at prompt`.
-
-WHERE THE MEASUREMENT LIVES. The script contains no forge invocation ("Constraints held"), and merged pull requests are a forge fact. Settle in research whether the population is read by the command file and handed to the script, or derived from history without a forge call; do not put a forge call in the script. The median is rejected by the ruling and is not offered.
-
-WHAT IS COUNTED. Added lines over the slice's paths (the first numstat column of the difference between target and work ref) and the number of paths. Paths declared generated are excluded from the line count and still listed. That declaration is owned by branch_aware_orchestration_and_squash_landing; UNTIL IT EXISTS EVERY PATH COUNTS AND PROMPT 2 SAYS SO. This record is buildable and correct as specified without it: the ruling's edge is from the accuracy of the bar onto that record, not from the bar's existence, so that record is ordered after this one and wires its declaration into the count this record builds. Leave a single, named place in the count where an exclusion list is read.
-
-THE DECLARATION DOCUMENT. Add a `slice_bar` section to context/standards/repo-level-declarations.md. delete_review_stack_inference_route removes the `review_base` section of the same document and is ordered after this record. No number appears in any deliverable as a property of the system: the measured figures in the ruling's E5 are evidence about three repositories and are not copied.
-
-=== TERRITORY ===
-
-The /slice script and its suite (named by slice_command_build); commands/slice.md where the bar line and prompt 2 print the source; context/standards/repo-level-declarations.md; index-entries.json for the line-count reconciliation (generate-context-line-counts.sh --check). Ordered after slice_command_build.
-
-=== VERIFY BY ===
-
-Suite cases for each source in order, for fewer than five merged requests falling through to the default, for nearest-rank on a known population, and for a declared bar winning over a measurable one; the prompt text stating that every path counts; generate-context-line-counts.sh --check clean; deploy-headless.sh reporting a clean verify.
 
 ---
 
