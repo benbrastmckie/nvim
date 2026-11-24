@@ -61,13 +61,27 @@
 #   bash .claude/scripts/issue-record.sh ... >/dev/null 2>&1 || \
 #     echo "Note: issue recording failed (non-fatal)" >&2
 #
+# An argument-shaped refusal (an unrecognized flag) does NOT simply vanish under that
+# redirection: it self-records a refusal entry into the same task's issues.jsonl (kind: issue,
+# class: "knowledge-capture gap", tags.issue_record_refusal naming the offending flag and the
+# caller's own --what-happened prose verbatim), then exits 2. A caller whose fallback note
+# fires should check the task's issues.jsonl for such an entry rather than assume nothing was
+# attempted. See context/formats/issue-log.md's refusal-entry subsection for the full shape.
+#
 # Exit codes:
 #   0 - Appended. stdout: the entry_id of the appended line.
-#   1 - Argument/validation error (missing/empty required argument, malformed --tags-json,
-#       unresolvable --task number, unresolvable task directory, an unrecognized value for a
-#       TRUE closed-set field). Nothing written.
+#   1 - Content-shaped argument/validation error (missing/empty required argument, malformed
+#       --tags-json, unresolvable --task number, unresolvable task directory, an unrecognized
+#       value for a TRUE closed-set field). Nothing written.
+#   2 - Argument-shaped refusal: the invocation named a flag this script does not recognize.
+#       A refusal entry is self-recorded into the resolved task's issues.jsonl when a task
+#       directory could resolve; stated residual: when the unrecognized flag precedes (or
+#       otherwise prevents resolving) --task-dir/--task, no task directory resolves and no
+#       entry can be appended -- this still exits 2, with stderr only.
 #
-# stdout: the entry_id on success. stderr: diagnostics, including the --class leniency warning.
+# stdout: the entry_id on success (exit 0 only). stderr: diagnostics, including the --class
+# leniency warning and, on an argument-shaped refusal, the offending flag and (when appended)
+# the refusal entry's entry_id.
 
 set -euo pipefail
 
@@ -100,10 +114,24 @@ Optional:
   --tags-json '{...}'           Must parse as a JSON object when present.
   --session SID                 sess_{timestamp}_{random} value.
 
-Exit codes: 0 appended, 1 argument/validation error (nothing written).
-See this script's header for the full contract.
+Exit codes: 0 appended, 1 content-shaped argument/validation error (nothing written),
+2 argument-shaped refusal (unrecognized flag; self-records a refusal entry when a task
+directory resolves, otherwise nothing written). See this script's header for the full contract.
 USAGE
-  exit 1
+  exit_refusal_aware
+}
+
+# exit_refusal_aware - the shared exit point for every refusal site this script treats as
+# argument-shaped (usage()'s own exit above, plus the three task-directory-resolution sites
+# below). $unknown_arg is set only when the parse loop hit an unrecognized flag; every other
+# refusal (a missing/empty required field, an unresolvable --task, etc.) leaves it empty and
+# this still exits 1, byte for byte as before. See the header's Exit codes block.
+exit_refusal_aware() {
+  if [ -n "${unknown_arg:-}" ]; then
+    exit 2
+  else
+    exit 1
+  fi
 }
 
 # --- Argument parsing (manual while-loop; unknown argument is a loud failure) ---
@@ -122,6 +150,7 @@ resolution_arg=""
 suggested_channel_arg=""
 tags_json_arg=""
 session_arg=""
+unknown_arg=""
 
 if [ $# -eq 0 ]; then
   usage
@@ -145,9 +174,50 @@ while [ $# -gt 0 ]; do
     --tags-json) tags_json_arg="${2:-}"; shift 2 ;;
     --session) session_arg="${2:-}"; shift 2 ;;
     -h|--help) usage ;;
-    *) echo "error: unknown argument: $1" >&2; usage ;;
+    *)
+      # Refusal mode, not an immediate usage()/exit: stop parsing here (any remaining
+      # arguments, including anything the caller intended after this point, are not
+      # consumed) and fall through to the refusal-mode block below, which forces every
+      # field to a value that survives the ordinary validation blocks unchanged so the
+      # normal append path runs and records a refusal entry instead of writing nothing.
+      unknown_arg="$1"
+      echo "error: unknown argument: $1" >&2
+      break
+      ;;
   esac
 done
+
+# --- Refusal mode: an unrecognized flag was encountered above. Force every field to a value
+# that will pass the ordinary validation blocks below unchanged, so the normal
+# validate-resolve-append path runs to completion and records a schema-valid refusal entry
+# (instead of the unknown-flag case previously exiting immediately with nothing written). The
+# caller's own --what-happened (when parsed before the unrecognized flag) is preserved
+# verbatim inside the synthesized what_happened below; --task-dir/--task, --phase, and
+# --session (when parsed before the unrecognized flag) are left untouched since they are
+# needed for normal task-directory resolution and entry construction. See
+# context/formats/issue-log.md's refusal-entry subsection for the full shape. ---
+refusal_tags_json=""
+if [ -n "$unknown_arg" ]; then
+  if [ -n "$what_happened_arg" ]; then
+    what_happened_arg="issue-record.sh refused this invocation: unrecognized argument '$unknown_arg'. The caller's own --what-happened was: $what_happened_arg"
+  else
+    what_happened_arg="issue-record.sh refused this invocation: unrecognized argument '$unknown_arg'. No --what-happened was parsed before the unrecognized argument was encountered."
+  fi
+  kind_arg="issue"
+  class_arg="knowledge-capture gap"
+  severity_arg="minor"
+  refusal_tags_json="$(jq -c -n --arg flag "$unknown_arg" --arg raw_tags "$tags_json_arg" \
+    '{issue_record_refusal: ({flag: $flag} + (if $raw_tags == "" then {} else {caller_tags_json: $raw_tags} end))}')"
+  evidence_path_arg=""
+  cost_value_arg=""
+  cost_unit_arg=""
+  resolution_arg=""
+  suggested_channel_arg=""
+  tags_json_arg=""
+  if ! [[ "$dispatch_seq_arg" =~ ^[0-9]+$ ]]; then
+    dispatch_seq_arg=""
+  fi
+fi
 
 # --- Validate required arguments (refuse, nothing written) ---
 if [ -z "$task_dir_arg" ] && [ -z "$task_arg" ]; then
@@ -366,12 +436,12 @@ else
   task_entry="$(task_lookup_entry "$task_arg" "$STATE_FILE")"
   if [ -z "$task_entry" ]; then
     echo "error: task $task_arg does not resolve to any entry in $STATE_FILE (active or archived)" >&2
-    exit 1
+    exit_refusal_aware
   fi
   project_name="$(echo "$task_entry" | jq -r '.project_name // empty')"
   if [ -z "$project_name" ]; then
     echo "error: task $task_arg's state.json entry has no project_name" >&2
-    exit 1
+    exit_refusal_aware
   fi
   task_dir_rel="$(task_lookup_dir "$task_arg" "$project_name" "$PROJECT_ROOT")"
   TASK_DIR="$PROJECT_ROOT/$task_dir_rel"
@@ -379,7 +449,7 @@ fi
 
 if [ ! -d "$TASK_DIR" ]; then
   echo "error: resolved task directory does not exist: $TASK_DIR" >&2
-  exit 1
+  exit_refusal_aware
 fi
 
 ISSUES_FILE="$TASK_DIR/issues.jsonl"
@@ -409,6 +479,9 @@ fi
 tags_arg="$tags_json_arg"
 if [ -z "$tags_arg" ]; then
   tags_arg='{}'
+fi
+if [ -n "$unknown_arg" ]; then
+  tags_arg="$refusal_tags_json"
 fi
 
 # --- Build exactly one line via jq -c -n (never string concatenation) ---
@@ -458,6 +531,14 @@ line=$(jq -c -n \
 #     context/formats/issue-log.md's "Central Cross-Repo Log" section for the envelope and the
 #     promotion filter (only kind == "issue" is promoted; a kind == "win" is not). ---
 central_log_promote "issues.jsonl" "$line" || true
+
+if [ -n "$unknown_arg" ]; then
+  # Refusal mode: the stdout-is-the-entry_id contract is for success only. The documented
+  # invocation form redirects both stdout and stderr, so this line is a direct-invocation
+  # convenience only -- the refusal entry appended above is what the caller actually recovers.
+  echo "error: issue-record.sh refused this invocation (unrecognized argument: $unknown_arg); recorded refusal entry $entry_id" >&2
+  exit 2
+fi
 
 echo "$entry_id"
 exit 0

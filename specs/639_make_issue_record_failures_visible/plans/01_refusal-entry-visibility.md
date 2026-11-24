@@ -1,7 +1,7 @@
 # Implementation Plan: Task #639
 
 - **Task**: 639 - Make issue-record.sh failures visible instead of silently losing the evidence entry
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/639_make_issue_record_failures_visible/reports/01_issue-record-failure-visibility.md
@@ -176,7 +176,7 @@ performed and no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Refusal Mode, Exit Code 2, and the Self-Recorded Refusal Entry [NOT STARTED]
+### Phase 1: Refusal Mode, Exit Code 2, and the Self-Recorded Refusal Entry [COMPLETED]
 
 **Goal**: `issue-record.sh` responds to an unrecognized flag by appending one schema-valid
 refusal entry to the resolved task's `issues.jsonl` (naming the offending flag and preserving the
@@ -185,14 +185,16 @@ and with the script's own header contract updated to match.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/issue-record.sh` immediately before editing
+- [x] Re-read `agent-system/extensions/core/scripts/issue-record.sh` immediately before editing
       (concurrent-sibling discipline) and re-confirm the four refusal sites the Scope Hypothesis
-      names via `grep -n 'exit 1' agent-system/extensions/core/scripts/issue-record.sh`.
-- [ ] Replace the `*)` arm of the parse loop (line 148) so it records the offending token in a new
+      names via `grep -n 'exit 1' agent-system/extensions/core/scripts/issue-record.sh`. *(completed:
+      confirmed exactly 17 `exit 1` sites with the four reachable-refusal sites at line 106
+      (inside `usage()`), 369, 374, 382, matching the Scope Hypothesis exactly)*
+- [x] Replace the `*)` arm of the parse loop (line 148) so it records the offending token in a new
       `unknown_arg` variable, prints the existing `error: unknown argument: $1` line to stderr,
       and stops parsing (`break`) instead of calling `usage()`. Leave the `-h|--help` arm exactly
-      as it is — a usage request is not a dropped entry and keeps exit 1.
-- [ ] Immediately after the parse loop, when `unknown_arg` is non-empty, enter refusal mode:
+      as it is — a usage request is not a dropped entry and keeps exit 1. *(completed)*
+- [x] Immediately after the parse loop, when `unknown_arg` is non-empty, enter refusal mode:
       force `kind_arg=issue`, `class_arg="knowledge-capture gap"` (a seed class whose gloss is
       precisely "a durable knowledge-capture step … produced nothing", and one already precedented
       as emitted by a mechanical writer), `severity_arg=minor`; synthesize `what_happened_arg` as
@@ -203,27 +205,28 @@ and with the script's own header contract updated to match.
       only as a JSON *string* for the refusal tags). Keep `--task-dir`/`--task`, `--phase`, and
       `--session`; clear `--dispatch-seq` unless it is already a bare integer. This ordering is
       what makes every downstream validation pass on the refusal path without reordering a single
-      existing validation block.
-- [ ] Build the refusal entry's `tags` as `{"issue_record_refusal": {...}}` carrying at least the
+      existing validation block. *(completed)*
+- [x] Build the refusal entry's `tags` as `{"issue_record_refusal": {...}}` carrying at least the
       offending flag and the raw `--tags-json` string when one was given — the open `tags` seam
-      `context/formats/issue-log.md` documents, requiring no schema change.
-- [ ] Make the four refusal sites refusal-aware so an argument-shaped refusal never exits 1:
+      `context/formats/issue-log.md` documents, requiring no schema change. *(completed)*
+- [x] Make the four refusal sites refusal-aware so an argument-shaped refusal never exits 1:
       `usage()`'s own `exit 1` (line 106) and the three inline `exit 1` sites in the
       task-directory resolution block (lines 369, 374, 382). A small helper that exits 2 when
       `unknown_arg` is set and 1 otherwise is sufficient; do not convert the content-shaped
-      validation sites.
-- [ ] At the append site, keep the existing `jq -c -n` build and the `flock`-guarded append
+      validation sites. *(completed: `exit_refusal_aware()` helper)*
+- [x] At the append site, keep the existing `jq -c -n` build and the `flock`-guarded append
       unchanged, then branch after the append: in refusal mode, print nothing to stdout (the
       stdout-is-the-entry_id contract is for success only), emit a stderr line naming the
-      offending flag and the appended `entry_id`, and `exit 2`.
-- [ ] Leave `central_log_promote` on its existing unconditional, best-effort path — a refusal
-      entry is `kind: issue` and is promoted like any other; do not special-case it.
-- [ ] Update the header block in the same file: the invocation-contract comment (lines 59-62) to
+      offending flag and the appended `entry_id`, and `exit 2`. *(completed)*
+- [x] Leave `central_log_promote` on its existing unconditional, best-effort path — a refusal
+      entry is `kind: issue` and is promoted like any other; do not special-case it. *(completed:
+      untouched)*
+- [x] Update the header block in the same file: the invocation-contract comment (lines 59-62) to
       state that an argument-shaped refusal self-records rather than vanishing under the
       prescribed redirection, and the exit-code block (lines 64-67) to document `2` alongside
       `0`/`1`, including the stated residual (a mistyped task-resolution flag resolves no task
       directory, so it exits 2 with stderr only and appends nothing). Add the new code to
-      `usage()`'s own "Exit codes:" line too.
+      `usage()`'s own "Exit codes:" line too. *(completed)*
 
 **Timing**: 1.5 hours
 

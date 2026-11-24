@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/639_make_issue_record_failures_visible/plans/01_refusal-entry-visibility.md",
-      "summary": "Four-phase plan making an unknown-flag refusal self-record a schema-valid refusal entry into the task's own issues.jsonl and exit with a new distinct code 2, plus regression cases, documentation parity, and a redeploy for non-vacuous default-mode verification."
-    }
-  ],
-  "phase_count": 4,
-  "estimated_hours": 4,
-  "dependency_waves": [[1], [2, 3], [4]],
-  "memory_candidates": [
-    {
-      "content": "Two coupled facts govern verifying a source-store script edit in agent-system/extensions/core: (1) a test suite using common_test_resolve_subject with mode deploy-tree-first honours CORE_TEST_SUBJECT_MODE=source-store, so the edited source-store copy CAN be exercised without a redeploy even when the script itself refuses direct source-store invocation via deploy-root-guard.sh (the suite copies it into a scratch .claude/scripts/ mirror); (2) the corollary cost -- the moment that suite gains cases asserting the NEW behaviour, a default-mode run resolves the stale deployed copy and those cases FAIL until a redeploy. A plan touching such a script must therefore schedule the redeploy inside the task (declaring the __WHOLE_TREE__ sentinel in that phase's Files to modify) rather than leaving it to the orchestration close, and must not claim verify-touched.sh as a pre-redeploy covering check: its suites resolve subjects deploy-tree-first and would validate the stale copy.",
-      "category": "PATTERN",
-      "source_artifact": "specs/639_make_issue_record_failures_visible/plans/01_refusal-entry-visibility.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["CORE_TEST_SUBJECT_MODE", "source-store verification", "deploy-tree-first", "verify-touched", "whole-tree sentinel"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 16,
   "metadata": {
-    "session_id": "sess_1795494587_0fa3fc_639",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "next_steps": "Run /orchestrate 639 to execute the plan",
-  "dispatch_seq": 14
+    "session_id": "sess_1795494587_0fa3fc",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

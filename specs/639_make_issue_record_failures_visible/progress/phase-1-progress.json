@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Refusal Mode, Exit Code 2, and the Self-Recorded Refusal Entry",
+  "started_at": "2026-11-24T05:00:00Z",
+  "last_updated": "2026-11-24T05:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read issue-record.sh and re-confirm the four exit-1 refusal sites via grep", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace the *) arm to record unknown_arg, print error, break instead of usage()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 3, "description": "Enter refusal mode after parse loop: force kind/class/severity, synthesize what_happened, clear optional fields", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 4, "description": "Build refusal entry tags.issue_record_refusal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 5, "description": "Make the four refusal sites refusal-aware (exit 2 vs 1 helper)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 6, "description": "Branch after append: refusal mode prints stderr + entry_id, exit 2, nothing on stdout", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 7, "description": "Leave central_log_promote unconditional/best-effort path unchanged", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Update header invocation-contract comment and exit-code block, including usage()'s Exit codes line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "bash -n": "clean",
+    "CORE_TEST_SUBJECT_MODE=source-store test-issue-record.sh": "27 passed, 0 failed (all existing cases a-v unchanged)",
+    "manual_scratch_exercise": "mistyped --session-id after --task-dir/--what-happened: exit 2 direct, appends exactly one tags.issue_record_refusal entry naming --session-id with caller's --what-happened verbatim; documented redirected form leaves caller exit 0"
+  }
+}
