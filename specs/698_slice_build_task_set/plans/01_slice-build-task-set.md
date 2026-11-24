@@ -1,7 +1,7 @@
 # Implementation Plan: Task #698
 
 - **Task**: 698 - slice_build_task_set
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.75 hours
 - **Dependencies**: None (the ruling's own record, `slice_command_design_and_consolidation`, is completed)
 - **Research Inputs**: specs/698_slice_build_task_set/reports/01_slice-build-task-set.md
@@ -141,21 +141,21 @@ to batch them. `roadmap_ext_blocked` on 694 belongs to that pass and is not edit
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the Task-Set Proposal Packet [NOT STARTED]
+### Phase 1: Author the Task-Set Proposal Packet [COMPLETED]
 
 **Goal**: One JSON packet holding everything the six new records need, keyed by slug, with a
 baseline of the live state it was authored against.
 
 **Tasks**:
-- [ ] Record the baseline: `jq '[.active_projects[].project_number] | sort' specs/state.json`
-      and `next_project_number`, written into the packet's `baseline` object.
-- [ ] Re-run the premise checks in the table above (statuses of 655, 690 to 695, 697; the
+- [x] Record the baseline: `jq '[.active_projects[].project_number] | sort' specs/state.json`
+      and `next_project_number`, written into the packet's `baseline` object. *(completed)*
+- [x] Re-run the premise checks in the table above (statuses of 655, 690 to 695, 697; the
       `review-stack-prepare`, `/merge`, `/slice|slice_bar` greps; `wc` on the handoff script) and
-      correct any figure that has moved before it enters a description.
-- [ ] Read the ruling's sections each description cites ("The command surface", "The mechanism",
+      correct any figure that has moved before it enters a description. *(completed: all figures confirmed; 27 /merge files, 11 review-stack-prepare files, 10 review_base lines, handoff 366 lines; work branch now 400 ahead)*
+- [x] Read the ruling's sections each description cites ("The command surface", "The mechanism",
       "Basis", "The size bar", "One survivor, and what is deleted", "Grants", "Constraints held",
-      "Successors", "What is discarded") so each description quotes the ruling by section name.
-- [ ] Write `records/01_task-set-packet.json` with: `baseline`; `topic` (`core-agent-system`);
+      "Successors", "What is discarded") so each description quotes the ruling by section name. *(completed)*
+- [x] Write `records/01_task-set-packet.json` with: `baseline`; `topic` (`core-agent-system`);
       `task_type` (`meta`); `creation_order` (`slice_command_build`,
       `bind_push_grant_to_pushed_ref`, `slice_bar_measurement_and_declaration`,
       `narrow_handoff_to_print_slice`, `delete_review_stack_inference_route`,
@@ -163,16 +163,16 @@ baseline of the live state it was authored against.
       `title`, `description`, `file_scope` (source-store-relative paths spelled
       `agent-system/extensions/core/...`, no shell variable), and `depends_on_slugs`; and an
       `edges_onto_existing` object (`655` after `slice_bar_measurement_and_declaration`; `694`
-      after all six, removing 692 and 693).
-- [ ] Each description opens with the standard source-store paragraph and carries the points in
+      after all six, removing 692 and 693). *(deviation: altered — sixteen edges, not fifteen: narrow_handoff_to_print_slice after slice_bar_measurement_and_declaration added for shared index-entries.json; packet also carries successor_map and edge_count)*
+- [x] Each description opens with the standard source-store paragraph and carries the points in
       the report's "What each description must say beyond its row", in particular: S1's
       acceptance is one real slice pushed by a typed grant and opened by the operator typing
       `/slice`, the implementing agent stops short and does not close the record; S3 names its
       live caller and Overview lines 16 and 19; S4 states it reverses a closed deliverable and
       retargets Case H; S5 carries the dispatch-time precondition that a pull request opened by
       `/slice` exists and names the three files in other extensions; S5's file list is marked
-      for re-enumeration by its own research.
-- [ ] No description contains a successor's task number; cross-references use slugs.
+      for re-enumeration by its own research. *(completed)*
+- [x] No description contains a successor's task number; cross-references use slugs. *(completed)*
 
 **Timing**: 1.5 hours
 

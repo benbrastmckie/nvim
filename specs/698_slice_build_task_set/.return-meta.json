@@ -1,32 +1,13 @@
 {
-  "status": "planned",
-  "started_at": "2026-11-24T11:26:00Z",
-  "completed_at": "2026-11-24T11:45:00Z",
-  "dispatch_seq": 2,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/698_slice_build_task_set/plans/01_slice-build-task-set.md",
-      "summary": "Four-phase plan: author a creation-ready proposal packet for the six /slice successor records, audit it and record follow-up evidence, revise the descriptions of 694 and 655, and write the foreground creation runbook. Record creation and all fifteen edges are deferred to a foreground surface."
-    }
-  ],
-  "next_steps": "Run /orchestrate 698 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "A task whose stated deliverable is 'create N task records and edge them' cannot be executed by an autonomous dispatch: multi-task-creation-standard.md's 'Requesting a Proposal Packet, Not Filing, From an Autonomous Dispatch' section makes confirmed creation foreground-only, and state-write.sh's audit-evidence gate refuses a new active_projects entry without a matching audit verdict or a human-authored override. Plan such a task as: proposal packet keyed by slug (full descriptions, file_scope, edges by slug), pre-computed audit-task-proposals.sh verdicts, one issue-record.sh --suggested-channel follow_up_task entry per candidate, and a foreground runbook. Description revisions of existing records remain doable by the dispatch via skill-reviser Stage 7's state-write.sh block. Do not remove a stale dependency edge from an existing record ahead of adding its replacements: removal alone can make the record dispatchable early.",
-      "category": "PATTERN",
-      "source_artifact": "specs/698_slice_build_task_set/plans/01_slice-build-task-set.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["proposal packet", "task creation", "autonomous dispatch", "foreground requirement", "audit-evidence gate", "follow_up_task"]
-    }
-  ],
+  "status": "in_progress",
+  "started_at": "2026-11-24T11:50:00Z",
+  "dispatch_seq": 3,
+  "artifacts": [],
+  "partial_progress": {"stage": "initializing", "details": "Implementation dispatch started", "phases_completed": 0, "phases_total": 4},
   "metadata": {
-    "session_id": "sess_1795519174_6a98f8_698",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 3.75,
-    "dependency_waves": [[1], [2, 3], [4]]
+    "session_id": "sess_1795519174_6a98f8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
