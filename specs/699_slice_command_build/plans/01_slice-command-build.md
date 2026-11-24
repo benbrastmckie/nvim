@@ -508,42 +508,51 @@ and only place a forge call appears.
 
 ---
 
-### Phase 5: Registration and the Runtime-File Row [NOT STARTED]
+### Phase 5: Registration and the Runtime-File Row [COMPLETED]
 
 **Goal**: The three new files are declared everywhere the deploy and its gates require, and the
 series file earns its row in the runtime-file policy table with its coupled generated surface
 reconciled in the same phase.
 
 **Tasks**:
-- [ ] Add `scripts/slice-series.sh` and `scripts/tests/test-slice-series.sh` to
+- [x] Add `scripts/slice-series.sh` and `scripts/tests/test-slice-series.sh` to
       `manifest.json`'s `provides.scripts`, at the alphabetically correct positions (beside the
       existing `review-stack-prepare.sh` / `tests/test-review-stack-prepare.sh` entries as the
-      naming and placement precedent).
-- [ ] Add `"slice.md"` to `manifest.json`'s `provides.commands`.
-- [ ] Add the suite's row to `scripts/tests/suite-classification.data`: TAB-separated
+      naming and placement precedent). *(completed: slice-series.sh between skill-base.sh and
+      state-write.sh; tests/test-slice-series.sh between tests/test-skill-base-lifecycle.sh and
+      tests/test-source-store-path-lib.sh)*
+- [x] Add `"slice.md"` to `manifest.json`'s `provides.commands`. *(completed: between
+      roadmap.md and spawn.md)*
+- [x] Add the suite's row to `scripts/tests/suite-classification.data`: TAB-separated
       `test-slice-series.sh`, class `unit`, reason `-`. The suite must therefore spawn none of
       `deploy-headless.sh`, `verify-deploy.sh`, or a nested `run-all.sh` — confirm before writing
-      the row rather than after.
-- [ ] Add a `/slice` row to the extension `README.md`'s Commands table (mechanically required:
+      the row rather than after. *(completed: confirmed via grep before writing the row)*
+- [x] Add a `/slice` row to the extension `README.md`'s Commands table (mechanically required:
       the doc lint fails a `provides.commands` entry not mentioned there). Leave the Overview
-      table's count and the "All 20 commands" sentence untouched.
-- [ ] Add one row to `context/standards/orchestrator-runtime-files.md` for
+      table's count and the "All 20 commands" sentence untouched. *(completed: row added beside
+      /merge; Overview count and sentence left untouched)*
+- [x] Add one row to `context/standards/orchestrator-runtime-files.md` for
       `specs/.orchestration/slices/<series id>.json` and its sibling
       `<series id>/<slice id>.md`: writer, reader, cleanup, and the **Durable provenance, but
       untracked** disposition, stating that it is covered by the pre-existing
       `**/.orchestration/` directory-class pattern so no new pattern member is needed. Place it
       beside the batch-record / queue-archive / review-manifest rows that share that disposition.
       Do not touch the review-manifest row — its deletion belongs to a different record.
-- [ ] Regenerate the coupled line-count surface in the same phase:
+      *(completed: row added immediately after the review-manifest row; review-manifest row left
+      untouched)*
+- [x] Regenerate the coupled line-count surface in the same phase:
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`, which
       updates `index-entries.json`'s `line_count` for
       `standards/orchestrator-runtime-files.md` (its declared value before this phase is the
-      pre-edit length, which the doc lint's line-count rule checks).
-- [ ] Confirm, before closing the phase, that the correction target named above still exists:
+      pre-edit length, which the doc lint's line-count rule checks). *(completed: deviation --
+      the script refuses outside a deployed tree, so run via its own documented
+      `REPO_ROOT=$(pwd)` source-store-invocation bypass; see progress file deviation 5.6)*
+- [x] Confirm, before closing the phase, that the correction target named above still exists:
       `context/standards/orchestrator-runtime-files.md` and its `index-entries.json` entry were
       both confirmed present at plan time. If either is absent when this phase runs, add the row
       to whichever file then holds the runtime-file inventory and record the deviation rather
-      than inventing a target.
+      than inventing a target. *(completed: both confirmed present; line_count now 731, matching
+      `wc -l`)*
 
 **Timing**: 1 hour
 

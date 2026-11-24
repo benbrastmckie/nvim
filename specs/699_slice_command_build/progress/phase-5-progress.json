@@ -1,0 +1,62 @@
+{
+  "phase": 5,
+  "phase_name": "Registration and the Runtime-File Row",
+  "started_at": "2026-11-24T17:45:00Z",
+  "last_updated": "2026-11-24T18:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add scripts/slice-series.sh and scripts/tests/test-slice-series.sh to manifest.json's provides.scripts at alphabetically correct positions",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 2,
+      "description": "Add slice.md to manifest.json's provides.commands",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 3,
+      "description": "Add the suite's row to suite-classification.data (unit, reason -), confirmed it spawns none of deploy-headless.sh/verify-deploy.sh/nested run-all.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/suite-classification.data"]
+    },
+    {
+      "id": 4,
+      "description": "Add a /slice row to the extension README.md's Commands table, leaving the Overview count and 20-commands sentence untouched",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/README.md"]
+    },
+    {
+      "id": 5,
+      "description": "Add a row to context/standards/orchestrator-runtime-files.md for the series file and its sibling body file (Durable provenance, but untracked)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]
+    },
+    {
+      "id": 6,
+      "description": "Regenerate index-entries.json's line_count for the edited standards file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"]
+    },
+    {
+      "id": 7,
+      "description": "Confirm the correction target (orchestrator-runtime-files.md and its index-entries.json entry) still exists",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.6",
+      "description": "generate-context-line-counts.sh invocation form",
+      "type": "altered",
+      "reason": "The script refuses to run directly from the source store (agent-system/extensions/core/scripts), requiring a deployed .claude/scripts/ tree, with an explicit, documented REPO_ROOT-bypass escape hatch in its own header comment for a deliberate source-store invocation. Used that documented bypass (`REPO_ROOT=\"$(pwd)\" bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`) rather than waiting for Phase 6's redeploy, since the task explicitly calls for this regeneration in Phase 5 itself.",
+      "annotation": "*(completed: used the script's own documented REPO_ROOT bypass for a source-store invocation, since the plain invocation refuses to run outside a deployed tree)*"
+    }
+  ]
+}
