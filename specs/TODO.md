@@ -13,7 +13,7 @@ next_project_number: 698
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,671,674,679,680,684,686,689,690,693,696,697 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,671,674,679,680,684,686,689,693,696,697 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,665,694 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,693,697 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -63,7 +63,6 @@ next_project_number: 698
 664 [NOT STARTED] — Add a /tmp sweep pass to /refresh for dead scratchpad...
 680 [NOT STARTED] — Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged...
 684 [NOT STARTED] — Sweep and fix stale command and sub-mode references across...
-690 [IMPLEMENTING] — milestone-ref-land.sh re-creates a deliberately retired...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
@@ -491,7 +490,7 @@ VERIFY BY: scripts/tests/test-review-stack-prepare.sh green with its existing 38
 ---
 
 ### 690. milestone-ref-land.sh re-creates a deliberately retired milestone ref
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: general
 - **Topic**: core-agent-system
 - **Dependencies**: Task 692
