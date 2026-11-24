@@ -2322,8 +2322,7 @@
         },
         "degradations_count": 47
       },
-      "roadmap_annotation": "blocked on a record that does not exist: the /slice build; re-edge onto it and revise before dispatch",
-      "roadmap_ext_blocked": true
+      "roadmap_annotation": "acceptance is one real slice pushed and opened in a second repository, so it stays last"
     },
     {
       "project_number": 692,
@@ -24234,7 +24233,7 @@
       "gate": "/slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.",
       "progress": {
         "status": "active",
-        "note": "Ruled, not built: slice.md absent. Six successor records plus their 16 edges are owed to a foreground runbook run."
+        "note": "Scheduled, not built: slice.md is still absent. The six build records now exist, batched in dependency order behind the build itself."
       },
       "review": {
         "state": "prepared",
@@ -24257,21 +24256,45 @@
             690
           ],
           "description": "Closed: the retired ref-land script's deletion, and the handoff task that closed unrevised",
-          "rationale": "690's deletion is confirmed by the ruling record: the retired script has no lifecycle caller. 692 closed as written, WITHOUT the revision the ruling requires -- milestone-review-handoff.sh still writes review.ref unconditionally and still prints /please push with no /slice line. Successor 4 (narrow the handoff) therefore has no owner: a terminal task cannot be revised into it, so it needs a NEW task record, ordered after the /slice build so the line it prints names a command that exists."
+          "rationale": "690's deletion is confirmed by the ruling record: the retired script has no lifecycle caller. 692 closed as written, WITHOUT the revision the ruling requires -- milestone-review-handoff.sh still writes review.ref unconditionally and still prints /please push with no /slice line. That gap now has an owner: narrow_handoff_to_print_slice (702) is a new record carrying exactly the work a terminal task could not be revised into, sited two batches below so the line it prints names a command that exists. Expect a backlog-audit match between 702 and 692; the match is the reversal of a closed deliverable, not a duplicate."
+        },
+        {
+          "task_ids": [
+            699,
+            700
+          ],
+          "description": "Build /slice and bind the push grant; the build closes only on an operator-opened request",
+          "rationale": "The build itself, and the one grant defect that makes its acceptance step affordable. Both are wave 1 with no predecessor and they share no file -- 699 declares commands/slice.md, manifest.json and the suite-classification row; 700 declares the two hooks, push-grant-lib.sh and their two suites. Each record's own text asks for the other alongside it.\n\nHUMAN GATE, which no dependency edge can express: 699 DOES NOT CLOSE ON A GREEN SUITE. Its acceptance is one real slice of a real difference, pushed by a typed /please push grant and opened as a pull request by the operator typing /slice, with the request URL recorded in the series file. The implementing agent builds, tests, redeploys and returns with the record STILL OPEN, naming the exact lines the operator types -- an agent can neither push nor open a request (rules/pr-prohibition.md). A dispatch reporting this record completed on suites alone has not met the acceptance; two builders with green suites and no pull request are precisely what the ruling deletes.\n\n700 is sited here rather than later on a measured reason carried in its own text: a grant is matched against git rev-parse HEAD at consume time, so any commit by any session inside the 600 s window kills it although the pushed ref is untouched -- routine in this repository with live orchestration, and exactly the operator step above. Fixing it before the acceptance push is attempted removes a retry loop from the one step the milestone's gate turns on, at no cost to the critical path.\n\nThe held 686 (per-batch worktree creation) claims manifest.json with 699. No edge, and it stays sited in no batch while the hold stands."
+        },
+        {
+          "task_ids": [
+            701,
+            702
+          ],
+          "description": "Then the measured size bar and the handoff that prints /slice, both behind the build",
+          "rationale": "The two wave-2 successors of the build, batched together BECAUSE they share a file and are deliberately not edged: both reconcile index-entries.json for the line-count check, and the operator ruled that overlap is to be sequenced at dispatch rather than ordered by an edge, since neither presupposes the other. DO NOT ADD A 702-AFTER-701 EDGE. Run the batch as a sequence, or dispatch at width 1.\n\n701 adds the two bar sources the build ships without -- a declared slice_bar object and the 75th-percentile nearest-rank measurement over merged requests on the chosen target -- and adds the slice_bar section to repo-level-declarations.md, the document whose review_base section the next batch deletes. 702 is a new record for work the ruling had assigned to a now-terminal task, so its deliverable is live in the tree and 702 undoes it: the handoff stops calling review-stack-prepare.sh, stops writing review.ref, and prints one line, /slice.\n\nCross-batch reading duty, recorded here rather than invented as an edge: 665 (the displaced Previous work section, in no batch) claims context/formats/roadmap-format.md and scripts/tests/test-orchestrate-conclusion-roadmap.sh, both of which 702 edits -- Case H of that suite is retargeted to the one-line /slice output. 665 is wave 1 and this batch is wave 2, so the pair never shares a wave, and neither record's text presupposes the other. Whichever lands second re-reads the other's edit instead of assuming the file it was written against."
+        },
+        {
+          "task_ids": [
+            703,
+            704
+          ],
+          "description": "Delete the inference route, then /merge -- only once /slice has opened a real request",
+          "rationale": "The two deletions, in the only order the tree allows. The ruling carries the inference-route deletion as 'ordered after nothing; it has no caller', and the tree overturns that: milestone-review-handoff.sh calls review-stack-prepare.sh today, and two context documents cite it as the live implementation of the ref-plumbing idiom. 703 is therefore ordered after 702, which removes the call, and after 701, which edits the same declarations document. Deleting first would pin a live caller to its refusal arm and leave two suites asserting behaviour that no longer exists.\n\nHUMAN GATE, which no dependency edge can express: 704 MUST NOT RUN UNTIL A PULL REQUEST OPENED BY /slice EXISTS. Its own first step reads specs/.orchestration/slices/ for a series file carrying a slice at state open or merged with a request_url, and returns BLOCKED, naming the operator step owed, having changed nothing if none is there. /merge is not removed until /slice has demonstrably replaced it. Its four edges -- onto the build, the grant, the handoff narrowing and the inference-route deletion -- are necessary and NOT sufficient; admitting this record while the series file is empty spends a dispatch to learn that.\n\nBoth members re-enumerate their own work list at research time. The /merge search returned 27 files on 2026-11-24 from a single pattern and is flagged ENUMERATION-UNVERIFIED; two of those files are deleted by 703 and four more edited by 702, so 704 builds its list from what remains.\n\nNo edge onto 684 (the stale-command-reference sweep, in no batch), considered and refused: it claims context/contracts/conclusion-stage.md with 704 and extends a lint that enumerates valid commands at run time, but neither order breaks the other -- running the sweep first leaves /merge legitimately resolvable, running it second hands it a corpus already renamed. The duty is to re-read, not to wait."
         },
         {
           "task_ids": [
             655
           ],
           "description": "Declare generated paths, so a slice diff reads and its size bar counts hand-written lines",
-          "rationale": "655 gates only the ACCURACY of the slice size bar, not the build: successor 2 carries a hard edge from the bar's line count onto this declaration, because the count is wrong in any repository where generated files ride in a slice. It does not block successor 1, which is unblocked right now. Its own two open predecessors, 553 and 513, are the open end of M4's chain -- which is why M4 sits directly behind this milestone."
+          "rationale": "The generated-path declaration that makes the size bar's count honest, sited after the deletions because the graph puts it there. THE EDGE DIRECTION IS 655 AFTER 701, not the reverse: the bar record is buildable and correct without the declaration (every path counts, and prompt 2 says so), so the ruling's edge runs from the bar's ACCURACY onto this record, and this record wires its exclusion list into the single named place the bar leaves for it. Its annotation states the live cost -- until it lands the bar miscounts wherever generated files ride in a slice.\n\nRe-measured 2026-11-24: its open predecessors are 513, 553, 654, 657 and 701 (517 has completed), which puts it at wave 9 -- the deepest member of this milestone, and the reason M4, whose chain carries 553 and 513, is ranked directly behind this milestone.\n\nIt also claims context/standards/git-workflow-narrative.md with both members of the batch above. No edge: at wave 9 against waves 3 and 4 the pair never shares a wave, and neither record's text presupposes the other. Whichever lands second re-reads the passage."
         },
         {
           "task_ids": [
             694
           ],
-          "description": "Last: doc parity, redeploy and the operator runbook, once /slice has opened a real stack",
-          "rationale": "694 still carries its creation-time edges onto 692 and the abandoned 693. The abandoned edge is dangling, there is no edge-removal flag, and the creation runbook replaces both with one edge onto the slice build in a single step -- leave it to that step rather than working around it. Until then 694 renders ext-blocked and is not dispatchable."
+          "description": "Last: doc parity, redeploy and the runbook, proven by a slice opened in a second repo",
+          "rationale": "Last, and its blocker is now a real record rather than a dangling edge. Its dependencies read [691, 695, 699, 700, 701, 702, 703, 704]: the edge onto the abandoned 693 is gone and the six build records it was waiting for exist, so roadmap_ext_blocked is cleared on this pass and it renders as an ordinary dependency-blocked member at wave 5.\n\nIt stays last on its own acceptance rather than on its edges: doc parity and the operator runbook are only proven by one real slice pushed and opened as a pull request in a SECOND repository, which cannot be attempted until /slice has worked once here. It shares four files with 704 (merge-sources/claudemd.md, docs/guides/user-guide.md, README.md, index-entries.json) and is already ordered after it, so the /merge rename lands there and the runbook here."
         }
       ]
     },

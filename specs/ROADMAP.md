@@ -6,7 +6,7 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M5: /slice: the one path from a work branch to a stack of review pull requests](#milestone-m5) | active | 5/7 | prepared |
+| [M5: /slice: the one path from a work branch to a stack of review pull requests](#milestone-m5) | active | 5/13 | prepared |
 | [M4: Close the commit-layer and detector chain the slice size bar waits on](#milestone-m4) | active | 9/21 | none |
 | [M6: The dispatch handoff contract: what one dispatch hands the next](#milestone-m6) | planned | 0/6 | none |
 | [M7: Lean plan contracts, compliance checks and the build-guard replay hole](#milestone-m7) | active | 6/22 | none |
@@ -21,7 +21,7 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Make /slice the single user-invoked path from a work-branch tip to a reviewable stack of pull requests on a chosen target, refuse a slice too large to review, and delete every other route to review.
 
-- **Progress**: active -- 2/4 batches, 5/7 tasks done -- Ruled, not built: slice.md absent. Six successor records plus their 16 edges are owed to a foreground runbook run.
+- **Progress**: active -- 2/7 batches, 5/13 tasks done -- Scheduled, not built: slice.md is still absent. The six build records now exist, batched in dependency order behind the build itself.
 - **Review**: prepared on `refs/heads/master` (updated 2026-11-24)
 - **Gate**: /slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.
 
@@ -29,18 +29,42 @@ Make /slice the single user-invoked path from a work-branch tip to a reviewable 
 
 **Batch 2** (done) -- Closed: the retired ref-land script's deletion, and the handoff task that closed unrevised
 
-**Batch 3** -- Declare generated paths, so a slice diff reads and its size bar counts hand-written lines
+**Batch 3** -- Build /slice and bind the push grant; the build closes only on an operator-opened request
+
+```
+/orchestrate 699, 700
+699 ready           slice_command_build
+700 ready           bind_push_grant_to_pushed_ref
+```
+
+**Batch 4** -- Then the measured size bar and the handoff that prints /slice, both behind the build
+
+```
+/orchestrate 701, 702
+701 blocked:699     slice_bar_measurement_and_declaration
+702 blocked:699     narrow_handoff_to_print_slice
+```
+
+**Batch 5** -- Delete the inference route, then /merge -- only once /slice has opened a real request
+
+```
+/orchestrate 703, 704
+703 blocked:701,702 delete_review_stack_inference_route
+704 blocked:699,700,702,703  remove_merge_command
+```
+
+**Batch 6** -- Declare generated paths, so a slice diff reads and its size bar counts hand-written lines
 
 ```
 /orchestrate 655
-655 blocked:513,553 Declare generated paths so they collapse in review   <- until this lands the size bar miscounts wherever generated files ride in a slice
+655 blocked:513,553,701  Declare generated paths so they collapse in review   <- until this lands the size bar miscounts wherever generated files ride in a slice
 ```
 
-**Batch 4** -- Last: doc parity, redeploy and the operator runbook, once /slice has opened a real stack
+**Batch 7** -- Last: doc parity, redeploy and the runbook, proven by a slice opened in a second repo
 
 ```
 /orchestrate 694
-694 EXT-BLOCKED     stack_pr_redeploy_and_second_repo_demo   <- blocked on a record that does not exist: the /slice build; re-edge onto it and revise before dispatch
+694 blocked:699,700,701,702,703,704  stack_pr_redeploy_and_second_repo_demo   <- acceptance is one real slice pushed and opened in a second repository, so it stays last
 ```
 
 <a id="milestone-m4"></a>
