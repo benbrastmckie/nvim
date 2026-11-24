@@ -1,7 +1,7 @@
 # Implementation Plan: Task #690
 
 - **Task**: 690 - Delete the orphaned milestone-ref-land.sh utility and its references
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/690_milestone_ref_land_recreates_retired_ref/reports/01_milestone-ref-land-deletion-scope.md
@@ -159,25 +159,31 @@ included. `specs/ROADMAP.md` was not consulted for sequencing.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Remove the script, its suite, and its machine-read declarations [NOT STARTED]
+### Phase 1: Remove the script, its suite, and its machine-read declarations [COMPLETED]
 
 **Goal**: Eliminate the executable surface and every declaration a script or lint reads, in one
 atomic batch so no intermediate state leaves the manifest describing a file that is gone.
 
 **Tasks**:
-- [ ] Re-run `grep -rn "milestone-ref-land" agent-system/` and record the reference set before
+- [x] Re-run `grep -rn "milestone-ref-land" agent-system/` and record the reference set before
       touching anything; confirm it still matches the eight sites this plan's Premise
-      Re-Validation table names.
-- [ ] Delete `agent-system/extensions/core/scripts/milestone-ref-land.sh`.
-- [ ] Delete `agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh`.
-- [ ] Remove the `"milestone-ref-land.sh",` entry from `manifest.json`'s scripts array and the
+      Re-Validation table names. *(completed: re-grep before deletion returned the same 8
+      sites: script, suite, manifest x2 rows, suite-classification.data, 1 test comment, 2
+      context docs)*
+- [x] Delete `agent-system/extensions/core/scripts/milestone-ref-land.sh`. *(completed)*
+- [x] Delete `agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh`. *(completed)*
+- [x] Remove the `"milestone-ref-land.sh",` entry from `manifest.json`'s scripts array and the
       `"tests/test-milestone-ref-land.sh",` entry from its tests array; confirm by grep that zero
       occurrences of either string remain in the file and that the JSON still parses (`jq . `).
-- [ ] Remove the `test-milestone-ref-land.sh` row from
+      *(completed: both rows removed, `jq -e .` exits 0)*
+- [x] Remove the `test-milestone-ref-land.sh` row from
       `agent-system/extensions/core/scripts/tests/suite-classification.data`, preserving the
-      file's tab-separated column shape for every surviving row.
-- [ ] Confirm the deletion orphans no exclusive library dependency: the script sourced only
+      file's tab-separated column shape for every surviving row. *(completed: removed via
+      `sed` on the exact tab-separated line; surrounding rows unchanged)*
+- [x] Confirm the deletion orphans no exclusive library dependency: the script sourced only
       `lib/common.sh` and `deploy-root-guard.sh`, both shared by many other scripts.
+      *(completed: 79 other scripts under scripts/*.sh still reference deploy-root-guard.sh or
+      lib/common.sh)*
 
 **Timing**: 0.5 hours
 

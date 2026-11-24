@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/690_milestone_ref_land_recreates_retired_ref/plans/01_milestone-ref-land-deletion.md",
-      "summary": "3-phase, ~2-hour plan deleting milestone-ref-land.sh and its 8 reference sites, re-pointing the ref-plumbing pattern's implementation citation to review-stack-prepare.sh, and closing with a line-count reconcile plus redeploy."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795484837_9a6a6b_690",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 2,
-    "dependency_waves": [[1], [2], [3]]
-  },
-  "memory_candidates": [
-    {
-      "content": "validate-artifact.sh's Tier Justification measurement check extracts a phase's suite-name CLAIM by grepping the whole justification block for 'test-[A-Za-z0-9_-]+\\.sh'. A justification that inlines the phase's declared file paths therefore turns any declared test-suite PATH into a phantom suitelist claim, flipping claim_kind from empty (out of scope, silently passed over) to suitelist and emitting a false 'under-verifies' warning naming every other suite the selector returns. The authoring fix is to reference the phase's `Files to modify` set by name in the justification rather than inlining paths -- which also keeps the field to the one sentence the standard asks for. Applies to any phase whose declared paths include a test file.",
-    "category": "PATTERN",
-    "source_artifact": "specs/690_milestone_ref_land_recreates_retired_ref/plans/01_milestone-ref-land-deletion.md",
-    "confidence": 0.85,
-    "suggested_keywords": ["tier-justification", "validate-artifact", "suite-selection", "plan-authoring", "false-positive"]
+    "session_id": "sess_1795484837_9a6a6b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
-  ],
-  "next_steps": "Run /orchestrate 690 to execute the plan",
-  "dispatch_seq": 8
 }

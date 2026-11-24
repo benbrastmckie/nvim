@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Remove the script, its suite, and its machine-read declarations",
+  "started_at": "2026-11-23T00:00:00Z",
+  "last_updated": "2026-11-23T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run grep to confirm 8-site reference set before touching anything", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Delete milestone-ref-land.sh and test-milestone-ref-land.sh; remove manifest.json rows; remove suite-classification.data row; confirm no exclusive lib dependency orphaned", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/milestone-ref-land.sh",
+      "agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh",
+      "agent-system/extensions/core/manifest.json",
+      "agent-system/extensions/core/scripts/tests/suite-classification.data"
+    ]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "verify-touched.sh over this phase's four paths exited 1 (140-suite narrowed battery). The only failure plausibly connected to this phase (test-verify-deploy-context-budget.sh: deployed-vs-source drift for suite-classification.data, plus two orphan findings for the deleted script/suite) is the EXPECTED Phase-1-before-Phase-3-redeploy intermediate state the plan's own Risk table names; Phase 3's redeploy resolves it. The other three FAILs (test-gate-cache-equivalence.sh timeout, test-lint-unit-integration-boundary.sh's 3 unrelated classification-gap violations, test-orchestrate-conclusion-roadmap.sh Case H) are pre-existing/unrelated, confirmed via isolated re-run for Case H. grep, jq, and the reference-count checks all passed cleanly. Recorded via issue-record.sh."
+}
