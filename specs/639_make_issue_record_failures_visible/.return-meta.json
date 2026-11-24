@@ -1,10 +1,89 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 16,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/639_make_issue_record_failures_visible/summaries/01_refusal-entry-visibility-summary.md",
+      "summary": "issue-record.sh now self-records an argument-shaped refusal (unrecognized flag) as a schema-valid entry in the task's own issues.jsonl and exits a new distinct code 2, with four regression cases, documentation parity, and a redeploy for non-vacuous default-mode verification; Phase 4 closed COMPLETED WITH EXCLUSIONS over one unrelated cross-task suite failure."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Made an unrecognized-flag invocation of issue-record.sh self-record a schema-valid refusal entry into the task's own issues.jsonl (naming the offending flag and preserving the caller's --what-happened verbatim) and exit a new distinct code 2, added four regression cases proven non-vacuous against pre-change behaviour, updated issue-log.md and the agent-facing dispatch template for documentation parity, and redeployed with all 31 test-issue-record.sh cases passing against the deployed copy."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/issue-record.sh",
+    "agent-system/extensions/core/scripts/tests/test-issue-record.sh",
+    "agent-system/extensions/core/context/formats/issue-log.md",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A refusal-mode pattern for a bash CLI that must never lose a caller's intended write on an unrecognized flag: on hitting the unknown-flag arm of the parse loop, break (don't exit/usage immediately) and then force every required/optional field to a value that survives the SAME downstream validation blocks unchanged (closed-set fields to a valid constant, free-text fields to synthesized prose, numeric fields cleared unless already valid) so the normal validate-resolve-append path runs to completion. This needs zero reordering of existing validation code and recovers the caller's already-parsed context (task-dir, what-happened prose) instead of discarding it. A shared exit_refusal_aware() helper distinguishes the new argument-shaped exit code from every pre-existing content-shaped exit code at every refusal site that must now discriminate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/639_make_issue_record_failures_visible/summaries/01_refusal-entry-visibility-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["argument parsing", "refusal mode", "bash CLI", "exit code discrimination", "issue-record.sh"]
+    },
+    {
+      "content": "verify-touched.sh's suite-selection mapping can sweep in a suite entirely unrelated to the actually-touched files (observed: editing orchestrate-build-dispatch.sh's rendered Issue Log block pulled in test-orchestrate-conclusion-roadmap.sh, whose only failure concerned milestone-review-handoff.sh/review-stack-prepare.sh -- files never touched). When a scoped touched-path run shows a failure, check whether the failing suite's content actually exercises any of the declared touched files before assuming a regression; a coarse suite-to-file mapping can legitimately surface a concurrent sibling task's own in-flight breakage.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/639_make_issue_record_failures_visible/summaries/01_refusal-entry-visibility-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verify-touched.sh", "suite selection", "cross-task contamination", "COMPLETED WITH EXCLUSIONS"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "issue-record.sh argument-shaped refusal design",
+      "predicate": "decision is",
+      "value": "Chosen fix wrote the refusal directly into the task's own issues.jsonl (an ordinary kind:issue, class:\"knowledge-capture gap\" entry carrying tags.issue_record_refusal) rather than a sibling breadcrumb file, because the existing conclusion-stage consumer already reads that file with zero consumer-side change, whereas a breadcrumb file would be a new artifact nothing reads.",
+      "ko_type": "decision",
+      "confidence": 0.85
+    },
+    {
+      "subject": "issue-record.sh refusal-mode residual",
+      "predicate": "constraint is",
+      "value": "When the unrecognized flag precedes or otherwise prevents --task-dir/--task from being parsed, no task directory can resolve and no refusal entry can be appended -- this case still exits 2 but with stderr only, an unavoidable-by-construction residual rather than a bug.",
+      "ko_type": "insight",
+      "confidence": 0.9
+    },
+    {
+      "subject": "issue-record.sh pre-change exit-1 site count",
+      "predicate": "finding is",
+      "value": "Measured via grep -n 'exit 1' issue-record.sh: exactly 17 sites existed pre-change, of which exactly 4 were reachable argument-shaped refusals (usage()'s own exit, and three task-directory-resolution sites) -- matching the plan's Scope Hypothesis exactly with no drift.",
+      "ko_type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "subject": "test-orchestrate-conclusion-roadmap.sh Case H failure (Logos/Verification-style agent-system repo, 2026-11-24)",
+      "predicate": "finding is",
+      "value": "Case H expects both a literal '/please push <branch>' line and a '/merge' line in milestone-review-handoff.sh's stderr output; only the /please line is present. Traced to concurrent sibling tasks 691 (move refs, rewrite manifest, redeploy) and 692 (wire cut/show and the refusal arm) reshaping the stack-based PR/merge flow -- the test's expectation is stale relative to that in-flight change, not caused by unrelated work.",
+      "ko_type": "fact",
+      "confidence": 0.75
+    },
+    {
+      "subject": "deploy-headless.sh verification scope vs Batch Gate Deferral",
+      "predicate": "finding is",
+      "value": "deploy-headless.sh runs its own internal verification battery (41 checks incl. --skip-slow) as an ordinary side effect of landing a deploy; this is distinct from an agent independently invoking verify-deploy.sh a second time, and does not violate a dispatch's 'no additional full sweep' Batch Gate Deferral directive since it is the prescribed deploy step's own built-in behavior, not an extra sweep chosen by the agent.",
+      "ko_type": "insight",
+      "confidence": 0.75
+    },
+    {
+      "subject": "Non-vacuous regression test technique for a script resolved deploy-tree-first",
+      "predicate": "technique is",
+      "value": "Running the same test suite with no CORE_TEST_SUBJECT_MODE override, against a deliberately-not-yet-redeployed tree, serves as a free negative control: new cases exercising just-added source-store behavior fail there (proving they are not vacuous passes) while all pre-existing cases still pass, with zero extra test-writing effort.",
+      "ko_type": "technique",
+      "confidence": 0.8
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795494587_0fa3fc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

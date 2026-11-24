@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a four-phase implementation plan adopting the research report's recommended candidate with one substitution: an unknown-flag refusal self-records a schema-valid refusal entry into the task's own issues.jsonl (carrying tags.issue_record_refusal and the caller's own --what-happened prose) and exits with a new distinct code 2, so the dropped evidence is recovered through a channel the prescribed >/dev/null 2>&1 redirection cannot reach and that an existing consumer already reads. Flag aliasing and a contract-wide stderr unswallowing are declined with grounds under the plan's Decisions section, and the three call-site scripts in file_scope are deliberately left unedited. Phases: mechanism plus header contract, four regression cases, documentation parity plus the agent-facing discoverability pointer and the regenerated index line_count, then a redeploy with default-mode verification. Plan-time premise re-validation confirmed the defect live with drifted line numbers, and found that CORE_TEST_SUBJECT_MODE=source-store removes the deploy-before-exercise step the description assumed.",
+  "status": "implemented",
+  "phase": "implement",
+  "summary": "Made issue-record.sh self-record an argument-shaped refusal (unrecognized flag) as a schema-valid entry in the task's own issues.jsonl, carrying tags.issue_record_refusal and the caller's own --what-happened prose verbatim, and exit a new distinct code 2 -- recovering the previously-silently-lost evidence entry. Added four regression cases (all confirmed non-vacuous against pre-change behaviour), achieved documentation parity (issue-log.md plus the agent-facing dispatch-template pointer), regenerated the index line_count, and redeployed with all 31 test-issue-record.sh cases passing against the deployed copy. Phase 4 closed COMPLETED WITH EXCLUSIONS: a scoped verify-touched.sh run showed 22 of 23 suites green, with the one failure (test-orchestrate-conclusion-roadmap.sh Case H) traced and excluded as unrelated drift from concurrent sibling tasks 691/692 reshaping the stack-based PR/merge flow, recorded cross-task via issue-record.sh.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/639_make_issue_record_failures_visible/plans/01_refusal-entry-visibility.md",
       "summary": "Four-phase plan: refusal mode and exit code 2 in issue-record.sh, four regression cases, documentation parity plus dispatch-template pointer, redeploy and default-mode verification."
+    },
+    {
+      "type": "summary",
+      "path": "specs/639_make_issue_record_failures_visible/summaries/01_refusal-entry-visibility-summary.md",
+      "summary": "Implementation summary: refusal-mode mechanism, exit code 2, four regression cases, documentation parity, redeploy verification, and the one excluded unrelated suite failure."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
-  "next_action_hint": "Dispatch the implement phase for task 639; Phase 4 declares __WHOLE_TREE__ because it invokes deploy-headless.sh, so admit it accordingly against any concurrent whole-tree claim.",
-  "dispatch_seq": 14
+  "next_action_hint": "Task 639 implementation complete; no further dispatch needed for this task. The cross-task issue-record.sh entry iss_1795497640271_xQnaY2 (test-orchestrate-conclusion-roadmap.sh Case H drift from tasks 691/692's stack-mode merge flow) is available for the batch's own conclusion stage to pick up.",
+  "dispatch_seq": 16
 }
