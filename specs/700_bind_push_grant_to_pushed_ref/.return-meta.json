@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795525113_9bbf2b_700",
-  "dispatch_seq": 2,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/700_bind_push_grant_to_pushed_ref/reports/01_bind-grant-to-pushed-ref.md",
-      "summary": "Locates the HEAD-binding at exactly two call sites (please-grant.sh mint, pg_grant_find_match consume), proposes a single action_class=push_branch-gated refs/heads/${REF} resolution that subsumes the checked-out-branch case for free, confirms guard-git-push.sh and git-push-granted.sh need no change, and confirms no context doc needs a correction."
+      "type": "plan",
+      "path": "specs/700_bind_push_grant_to_pushed_ref/plans/01_bind-grant-to-pushed-ref.md",
+      "summary": "Four-phase plan binding a push_branch grant to refs/heads/<ref> at both the mint and match sites, with suite cases for the three acceptance behaviours, one clarifying doc sentence, and a redeploy."
     }
   ],
   "memory_candidates": [
     {
-      "content": "In a consent-gated push-grant mechanism (mint hook writes a KV grant file with HMAC; a PreToolUse guard matches and consumes it), a 'bind to HEAD' defect for a non-checked-out ref is fixable at exactly the two symmetric call sites (mint-time write, consume-time match) with a single substitution gated on the action class that can ever name a non-checked-out ref -- resolving refs/heads/<name> instead of HEAD. Because a checked-out branch's refs/heads/<name> always equals HEAD by git's own definition, this one substitution reproduces the old behavior for the checked-out case automatically, with no separate 'is this the checked-out branch' conditional needed.",
+      "content": "When a plan phase must declare a Verification Tier below `full`, the honest Tier Justification is produced by running suite_selection_select ONCE over that phase's whole Files-to-modify set and naming what it returns -- and the selector's answer can be strictly larger than intuition suggests. For a two-file edit to a consent-grant hook plus its library, the selector returned seven suites (including the destructive-guard and deploy-propagation suites), not the two obviously-named ones; that larger set is itself the argument for `interface` over `local`, because it enumerates the real one-hop dependent set. A markdown-only standards file in the same source store returned __FULL_SWEEP__ (no covering suite), which routes to the verify-deploy.sh --only-gate 3,4 subset with the SOURCE-STORE REPOSITORY ROOT as TARGET -- never the source_dir itself, which has no .claude/ subtree and fails gate0 before gate selection runs.",
       "category": "PATTERN",
-      "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/reports/01_bind-grant-to-pushed-ref.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["push-grant", "HEAD binding", "ref resolution", "consent-gated push", "fail-closed"]
-    },
-    {
-      "content": "When a dispatch's territory lists several files for a bugfix (e.g. a hook, a guard, a wrapper, a lib), a call-site survey (grep for every caller of the function being fixed) can establish that some listed files are test-coverage spectators needing zero code change, not oversights -- worth doing explicitly before planning edits to every listed file.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/reports/01_bind-grant-to-pushed-ref.md",
-      "confidence": 0.6,
-      "suggested_keywords": ["call-site survey", "territory", "research efficiency", "scope confirmation"]
+      "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/plans/01_bind-grant-to-pushed-ref.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verification tier", "suite selection", "tier justification", "FULL_SWEEP", "plan authoring"]
     }
   ],
-  "next_steps": "Run /orchestrate 700 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1795525113_9bbf2b_700",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 2.75,
+    "dependency_waves": 3
+  },
+  "dispatch_seq": 4,
+  "next_steps": "Run /orchestrate 700 to execute the plan"
 }

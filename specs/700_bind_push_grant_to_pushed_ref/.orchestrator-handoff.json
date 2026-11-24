@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 4,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a four-phase implementation plan binding a push_branch grant to refs/heads/<ref> at both the mint site (hooks/please-grant.sh line 211) and the match site (pg_grant_find_match in scripts/lib/push-grant-lib.sh line 453), gated on action_class so push_tag and the destructive classes fall through unchanged. Phase 2 adds nine suite cases across the two existing suites plus a fixture-helper fix for a third HEAD-binding the research report had not surveyed; Phase 3 adds one clarifying sentence to context/standards/git-safety.md; Phase 4 redeploys under the bounded-wait idiom and declares __WHOLE_TREE__. All ten of the description's and report's load-bearing figures were re-measured, nine confirmed exactly and one (git-push-granted.sh at 115 vs 114 lines) corrected in the plan's Premise Re-Validation table. The plan validates with zero warnings and avoids every path the concurrent sibling owns.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/700_bind_push_grant_to_pushed_ref/plans/01_bind-grant-to-pushed-ref.md",
+      "summary": "Four-phase plan: ref-bound mint and match for push_branch, suite cases for the three acceptance behaviours, one doc sentence, redeploy and verify."
+    }
+  ]
+}
