@@ -214,7 +214,8 @@
         "agent-system/extensions/core/commands/slice.md",
         "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/tests/suite-classification.data"
-      ]
+      ],
+      "audit_note": "No verdict is genuinely-new, so Create Task Mode's backlog-audit confirmation fires for this proposal. The volume is the matcher's stated recall bias: every description opens with the shared source-store paragraph, which lifts the semantic score against most of the corpus (top scores 0.55 to 0.68, led by consent_gated_git_push, slice_command_design_and_consolidation and validate_carried_unverified_names_a_source in every proposal). No match is a duplicate. Disposition: new work. slice_command_design_and_consolidation is the ruling that asks for it and built nothing; restack_review_stack_when_parent_merges and handoff_prints_review_stack built the route the ruling deletes; stack_pr_redeploy_and_second_repo_demo is the doc-parity record ordered after this one. Mechanical overlap with open records is on registration hub files only: scripts/tests/suite-classification.data (return_meta_terminal_status_vocabulary) and manifest.json (batch_worktree_creation_when_isolation_on, held)."
     },
     {
       "id": "bind_push_grant_to_pushed_ref",
@@ -227,7 +228,8 @@
         "agent-system/extensions/core/scripts/lib/push-grant-lib.sh",
         "agent-system/extensions/core/scripts/tests/test-please-grant.sh",
         "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"
-      ]
+      ],
+      "audit_note": "No verdict is genuinely-new, so Create Task Mode's backlog-audit confirmation fires for this proposal. The volume is the matcher's stated recall bias: every description opens with the shared source-store paragraph, which lifts the semantic score against most of the corpus (top scores 0.55 to 0.68, led by consent_gated_git_push, slice_command_design_and_consolidation and validate_carried_unverified_names_a_source in every proposal). No match is a duplicate. Disposition: new work. consent_gated_git_push and fix_guard_git_push_expired_grant_matching_defect built and repaired the grant this record re-binds; neither binds a grant to a non-checked-out ref. No mechanical overlap with any open record."
     },
     {
       "id": "slice_bar_measurement_and_declaration",
@@ -240,7 +242,8 @@
         "agent-system/extensions/core/commands/slice.md",
         "agent-system/extensions/core/context/standards/repo-level-declarations.md",
         "agent-system/extensions/core/index-entries.json"
-      ]
+      ],
+      "audit_note": "No verdict is genuinely-new, so Create Task Mode's backlog-audit confirmation fires for this proposal. The volume is the matcher's stated recall bias: every description opens with the shared source-store paragraph, which lifts the semantic score against most of the corpus (top scores 0.55 to 0.68, led by consent_gated_git_push, slice_command_design_and_consolidation and validate_carried_unverified_names_a_source in every proposal). No match is a duplicate. Disposition: new work. Mechanical overlap with open records is index-entries.json only (stack_pr_redeploy_and_second_repo_demo, ordered after this record; durable_record_for_gate_enforced_verbatim_fragments, bounded_waiter_detach_form_pid_fidelity, bounded_waiter_load_sizing_and_output_capture, outside this set)."
     },
     {
       "id": "narrow_handoff_to_print_slice",
@@ -258,7 +261,8 @@
         "agent-system/extensions/core/context/formats/roadmap-format.md",
         "agent-system/extensions/core/context/formats/roadmap-entry-template.md",
         "agent-system/extensions/core/index-entries.json"
-      ]
+      ],
+      "audit_note": "No verdict is genuinely-new, so Create Task Mode's backlog-audit confirmation fires for this proposal. The volume is the matcher's stated recall bias: every description opens with the shared source-store paragraph, which lifts the semantic score against most of the corpus (top scores 0.55 to 0.68, led by consent_gated_git_push, slice_command_design_and_consolidation and validate_carried_unverified_names_a_source in every proposal). No match is a duplicate. Disposition: new work that reverses a closed deliverable. handoff_prints_review_stack (closed, mechanical overlap on the handoff and its suite) built what this record undoes; case_h_assertion_review_stack_refusal_arm (closed) retargeted the Case H assertion this record retargets again; milestone_ref_land_recreates_retired_ref (closed) last edited the handoff suite. One real open overlap outside this set: previous_work_section_in_generated_roadmap shares context/formats/roadmap-format.md and scripts/tests/test-orchestrate-conclusion-roadmap.sh; no edge is proposed, the operator sequences the two at dispatch. index-entries.json is shared as for the bar record."
     },
     {
       "id": "delete_review_stack_inference_route",
@@ -278,7 +282,8 @@
         "agent-system/extensions/core/context/patterns/ref-plumbing-landing.md",
         "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
         "agent-system/extensions/core/index-entries.json"
-      ]
+      ],
+      "audit_note": "No verdict is genuinely-new, so Create Task Mode's backlog-audit confirmation fires for this proposal. The volume is the matcher's stated recall bias: every description opens with the shared source-store paragraph, which lifts the semantic score against most of the corpus (top scores 0.55 to 0.68, led by consent_gated_git_push, slice_command_design_and_consolidation and validate_carried_unverified_names_a_source in every proposal). No match is a duplicate. Disposition: new work that reverses a closed deliverable. restack_review_stack_when_parent_merges (closed, mechanical overlap on the script and its suite) built the restack subcommand deleted here; milestone_ref_land_recreates_retired_ref (closed) wrote the two context citations re-pointed here. Open overlaps outside this set: context/standards/orchestrator-runtime-files.md (sweep_task_support_file_tracked_or_ignored; batch_worktree_creation_when_isolation_on, held), context/standards/git-workflow-narrative.md (branch_aware_orchestration_and_squash_landing, whose own description calls that file_scope entry an over-claim), suite-classification.data, manifest.json and index-entries.json as hub files. No edge is proposed for any of them."
     },
     {
       "id": "remove_merge_command",
@@ -315,7 +320,8 @@
         "agent-system/extensions/approvals/README.md",
         "agent-system/extensions/cslib/context/project/cslib/pr-command-workflow.md",
         "agent-system/extensions/cslib/skills/skill-pr-implementation/SKILL.md"
-      ]
+      ],
+      "audit_note": "No verdict is genuinely-new, so Create Task Mode's backlog-audit confirmation fires for this proposal. The volume is the matcher's stated recall bias: every description opens with the shared source-store paragraph, which lifts the semantic score against most of the corpus (top scores 0.55 to 0.68, led by consent_gated_git_push, slice_command_design_and_consolidation and validate_carried_unverified_names_a_source in every proposal). No match is a duplicate. Disposition: new work. merge_command_stack_mode (abandoned) planned the opposite direction and built nothing. stack_pr_redeploy_and_second_repo_demo shares README.md, docs/guides/user-guide.md, merge-sources/claudemd.md and index-entries.json and is ordered after this record. Open overlaps outside this set, one file each: context/reference/state-management-schema.md (dependency_edge_rationale_semantic_check), extensions/cslib/context/project/cslib/pr-command-workflow.md (agent_system_context_extensions_cslib_survey), docs/guides/user-guide.md (name_shared_pool_semantics_in_cycle_budget_docs), context/standards/git-workflow-narrative.md (branch_aware_orchestration_and_squash_landing, an over-claimed entry). No edge is proposed for any of them; this record's own research re-enumerates its list and re-checks."
     }
   ],
   "edges_onto_existing": {
@@ -349,5 +355,10 @@
     "onto_694": 6,
     "total": 16,
     "delta_from_plan": "The plan and report carry fifteen. The sixteenth, narrow_handoff_to_print_slice after slice_bar_measurement_and_declaration, was added at packet authoring: both records reconcile index-entries.json line counts (each edits a context document registered there) and were otherwise unordered. It is a territory edge with no semantic content and may be reversed or dropped by the operator; dropping it leaves the two records overlapping on one file."
+  },
+  "audit": {
+    "verdicts_file": "specs/698_slice_build_task_set/records/01_audit-verdicts.ndjson",
+    "run_against_head": "576c0a4e9",
+    "summary": "Six lines, one per proposal, each carrying 200 to 300 verdicts (covered-by-closed, duplicate-of-open, overlaps-open, scope-blind). None is genuinely-new. The verdicts were computed before audit_note was added; proposal title, description and file_scope are unchanged since, so the verdict file still matches."
   }
 }

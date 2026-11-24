@@ -199,29 +199,29 @@ re-run premise checks move an ordering, correct the packet and record the delta 
 
 ---
 
-### Phase 2: Audit the Proposals and Record Follow-Up Evidence [NOT STARTED]
+### Phase 2: Audit the Proposals and Record Follow-Up Evidence [COMPLETED]
 
 **Goal**: Pre-compute the backlog-reconciliation verdicts the creation gate will demand, and
 record each candidate in the channel the conclusion stage reads.
 
 **Tasks**:
-- [ ] Run `jq '.proposals' records/01_task-set-packet.json | bash
+- [x] Run `jq '.proposals' records/01_task-set-packet.json | bash
       .claude/scripts/audit-task-proposals.sh --proposals-file -` and save stdout to
-      `records/01_audit-verdicts.ndjson`. Confirm each line's `.proposal.id` equals the slug.
-- [ ] For every verdict other than `genuinely-new` and `scope-blind`, add a one-line disposition
+      `records/01_audit-verdicts.ndjson`. Confirm each line's `.proposal.id` equals the slug. *(completed)*
+- [x] For every verdict other than `genuinely-new` and `scope-blind`, add a one-line disposition
       to the packet proposal's `audit_note` field (expected: S4 against
       `handoff_prints_review_stack`, S3 against `restack_review_stack_when_parent_merges`; both
       genuinely new work reversing a closed deliverable). Cite matched records by
-      `project_name`.
-- [ ] Record six entries, one per candidate, non-fatally:
+      `project_name`. *(deviation: altered — every proposal drew 200 to 300 non-scope-blind verdicts, not the two expected; each audit_note carries a hand-written disposition from the mechanical overlaps and the named related records)*
+- [x] Record six entries, one per candidate, non-fatally:
       `bash .claude/scripts/issue-record.sh --task-dir <task_dir> --kind issue --class
       "follow-up task candidate" --severity none --phase implement --resolution open
       --suggested-channel follow_up_task --evidence-path
       specs/698_slice_build_task_set/records/01_task-set-packet.json --what-happened "<slug>:
       <one-sentence scope>; depends on <slugs>"`. If `--severity none` is refused for
-      `kind: issue`, use `minor`.
-- [ ] Record one further `follow_up_task` entry for the edge work on existing records (655 after
-      S2; 694 re-edged), since it is also deferred to the foreground step.
+      `kind: issue`, use `minor`. *(completed: six entries; --severity none accepted)*
+- [x] Record one further `follow_up_task` entry for the edge work on existing records (655 after
+      S2; 694 re-edged), since it is also deferred to the foreground step. *(completed)*
 
 **Timing**: 0.5 hours
 
