@@ -1,6 +1,361 @@
 {
   "completed_projects": [
     {
+      "project_number": 693,
+      "project_name": "merge_command_stack_mode",
+      "status": "abandoned",
+      "task_type": "meta",
+      "description": "RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE IMPLEMENTING. specs/decisions/review-slices-are-declared-tasks.md amends the landing record's L3/L4 and its \"Interface to review submission\": a review slice is declared before the work (S1/S2) and lands by an ordinary scoped commit (S4), rather than being reconstructed from landing proofs by plumbing at review time. This record's own deliverable SURVIVES the amendment intact -- see that record's \"What is retained from the inference route\" section, which keeps the resolvers, the manifest, show, record-request and restack wired. Do NOT widen scope to implement slices here. The one thing to check at implementation time: any prose this record adds must not assert that a review unit is INFERRED from path overlap or dependency topology, because that is no longer the primary route.\n\n=== ORIGINAL DESCRIPTION BELOW, UNCHANGED ===\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\nORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.\n\nLANDED AND NOT TO BE REDONE: scripts/review-stack-prepare.sh already carries `cut`, `show`, `record-request` and the shared resolvers for review_base (PD1, exit codes 10-13), remote and platform (PD9, exit codes 30-32), plus selection/attribution/union-find unit merging/topological ordering (exit codes 40-47) and the manifest writer with exit codes 49-52. Its suite scripts/tests/test-review-stack-prepare.sh stands at 38 passing cases. Verify against the live file before writing anything.\n\nTHIS RECORD OWNS PHASE 4 ONLY -- \"Restack when a parent merges\". Deliverable, per that phase section: `restack --stack-id NAME [--merged NN]` reads the manifest and the review base's remote-tracking ref (never fetching -- an absent ref refuses and prints the fetch the operator runs); detects a merged entry per PD7 bottom-up, moving that entry to state `merged` and the next entry's base to the review base; recomputes each descendant with a three-way `merge-tree` onto its new parent, writes it with `git commit-tree`, and moves its ref by compare-and-swap, so a conflict refuses naming the path and moves nothing; and refuses when a local review ref and its remote-tracking ref disagree in a way the manifest does not explain.\n\nTHIS RECORD OWNS PHASE 6 ONLY -- \"`/merge` stack mode\". Deliverable, per that phase section: add `--stack <stack id>`, `--only NN` and `--retarget` (alongside the existing `--draft`) to commands/merge.md, updating the frontmatter argument hint and the options table while leaving the single-branch mode exactly as it is. Stack mode's steps, in order: revoke the prompt-minted grant, since this mode pushes nothing; read the manifest via `review-stack-prepare.sh show --json`; refuse a platform PD9 does not support; show ONE approval prompt listing every PR with its head and base. Then per entry, bottom-up: confirm the remote branch tip equals the manifest commit with `git ls-remote <remote> refs/heads/<branch>`, stopping and naming the `/please push` to type when it does not; look for an open PR on that head; create one with the manifest's head, base, title and body file when there is none; and record the URL.\n\nUSER-ONLY, AND THE PROHIBITION STILL BINDS: `/merge` may only be invoked by the user, never by an agent (rules/pr-prohibition.md). This record ADDS A MODE to the command's documented behaviour; implementing it must not cause any agent-reachable path to push or to open a PR. The grant revocation in step one is load-bearing precisely because stack mode pushes nothing.\n\nVERIFY BY: the command file's own documented contract being internally consistent (argument hint, options table and step list agreeing), the single-branch mode's text unchanged, and whatever suite covers commands/merge.md staying green. If skills/skill-git-workflow/SKILL.md carries merge-mode wiring that this mode must reach, declare it before editing it rather than widening scope mid-dispatch.",
+      "topic": "orchestrator",
+      "dependencies": [
+        695
+      ],
+      "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/commands/merge.md",
+        "agent-system/extensions/core/skills/skill-git-workflow/SKILL.md"
+      ],
+      "created": "2026-11-23T22:15:32Z",
+      "last_updated": "2026-11-24T04:30:16Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "merge_command_stack_mode",
+          "project_number": null,
+          "title": "Add stack mode to the /merge command"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 44,
+          "duplicate-of-open": 22,
+          "scope-blind": 47
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 631,
+            "project_name": "gate29_typescript_test_fixed_depth_walk",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40384615384615385
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47560975609756095
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43902439024390244
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43902439024390244
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.483739837398374
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4105691056910569
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42276422764227645
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4186991869918699
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44308943089430897
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4024390243902439
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4105691056910569
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4268292682926829
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4349593495934959
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 533,
+            "project_name": "lake_build_guard_stale_replay_env_lean_file",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4186991869918699
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.491869918699187
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44715447154471544
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4959349593495935
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 548,
+            "project_name": "plan_contingency_file_scope_and_containment_drop",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4349593495934959
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 553,
+            "project_name": "git_commit_scoped_gate_refusal_diagnostic",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42276422764227645
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 561,
+            "project_name": "bounded_waiter_load_sizing_and_output_capture",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45121951219512196
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 575,
+            "project_name": "fix_ceiling_check_stopword_unit_false_positive",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4024390243902439
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 665,
+            "project_name": "previous_work_section_in_generated_roadmap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4268292682926829
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 47
+      },
+      "session_id": "sess_1795494587_0fa3fc",
+      "artifacts": [
+        {
+          "path": "specs/693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md",
+          "type": "report",
+          "summary": "Research for commands/merge.md --stack/--only/--retarget mode: confirms file_scope excludes the duplicated Phase 4 (restack) paragraph, documents the manifest JSON schema, shows the platform refusal and push-grant revocation are already discharged by existing calls, and flags that skill-git-workflow/SKILL.md needs no edit for this deliverable."
+        },
+        {
+          "path": "specs/693_merge_command_stack_mode/plans/01_merge-stack-mode.md",
+          "type": "plan",
+          "summary": "Two-phase plan for /merge stack mode in commands/merge.md plus redeploy; verification via verify-deploy.sh --only-gate 3,4."
+        }
+      ],
+      "next_artifact_number": 2,
+      "roadmap_annotation": "ruled abandon: /merge is removed and --stack is never built",
+      "abandoned": "2026-11-24T05:32:21Z"
+    },
+    {
+      "project_number": 666,
+      "project_name": "re_site_branch_aware_batch_after_prerequisites",
+      "status": "abandoned",
+      "task_type": "meta",
+      "description": "Re-site the branch-aware orchestration batch in the authored roadmap so it no longer precedes its own prerequisites\n\n=== FINDING, 2026-11-20 (written by amend_branch_topology_per_batch_worktree_squash; checked against live specs/state.json, not inferred from a commit subject) ===\n\nTHE NAMED INSTANCE IS ALREADY APPLIED. Commit 7231ccbe2 (\"roadmap: maintenance pass (re-site the branch-aware batch after its prerequisites)\") moved the branch-aware batch from position 3 to position 19 under milestone M1. Its member's three non-terminal prerequisites sit at positions 9 (git_commit_scoped_gate_refusal_diagnostic), 15 (stage_regenerated_derived_files_in_phase_commits) and 18 (phase_commit_boundary_mechanical_check), all earlier; its other two dependencies are completed. Checked against the required outcome:\n- The batch sits after the last batch holding one of its prerequisites: YES (19 after 18).\n- No task is a member of two batches: YES (no task_id repeats across roadmap_milestones[].batches[]).\n- No batch lost a member without re-homing: YES (the sorted list of all batch members is identical before and after the commit, 127 entries).\n- The batch kept its --hard flag: YES.\n\nTHE PRECISE REMAINDER IS THE SWEEP. This record also requires a sweep for the same inversion elsewhere under the milestone. Run now, the sweep finds exactly one: manifest_registration_dropped_from_phase_commit sits in the batch at position 8 and depends on snapshot_artifacts_contaminate_phase_commits, which sits in the batch at position 9. That edge is Edge 2 of specs/decisions/commit-layer-cluster-ordering.md. Whether to re-site, and which side moves, is the roadmap-authoring judgment this record describes; nothing was changed here.\n\nONE FURTHER CHANGE SINCE THIS RECORD WAS WRITTEN. The branch-aware batch's single member has been narrowed to its generated-file-declaration element; its branch-topology elements moved to eight new tasks (specs/decisions/batch-worktree-isolation-and-task-squash-landing.md, \"Successor tasks\"), none of which is sited in any batch yet. The batch's --hard flag, its position and its rationale were authored for the superseded scope and should be re-judged in the same /roadmap pass that sites the new tasks.\n\nRECOMMENDED DISPOSITION: either narrow this record to the one-inversion remainder above, or abandon it and let the next /roadmap pass absorb both points. It was NOT abandoned by the task that wrote this finding; abandonment is the user's /task --abandon.\n\n=== ORIGINAL DESCRIPTION (unchanged below) ===\n\nThe authored milestone batch that proposes the branch-aware orchestration and squash-landing work is sited at a position that runs BEFORE every batch holding its prerequisites. Its rendered dispatch command is therefore undispatchable from its authored position, and an operator who runs it as printed gets an admission refusal rather than work.\n\nTHE EDIT TARGET IS THE AUTHORED BATCH ENTRY in specs/state.json's roadmap_milestones[].batches[] -- not the roadmap generator, and not the rendered specs/ROADMAP.md, which is a generated artifact that correctly renders whatever the entry says. The generator is working as designed; the authored data is stale. Do not change generator code to paper over an authoring defect.\n\n=== MEASURED EVIDENCE -- RE-DERIVABLE, DO NOT RE-DERIVE FROM SCRATCH ===\n\nM1. THE ORDERING INVERSION. Under the active milestone, the branch-aware orchestration batch sits at batch position 3 with a single member and the --hard flag. That member declares five dependencies. Two are already terminal and need no ordering. The remaining three are each an authored member of a LATER batch under the same milestone:\n\n  - the commit-containment batch, at position 10, holds one of them\n  - the generated-surfaces-and-store-leak batch, at position 16, holds another\n  - the landing-target-contract detectors batch, at position 19, holds the third\n\nSo the batch is authored 7, 13 and 16 positions ahead of its own three prerequisites. The earliest position from which its command could dispatch is after the latest of those three.\n\nM2. WHAT THE RENDERED FILE SHOWS. The generated roadmap renders the batch's command line from the entry's task_ids and flags, then renders one row per member carrying that member's live blocker list. The result is a printed command naming one task, immediately followed by a row stating that same task is blocked on three others. The two lines contradict each other as operator instructions: the command says \"run this\", the row says \"this cannot run\". Contrast the batch at position 4 under the same milestone, which lists all six of its members including a blocked one, so running its printed command advances the batch even though one member defers.\n\nM3. THE ENTRY'S OWN RATIONALE ALREADY PREDICTED THIS, AND NAMED THE RESOLUTION. The authored rationale states that the member's \"true prerequisite set is not knowable yet\", that a pending ruling was being asked whether certain work constitutes hard prerequisites, and that if it ruled yes the member \"acquires predecessors that currently sit in the commit-containment and dispatch-composition batches further down, and it cannot land in the run its position here implies.\" It then states the resolution principle verbatim: \"That is an ordering constraint for the ruling to discover, never grounds for moving this record out of the strand -- an unmet predecessor orders work, it does not disqualify it from a batch.\" The ruling has since landed and did add the dependency edges. The predicted ordering constraint was never applied to the entry.\n\nM4. WHY THE OBVIOUS FIX IS WRONG. Widening the batch's task_ids to absorb its three prerequisites would place each of those three in two batches at once, under the same milestone. Milestone membership comes only from sitting in a batch and a batch is a dispatch proposal, so double membership would double-propose the same work and corrupt the per-milestone batch-done and task-done fractions the milestone summary table renders. Each prerequisite also sits in its current batch for a stated topical reason. Absorption is therefore not the fix.\n\n=== WHAT TO DECIDE AND APPLY ===\n\nThis is a roadmap-authoring judgment call over batch position and membership, which is roadmap-agent's declared remit. Rule between at least these, and state the reasoning in the entry's rationale:\n\nA. RE-SITE THE BATCH LATER: move it to a position after the last batch holding one of its prerequisites. Cheapest change, preserves every existing batch's membership and the standalone-dispatch intent the rationale argues for at length. Costs: the batch moves a long way down the authored order, and the milestone's narrative ordering may no longer read as intended.\n\nB. PULL THE PREREQUISITES FORWARD: lift the three prerequisite tasks out of their current batches into a new batch sited immediately before the branch-aware batch. Preserves the branch-aware work's early position. Costs: breaks up three topically-authored batches, and each prerequisite may itself carry predecessors that would need the same treatment -- check before choosing this.\n\nC. SPLIT THE DIFFERENCE: re-site the branch-aware batch only as late as strictly necessary, after establishing which of the three prerequisites genuinely gates which element of the member's own scope. The member's description distinguishes elements that survive the landed topology ruling from elements that ruling superseded, so the real gating set may be smaller than the declared dependency array.\n\nWhichever is chosen, the outcome must satisfy: the batch's rendered command is dispatchable from its authored position at the time an operator reaches it, no task is a member of two batches under one milestone, and no existing batch loses a member without that member being re-homed.\n\n=== CONSTRAINTS ===\n\n- Edit the authored entry only, through the sanctioned state writer. Never hand-edit specs/ROADMAP.md, which is regenerated from this data and whose first line declares it generated.\n- Do not add a dependency edge to express the ordering. The dependency edges already exist and are correct; this record is about the authored batch POSITION disagreeing with them, not about a missing edge.\n- Do not weaken or re-open the standalone-dispatch intent the entry's rationale argues for, unless option B is chosen on its own merits and the rationale is updated to say so.\n- Preserve the entry's --hard flag and its description text unless the chosen option requires changing them.\n- The same inversion may exist for other batches under the same milestone. Sweep for it rather than fixing only this one instance, and report what the sweep found.\n\n=== VERIFICATION ===\n\nThe authored batch's rendered command, read from its position in the generated roadmap, names a set an operator can actually dispatch. No task appears in two batches under one milestone. Every batch that lost a member has that member re-homed. The milestone summary table's batch-done and task-done fractions still reconcile against the authored membership. A regenerate produces the corrected file and a second regenerate is byte-identical.",
+      "topic": "orchestrator",
+      "created": "2026-11-20T18:57:33Z",
+      "last_updated": "2026-11-20T20:34:31Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "re_site_branch_aware_batch_after_prerequisites",
+          "project_number": null,
+          "title": "Re-site the branch-aware orchestration batch in the authored roadmap so it no longer precedes its own prerequisites"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 14,
+          "duplicate-of-open": 12,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49834983498349833
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40924092409240925
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43234323432343236
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40594059405940597
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45874587458745875
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40924092409240925
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.504950495049505
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4158415841584158
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44554455445544555
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 561,
+            "project_name": "bounded_waiter_load_sizing_and_output_capture",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40264026402640263
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 655,
+            "project_name": "branch_aware_orchestration_and_squash_landing",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4158415841584158
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 665,
+            "project_name": "previous_work_section_in_generated_roadmap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43564356435643564
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      },
+      "abandoned": "2026-11-23T23:43:31Z"
+    },
+    {
       "project_number": 682,
       "project_name": "sapience_mcp_entry_carries_no_token",
       "status": "completed",
