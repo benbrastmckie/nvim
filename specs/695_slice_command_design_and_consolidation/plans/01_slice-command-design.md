@@ -1,7 +1,7 @@
 # Implementation Plan: Task #695
 
 - **Task**: 695 - Design the /slice command: one clean path from work branch to a stack of review pull requests
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/695_slice_command_design_and_consolidation/reports/01_slice-command-design.md
