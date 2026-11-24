@@ -217,37 +217,62 @@ established. No task in this phase requires editing either excluded file.
 
 ---
 
-### Phase 2: Suite cases for the ref-bound grant [NOT STARTED]
+### Phase 2: Suite cases for the ref-bound grant [COMPLETED]
 
 **Goal**: The suite proves the three behaviours the acceptance bar names, and the fixture's own
 mint helper models the real mint rather than a divergent HEAD-bound one.
 
 **Tasks**:
-- [ ] In `scripts/tests/test-guard-git-push.sh`, update the `mint_grant_in` helper (line 89) so
+- [x] In `scripts/tests/test-guard-git-push.sh`, update the `mint_grant_in` helper (line 89) so
       that for `push_branch` it binds to `git rev-parse refs/heads/<ref>` and for every other
       class it keeps `git rev-parse HEAD`, mirroring Phase 1's production shape (D1). Update the
       helper's own header comment, which currently states the grant is "bound to that repo's
-      current HEAD".
-- [ ] Extend `make_push_fixture` (or add a sibling helper beside it) so a fixture can carry a
+      current HEAD". *(completed: mint_grant_in now mints nothing at all when the ref does not
+      resolve, mirroring please-grant.sh's own fail-closed refusal)*
+- [x] Extend `make_push_fixture` (or add a sibling helper beside it) so a fixture can carry a
       second branch that is **not** checked out, built the way a plumbing-landed ref is — advance
       `refs/heads/<name>` without a checkout — while `feature-x` stays the checked-out branch.
-- [ ] Consume-side case: a `push_branch` grant for the non-checked-out ref survives an unrelated
+      *(completed: added sibling helpers `make_plumbing_branch` / `advance_plumbing_branch`,
+      using `commit-tree` + `update-ref`, never a checkout)*
+- [x] Consume-side case: a `push_branch` grant for the non-checked-out ref survives an unrelated
       commit on the checked-out branch inside the expiry window — the guard authorizes the push
-      and the grant is consumed.
-- [ ] Consume-side case: the same grant is refused once the granted ref itself moves after mint.
-- [ ] Consume-side regression case: a grant for the checked-out branch is still killed by a
-      commit on HEAD inside the window, exactly as today.
-- [ ] Consume-side case: a `push_branch` grant whose ref does not resolve under `refs/heads/` is
+      and the grant is consumed. *(completed; empirically confirmed against the pre-fix
+      production code via a scratch copy that this case fails pre-fix (exit 2) and passes
+      post-fix (exit 0) -- a genuine discriminator)*
+- [x] Consume-side case: the same grant is refused once the granted ref itself moves after mint.
+      *(completed; empirically confirmed this case is satisfied by BOTH pre-fix and post-fix
+      code -- pre-fix refuses every non-checked-out-ref grant unconditionally (too strict), so
+      this case is a forward-looking regression pin for the fixed behaviour rather than an
+      old-vs-new discriminator; recorded in issues.jsonl rather than mis-described*)
+- [x] Consume-side regression case: a grant for the checked-out branch is still killed by a
+      commit on HEAD inside the window, exactly as today. *(completed: the pre-existing "HEAD
+      moved since mint" case already exercises this identically under the new code, since
+      refs/heads/feature-x IS what HEAD resolves to while checked out; annotated in place)*
+- [x] Consume-side case: a `push_branch` grant whose ref does not resolve under `refs/heads/` is
       refused (fail-closed), pinning the refusal reason for the existing `other-branch` negative
-      case and for the detached-HEAD `REF=HEAD` derivation named in Risks.
-- [ ] In `scripts/tests/test-please-grant.sh`, mint-side case: `/please push origin <other>` for
+      case and for the detached-HEAD `REF=HEAD` derivation named in Risks. *(completed: added a
+      dedicated REF=HEAD case here, plus annotated the existing "other-branch" case; the
+      detached-HEAD risk is pinned more directly by the production-level please-grant.sh mint
+      case below, since no push_branch grant naming REF=HEAD can ever be minted in the first
+      place)*
+- [x] In `scripts/tests/test-please-grant.sh`, mint-side case: `/please push origin <other>` for
       an existing non-checked-out branch mints exactly one grant whose `HEAD_SHA` equals that
       branch's commit and differs from `HEAD` — reusing the existing `field_in` /
-      `grant_files_in` helpers and the `assert_mint_fields` convention.
-- [ ] Mint-side case: `/please push origin <nonexistent>` mints nothing.
-- [ ] Mint-side regression case: a grant for the checked-out branch still binds to `HEAD`.
-- [ ] Run both suites directly and confirm every pre-existing case still passes, with no
-      assertion rewritten to accommodate the new behaviour.
+      `grant_files_in` helpers and the `assert_mint_fields` convention. *(completed, using the
+      fixture's existing "master" branch, advanced past by an extra commit on feature-x so the
+      two commits provably differ; empirically confirmed discriminating against the pre-fix
+      please-grant.sh)*
+- [x] Mint-side case: `/please push origin <nonexistent>` mints nothing. *(completed;
+      empirically confirmed discriminating -- pre-fix please-grant.sh minted a grant for a
+      nonexistent branch, post-fix refuses)*
+- [x] Mint-side regression case: a grant for the checked-out branch still binds to `HEAD`.
+      *(completed)*
+- [x] Run both suites directly and confirm every pre-existing case still passes, with no
+      assertion rewritten to accommodate the new behaviour. *(completed: 50/50 in
+      test-guard-git-push.sh (47 pre-existing + 3 new), 32/32 in test-please-grant.sh (28
+      pre-existing + 4 new, including a bonus production-level pin for the pathological
+      "/please push HEAD to origin" typed line, empirically confirmed discriminating); zero
+      pre-existing assertions altered)*
 
 **Timing**: 1.25 hours
 

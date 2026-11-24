@@ -1,0 +1,32 @@
+{
+  "phase": 2,
+  "phase_name": "Suite cases for the ref-bound grant",
+  "started_at": "2026-11-24T18:12:00Z",
+  "last_updated": "2026-11-24T18:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update mint_grant_in helper in test-guard-git-push.sh for push_branch ref resolution", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 2, "description": "Add non-checked-out plumbing branch helpers to test-guard-git-push.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 3, "description": "Consume-side case: survival across unrelated HEAD commit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 4, "description": "Consume-side case: refused once granted ref moves", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 5, "description": "Consume-side regression: checked-out branch still killed by HEAD move (existing case annotated)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 6, "description": "Consume-side fail-closed case: unresolvable ref (REF=HEAD) mints/matches nothing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 7, "description": "Mint-side case: existing non-checked-out branch binds to its own commit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-please-grant.sh"]},
+    {"id": 8, "description": "Mint-side case: nonexistent branch mints nothing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-please-grant.sh"]},
+    {"id": 9, "description": "Mint-side regression: checked-out branch still binds to HEAD", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-please-grant.sh"]},
+    {"id": 10, "description": "Run both suites directly, confirm all pre-existing cases still pass", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [
+    {"approach": "Reasoned abstractly about whether each new case would fail pre-fix", "result": "superseded", "reason": "Replaced with empirical verification against a scratch pre-Phase-1 copy of the production files -- found that two of the planned cases are vacuously satisfied by pre-fix code too and are forward regression pins, not discriminators; recorded honestly in issues.jsonl"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.add",
+      "description": "Added a bonus production-level mint-side case (pathological '/please push HEAD to origin') beyond the plan's three listed mint-side cases",
+      "type": "altered",
+      "reason": "Empirically confirmed this is the most faithful test of the Risks table's detached-HEAD REF=HEAD mitigation at the real please-grant.sh call site, strengthening coverage without removing or weakening any planned case",
+      "annotation": "*(deviation: altered -- added a 4th mint-side case beyond the 3 listed)*"
+    }
+  ]
+}
