@@ -591,35 +591,50 @@ to this estimate, not a reason to skip it.
 
 ---
 
-### Phase 6: Redeploy, Full Verification, and the Operator Handoff [NOT STARTED]
+### Phase 6: Redeploy, Full Verification, and the Operator Handoff [COMPLETED]
 
 **Goal**: The registered deliverables are deployed and verified clean, and the dispatch returns
 with the record **not** closed, naming the exact lines the operator types to push one slice and
 open its pull request.
 
 **Tasks**:
-- [ ] Redeploy with the bounded-wait idiom:
+- [x] Redeploy with the bounded-wait idiom:
       `timeout 540 bash agent-system/extensions/core/scripts/deploy-headless.sh /home/benjamin/.config/nvim`
       with the Bash tool timeout set to 600000. Treat exit 3 (deploy landed, inline verify
       reported failures) and exit 4 (verify suppressed) as distinct from exit 0 — neither is a
-      clean verify.
-- [ ] Confirm the deploy landed the three new files: `.claude/commands/slice.md`,
+      clean verify. *(completed: deviation -- a first attempt landed exit 3 (gate 27 flagged
+      test-slice-series.sh's unmigrated subject resolution); fixed forward and redeployed again,
+      landing exit 0 / landed_verify_clean; see progress file deviation 6.1)*
+- [x] Confirm the deploy landed the three new files: `.claude/commands/slice.md`,
       `.claude/scripts/slice-series.sh`, `.claude/scripts/tests/test-slice-series.sh`.
-- [ ] Run the new suite from the deployed tree as well as the source store, so the
-      deployed-shape fixture convention is exercised from both invocation paths.
-- [ ] Run the scoped touched-path check over every path this task touched, and record that the
+      *(completed: all three present, non-empty)*
+- [x] Run the new suite from the deployed tree as well as the source store, so the
+      deployed-shape fixture convention is exercised from both invocation paths. *(completed:
+      45 passed, 0 failed from both)*
+- [x] Run the scoped touched-path check over every path this task touched, and record that the
       complete gate set is deferred to the orchestration close rather than independently invoked
-      here.
-- [ ] Do a dry read-through of `/slice`'s own resolution and prompt-1 arithmetic against this
+      here. *(completed: only failure attributable to this task's own files is the two
+      known-and-logged pre-existing-at-this-phase issues -- gate-cache-equivalence (EXPECTED by
+      run-all.sh itself) and three foreign unclassified suites unrelated to task 699, confirmed
+      by content inspection; full gate set deferred to orchestration close)*
+- [x] Do a dry read-through of `/slice`'s own resolution and prompt-1 arithmetic against this
       repository's live difference — printing only, writing nothing, pushing nothing — to confirm
-      the command's figures resolve against a real difference.
-- [ ] Record, in the dispatch's own return and handoff, the exact operator lines: for each slice
+      the command's figures resolve against a real difference. *(completed: origin/master
+      confirmed an ancestor of HEAD, 4 commits ahead, 18 files changed, 1923 insertions / 64
+      deletions, after a fresh fetch; deviation -- this differs from the plan's own re-measured
+      414-ahead premise, since origin/master advanced in the interim; see progress file
+      deviation 6.5 and the issue log)*
+- [x] Record, in the dispatch's own return and handoff, the exact operator lines: for each slice
       the `/please push <remote> slice/<series>/<id>` line, then `/slice` to open the requests.
       State plainly that an agent can neither push nor open a pull request
       (`rules/pr-prohibition.md`), so the record stays open until the operator has done both and
-      the request URL is recorded in the series file.
-- [ ] Do not mark the task complete, do not push, do not invoke a forge CLI, and do not create a
-      pull request.
+      the request URL is recorded in the series file. *(completed: deviation -- the printed
+      lines are the command's templated form (placeholders, not a concrete built result), since
+      no slice was actually built in the live repository; this phase's own task list scopes the
+      dry read-through to "writing nothing, pushing nothing"; see progress file deviation 6.6)*
+- [x] Do not mark the task complete, do not push, do not invoke a forge CLI, and do not create a
+      pull request. *(completed: no push, no forge call, no PR; task status stays
+      [IMPLEMENTING], not [COMPLETED])*
 
 **Timing**: 1.5 hours
 
