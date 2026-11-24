@@ -10,7 +10,7 @@
 | [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 9/21 | none |
 | [M3: Batch worktree isolation off a per-batch branch](#milestone-m3) | planned | - | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
-| [M1: Current work](#milestone-m1) | active | 15/106 | none |
+| [M1: Current work](#milestone-m1) | active | 17/106 | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
 
@@ -38,7 +38,7 @@ Make /slice the single user-invoked path from a work-branch tip to a reviewable 
 
 ```
 /orchestrate 694
-694 blocked:693     stack_pr_redeploy_and_second_repo_demo   <- revise first: its edges onto the handoff and the /merge record belong on the /slice build record
+694 ready           stack_pr_redeploy_and_second_repo_demo   <- revise first: its edges onto the handoff and the /merge record belong on the /slice build record
 ```
 
 <a id="milestone-m4"></a>
@@ -122,23 +122,23 @@ Make a repository bindable to a shared Sapience project and workable by a second
 
 Work already scheduled when this store adopted milestones. Divide it into real milestones on a later /roadmap run.
 
-- **Progress**: active -- 2/29 batches, 15/106 tasks done
+- **Progress**: active -- 2/29 batches, 17/106 tasks done
 - **Review**: none
 
 **Batch 1** (done) -- Support a gitignored specs tree: price the durability exposure, then the predicate and demotion fix
 
 **Batch 2** (done) -- Decide before building: the commit-layer order, the milestone schema, then the topology ruling
 
-**Batch 3** -- Make verify-deploy's verdict mean something again: the live reds, one roster row, two gate rulings
+**Batch 3** -- Make verify-deploy's verdict mean something again: the live reds, one roster row, two gate rulings (1/6 done)
 
 ```
-/orchestrate 645, 560, 629, 630, 631, 632
+/orchestrate 560, 629, 630, 631, 632
 630 blocked:629     Give test-deploy-propagation.sh and test-gate-registry-resolution.sh declared...
 560 ready           Clear the three standing verify-deploy findings blocking a clean nvim deploy
 629 ready           Fix the two-engine defect: scan_all_artifacts' sync_scan allow-list post-filt...
 631 ready           Replace test-typescript-verify.sh's fixed-depth REPO_ROOT walk with a boundar...   <- gate 29 reports 0 violations and the fixed-depth walk is already replaced -- confirm before dispatch
 632 ready           Stop orchestrator-context-budget.json's derivation log from re-breaking the t...   <- gate 4 is green; what remains is the exemption-vs-house-style ruling, not a live violation
-645 ready           Fix the .mcp.json merge defect that drops a hand-authored server entry across...   <- the unit/integration boundary suite is red again from a later cause its provenance list predates
+645 done            Fix the .mcp.json merge defect that drops a hand-authored server entry across...
 ```
 
 **Batch 4** -- Hard stops: task creation dies on a big verdict, a lock never reaps, a run never converges
@@ -178,12 +178,12 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 579 ready           Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 ```
 
-**Batch 8** -- Two residues of the containment work: lost issue entries, and where shared metadata belongs
+**Batch 8** -- Two residues of the containment work: lost issue entries, and where shared metadata belongs (1/2 done)
 
 ```
-/orchestrate 639, 508
+/orchestrate 508
 508 ready           Rule on where shared extension metadata belongs in the containment allowlist,...
-639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
+639 done            Make issue-record.sh failures visible instead of silently losing the evidence...
 ```
 
 **Batch 9** -- The sanctioned in-dispatch remedy for a coupled pair path the containment guard drops
@@ -436,13 +436,11 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 672 HOLD            Classify every remaining project-root consumer as code-root, state-root or both
 674 HOLD            Build batch worktree cleanup, retention on partial batches, and orphan report...
 686 HOLD            Create the per-batch worktree and batch branch when isolation is declared on
-665 blocked:697     Record the last dispatching orchestration batch in a displaced Previous work ...
 688 blocked:501     dispatch_redeploy_clears_staleness_verdict
 664 ready           Add a /tmp sweep pass to /refresh for dead scratchpad sessions and agent-test...
+665 ready           Record the last dispatching orchestration batch in a displaced Previous work ...
 680 ready           gate_cache_key_in_deployed_repos
 684 ready           Sweep and fix stale command and sub-mode references across the source store
 689 ready           oversized_plan_phase_count_advisory
-693 ready           merge_command_stack_mode   <- ruled abandon: /merge is removed and --stack is never built
 696 ready           narrow_batch_gate_stage_verify_deploy_invocation
-697 ready           case_h_assertion_review_stack_refusal_arm
 ```
