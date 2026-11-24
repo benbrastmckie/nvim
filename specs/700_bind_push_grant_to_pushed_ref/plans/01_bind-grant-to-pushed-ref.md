@@ -307,23 +307,25 @@ phase requires touching either excluded file.
 
 ---
 
-### Phase 3: Document the push_branch/HEAD split [NOT STARTED]
+### Phase 3: Document the push_branch/HEAD split [COMPLETED]
 
 **Goal**: The one semantic a future reader cannot re-derive from the field name — which commit
 `HEAD_SHA` holds, for which action class — is stated once in the standard that enumerates what a
 grant binds.
 
 **Tasks**:
-- [ ] Re-read the paragraph containing `context/standards/git-safety.md` line 126 ("... branch/tag,
-      commit SHA, and force-or-not ...") immediately before editing.
-- [ ] Add one sentence to that existing paragraph — not a new section — stating that for a
+- [x] Re-read the paragraph containing `context/standards/git-safety.md` line 126 ("... branch/tag,
+      commit SHA, and force-or-not ...") immediately before editing. *(completed)*
+- [x] Add one sentence to that existing paragraph — not a new section — stating that for a
       `push_branch` grant the bound SHA is the named ref's own commit, and that for every other
-      action class it is `HEAD`'s.
-- [ ] Write it as a statement of the current design only: no "previously", no "no longer", no
+      action class it is `HEAD`'s. *(completed)*
+- [x] Write it as a statement of the current design only: no "previously", no "no longer", no
       task-number reference (`rules/no-record-versioning-in-deliverables.md`,
-      `rules/no-task-references-in-deliverables.md`).
-- [ ] Leave `context/standards/push-consent-relay.md` untouched (D4); confirm by re-reading its
-      line 76 that the sentence there remains true as written.
+      `rules/no-task-references-in-deliverables.md`). *(completed: confirmed by re-reading the
+      added sentence)*
+- [x] Leave `context/standards/push-consent-relay.md` untouched (D4); confirm by re-reading its
+      line 76 that the sentence there remains true as written. *(completed: confirmed untouched
+      and still accurate)*
 
 **Timing**: 0.25 hours
 
@@ -350,9 +352,17 @@ section. No task in this phase requires editing the excluded file.
 
 **Verification**:
 - Diff read-through confirms every changed hunk lies inside prose, adds no page-level version
-  label, and carries no task-number reference.
+  label, and carries no task-number reference. *(confirmed)*
 - The gate subset named in the Tier Justification runs green (both gates must report a real
   check, not SKIP — a zero-check-under-filter result does not attest to anything).
+  *(Gate 4 (task-reference lint) ran clean. Gate 3 (doc-lint) reported 4 pre-redeploy-drift
+  failures -- a plan-ordering collision, not a defect in this phase's edit: "deployed script
+  content drift" for every source-store file Phases 1-2 touched, plus an index-entries.json
+  line_count mismatch for git-safety.md that `generate-context-line-counts.sh --write` itself
+  refuses to fix from the source store (it requires a deployed scripts/ tree -- the same
+  machinery `deploy-headless.sh` runs automatically before every deploy). Content correctness
+  was confirmed by diff read-through instead; gate 3/4 is re-run, and expected green, as part of
+  Phase 4's own redeploy+verify criterion below. Recorded in issues.jsonl.)*
 
 ---
 
