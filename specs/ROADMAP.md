@@ -7,9 +7,11 @@
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
 | [M5: /slice: the one path from a work branch to a stack of review pull requests](#milestone-m5) | active | 5/7 | prepared |
-| [M4: Close the commit-layer and detector chain the slice size bar waits on](#milestone-m4) | planned | 9/21 | none |
+| [M4: Close the commit-layer and detector chain the slice size bar waits on](#milestone-m4) | active | 9/21 | none |
+| [M6: The dispatch handoff contract: what one dispatch hands the next](#milestone-m6) | planned | 0/6 | none |
+| [M7: Lean plan contracts, compliance checks and the build-guard replay hole](#milestone-m7) | active | 6/22 | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
-| [M1: Current work](#milestone-m1) | active | 17/106 | none |
+| [M1: Current work](#milestone-m1) | active | 11/78 | none |
 | [M3: Batch worktree isolation off a per-batch branch](#milestone-m3) | planned | - | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
@@ -19,7 +21,7 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Make /slice the single user-invoked path from a work-branch tip to a reviewable stack of pull requests on a chosen target, refuse a slice too large to review, and delete every other route to review.
 
-- **Progress**: active -- 2/4 batches, 5/7 tasks done -- Ruled, not built: slice.md absent, the inference route and /merge still present, and five of the six successors have no task record.
+- **Progress**: active -- 2/4 batches, 5/7 tasks done -- Ruled, not built: slice.md absent. Six successor records plus their 16 edges are owed to a foreground runbook run.
 - **Review**: prepared on `refs/heads/master` (updated 2026-11-24)
 - **Gate**: /slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.
 
@@ -46,7 +48,7 @@ Make /slice the single user-invoked path from a work-branch tip to a reviewable 
 
 Settle which paths a phase commit may drop and from which root, and land the phase-commit boundary detector, so the generated-path declaration that the slice size bar counts through has no open predecessor left.
 
-- **Progress**: planned -- 3/6 batches, 9/21 tasks done -- The chain's open end is 553 and 513, the two open predecessors of the generated-path declaration under the slice size bar.
+- **Progress**: active -- 3/6 batches, 9/21 tasks done -- The chain's open end is 553 and 513, the two open predecessors of the generated-path declaration under the slice size bar.
 - **Review**: none
 - **Gate**: The containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and the generated-path declaration behind the slice size bar has no open dependency left.
 
@@ -86,6 +88,96 @@ Settle which paths a phase commit may drop and from which root, and land the pha
 438 ready           Dependency edges conflate semantic and serialization rationale, and a semanti...
 ```
 
+<a id="milestone-m6"></a>
+## M6: The dispatch handoff contract: what one dispatch hands the next
+
+Make the handoff one dispatch writes mean the same thing at every authoring site and every consumer: a declared blockers shape, a terminal-status vocabulary, a stale handoff recorded as a defect, and an aux revision that can clear the blocker it answers.
+
+- **Progress**: planned -- 0/3 batches, 0/6 tasks done -- 551 and 577 are ready now; 518 waits on the handoff-validator repair carried in the commit-layer chain.
+- **Review**: none
+- **Gate**: Every handoff-authoring site states the blockers shape it writes; a blocker-triggered aux revision clears its blocker through triage; a stale or schema-violating handoff leaves a ledger entry; a pending user question is not charged as a failure; and a superseded in-flight dispatch is refused at consumption time.
+
+**Batch 1** -- The two ready handoff defects: the recurring stale handoff, then the aux revision triage drops
+
+```
+/orchestrate 551, 577
+577 blocked:551     Make a blocker-triggered aux plan-revision consumable by triage, and stop the...
+551 ready           Close the recurring stale-handoff defect and find out why the return-meta sch...
+```
+
+**Batch 2** -- A non-failure outcome must not read as a failure: the status vocabulary and the charged question
+
+```
+/orchestrate 646, 609
+609 blocked:577     Stop a pending user question from charging its own task into failed_tasks and...
+646 ready           Decide and implement how .return-meta.json's status vocabulary admits non-pha...
+```
+
+**Batch 3** -- Then the blockers admission contract at every authoring site, and the superseded-dispatch refusal
+
+```
+/orchestrate 518, 571
+518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
+571 blocked:518     Invalidate an in-flight dispatch whose dispatch_seq has been superseded, at c...
+```
+
+<a id="milestone-m7"></a>
+## M7: Lean plan contracts, compliance checks and the build-guard replay hole
+
+Make a Lean plan's pinned Challenge block authorable and checkable at plan time, stop the compliance check failing on end-state deliverables it cannot yet see, land the measured lean4 context records, and close the build-guard's stale-replay hole at both entry points.
+
+- **Progress**: active -- 1/6 batches, 6/22 tasks done -- The harvest contract, the trust surfaces and the plan-time snapshot landed; the authoring rules, the checks and the replay hole remain.
+- **Review**: none
+- **Gate**: The Challenge block has stated precedence, snapshot and measurement rules plus a mechanically checkable fixture-dependent form; the compliance check passes a plan whose end-state deliverables are unreached; the LSP-index and snapshot-scope probes are in place; lake-build-guard refuses a stale replay at both entry points; and formal:logic implement routing is ruled on.
+
+**Batch 1** (done) -- Landed: the plan-time Challenge snapshot, the goals harvest contract, trust surfaces, probe scope
+
+**Batch 2** -- Ready now: the compliance check's end-state blind spot, the LSP-index probe, the snapshot scope
+
+```
+/orchestrate 516, 550, 462, 399
+399 ready           Record three measured lean4 gotchas: IO-forced timing harnesses, docstring/se...
+462 ready           Give lean-challenge-snapshot.sh --check a scope limit so a research prototype...
+516 ready           Stop the Lean plan compliance check failing on not-yet-reached end-state deli...
+550 ready           Probe the Lean LSP index state at dispatch start and propagate the degraded e...
+```
+
+**Batch 3** -- Unblock the plan records: the Challenge authoring rules and a deferral form for Lean sources
+
+```
+/orchestrate 539, 599
+539 ready           State the precedence and snapshot-prerequisite rules for a lean plan's pinned...
+599 ready           Give the batch-gate-deferral directive a narrowing form that covers a phase t...
+```
+
+**Batch 4** -- The plan records those rules gate: measured signatures, polarity, phase sizing, generated scope
+
+```
+/orchestrate 540, 544, 593, 594, 595, 596
+540 blocked:399,539 Record five measured lean4 facts: the decide-synthesis working form, the axio...
+544 blocked:539     Make a fixture-dependent Lean gate statement expressible and mechanically che...
+593 blocked:599     Require pinned Lean Challenge signatures to be measured at plan time
+594 blocked:593,599 Size symmetric-pair phases and iteration obligations separately
+595 blocked:539,593,594,599  Define Goal Polarity semantics for decision-gate plans
+596 blocked:593,594,595,599  Separate generator-written files from hand-edited read-only scope de...
+```
+
+**Batch 5** -- The stale-replay hole at both lake-build-guard entry points, then the record over its window
+
+```
+/orchestrate 410, 533, 576
+533 blocked:410     lake-build-guard replays stale result for env lean FILE
+576 blocked:533     Record the Lean verification-tier gate-naming rule, the Constraints-consumed ...
+410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
+```
+
+**Batch 6** -- Rule whether a formal:logic implement phase touching .lean files reaches the Lean agent
+
+```
+/orchestrate 529
+529 ready           Evaluate whether formal:logic implement routing should resolve to a Lean-capa...
+```
+
 <a id="milestone-m2"></a>
 ## M2: Sapience linked projects, capture activation and collaborator access
 
@@ -113,7 +205,7 @@ Make a repository bindable to a shared Sapience project and workable by a second
 
 Work already scheduled when this store adopted milestones. Divide it into real milestones on a later /roadmap run.
 
-- **Progress**: active -- 2/29 batches, 17/106 tasks done
+- **Progress**: active -- 2/24 batches, 11/78 tasks done
 - **Review**: none
 
 **Batch 1** (done) -- Support a gitignored specs tree: price the durability exposure, then the predicate and demotion fix
@@ -142,17 +234,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 613 ready           Make session liveness distinguish a dead same-process session so an orphaned ...
 ```
 
-**Batch 5** -- What one dispatch hands the next: the return-meta vocabulary, the stale handoff, two aux-plan gaps
-
-```
-/orchestrate 646, 551, 577, 609
-609 blocked:577     Stop a pending user question from charging its own task into failed_tasks and...
-551 ready           Close the recurring stale-handoff defect and find out why the return-meta sch...
-577 ready           Make a blocker-triggered aux plan-revision consumable by triage, and stop the...
-646 ready           Decide and implement how .return-meta.json's status vocabulary admits non-pha...
-```
-
-**Batch 6** -- Make a full battery's numbers trustworthy: the standing cost verdicts, then one stale roster row
+**Batch 5** -- Make a full battery's numbers trustworthy: the standing cost verdicts, then one stale roster row
 
 ```
 /orchestrate 586, 605
@@ -160,7 +242,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 605 blocked:586     Flag an advisory known-failures roster row whose named suite now passes
 ```
 
-**Batch 7** -- Two false validator failures, plus the plan-time record of the path-set rule behind one fix
+**Batch 6** -- Two false validator failures, plus the plan-time record of the path-set rule behind one fix
 
 ```
 /orchestrate 545, 579, 575
@@ -169,7 +251,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 579 ready           Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 ```
 
-**Batch 8** -- Two residues of the containment work: lost issue entries, and where shared metadata belongs (1/2 done)
+**Batch 7** -- Two residues of the containment work: lost issue entries, and where shared metadata belongs (1/2 done)
 
 ```
 /orchestrate 508
@@ -177,26 +259,23 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 639 done            Make issue-record.sh failures visible instead of silently losing the evidence...
 ```
 
-**Batch 9** -- The sanctioned in-dispatch remedy for a coupled pair path the containment guard drops
+**Batch 8** -- The sanctioned in-dispatch remedy for a coupled pair path the containment guard drops
 
 ```
 /orchestrate 598
 598 blocked:548     Provide a sanctioned in-dispatch remedy for a mechanically coupled pair path ...
 ```
 
-**Batch 10** -- Dispatch composition: gate narrowing, starting position, deploy order, prior art, stale seq
+**Batch 9** -- Dispatch composition: a re-verified starting position, deploy ordering, archived prior-art paths
 
 ```
-/orchestrate 599, 592, 520, 565, 518, 571
-518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
-571 blocked:518     Invalidate an in-flight dispatch whose dispatch_seq has been superseded, at c...
+/orchestrate 592, 520, 565
 592 blocked:599     Re-verify or timestamp a task recorded starting position at dispatch composition
 520 ready           Emit deploy ordering in implement dispatch body
 565 ready           Resolve archived prior-art paths when composing dispatch and task-description...
-599 ready           Give the batch-gate-deferral directive a narrowing form that covers a phase t...
 ```
 
-**Batch 11** -- Bounded-waiter: unstrand the dispatches a blocked wait killed, and stop the hook self-refusing
+**Batch 10** -- Bounded-waiter: unstrand the dispatches a blocked wait killed, and stop the hook self-refusing
 
 ```
 /orchestrate 506, 542, 552, 561
@@ -206,7 +285,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 542 ready           Record the launch-side PID-fidelity condition on the bounded-waiter detach form
 ```
 
-**Batch 12** -- Enforcement that silently does not run: a half-matching glob, two dead fixtures, grep counts
+**Batch 11** -- Enforcement that silently does not run: a half-matching glob, two dead fixtures, grep counts
 
 ```
 /orchestrate 521, 525, 510, 511, 523
@@ -217,7 +296,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 525 ready           Repair the always-failing extensions-directory fallback in the task-type dete...
 ```
 
-**Batch 13** -- Settle the duplication-exclusion record, then propagate the bounded-wait contract it gates
+**Batch 12** -- Settle the duplication-exclusion record, then propagate the bounded-wait contract it gates
 
 ```
 /orchestrate 431, 474, 439, 454, 641, 642
@@ -229,7 +308,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 431 ready           Record the gate-enforced verbatim-duplication exclusion class as durable agen...
 ```
 
-**Batch 14** -- The dead-command-recommendation lint, both claimants together: builtin exemption and /ide reds
+**Batch 13** -- The dead-command-recommendation lint, both claimants together: builtin exemption and /ide reds
 
 ```
 /orchestrate 512, 590
@@ -237,7 +316,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 590 ready           Resolve the /ide dead-command-recommendation findings
 ```
 
-**Batch 15** -- Stop repo content leaking to the store, and make a report name the surfaces it stales
+**Batch 14** -- Stop repo content leaking to the store, and make a report name the surfaces it stales
 
 ```
 /orchestrate 502, 457
@@ -245,7 +324,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 502 ready           Require research reports to enumerate generated doc-sync surfaces
 ```
 
-**Batch 16** -- Rule on what the system leaves behind: a per-class residue policy and the tracked/ignored split
+**Batch 15** -- Rule on what the system leaves behind: a per-class residue policy and the tracked/ignored split
 
 ```
 /orchestrate 618, 338
@@ -253,7 +332,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 618 ready           Determine what leaves files in the working tree and give every residue class ...   <- re-measure its git-commit-scoped.sh evidence after the ignored-specs predicate lands; no edge
 ```
 
-**Batch 17** -- The backlog and selection surfaces: corroboration, duplicate rows, one question renderer
+**Batch 16** -- The backlog and selection surfaces: corroboration, duplicate rows, one question renderer
 
 ```
 /orchestrate 491, 492, 559, 580, 581
@@ -264,14 +343,14 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 580 ready           Correct the interactive-selection threshold model to AskUserQuestion's real f...
 ```
 
-**Batch 18** -- The advisory detector for research stranded with no landing target named
+**Batch 17** -- The advisory detector for research stranded with no landing target named
 
 ```
 /orchestrate 480
 480 blocked:479     Advisory detector for research tasks stranded at RESEARCHED with artifacts bu...
 ```
 
-**Batch 19** -- Three init.lua claimants: make a load trust its project root, then the registry and defaults
+**Batch 18** -- Three init.lua claimants: make a load trust its project root, then the registry and defaults
 
 ```
 /orchestrate 663, 563, 583
@@ -280,53 +359,17 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 663 ready           Resolve the extension loader's project_dir to the git toplevel and refuse a l...
 ```
 
-**Batch 20** -- Snapshot the Lean Challenge at plan time, then the baseline-relative and redeploy gate rules (1/6 done)
+**Batch 19** -- The baseline-relative gate criterion, then the cycle-check call sites and the redeploy rules
 
 ```
-/orchestrate 462, 452, 566, 509, 588
+/orchestrate 452, 566, 509, 588
 509 blocked:452     Make a redeploy phase declarable without polluting file_scope, and bar a pre-...
 566 blocked:452     Document that the validate-state.sh cycle check requires --deep at every call...
 588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
 452 ready           Require a verification criterion over a repo-wide gate with standing pre-exis...
-462 ready           Give lean-challenge-snapshot.sh --check a scope limit so a research prototype...
-451 done            Take the Lean Challenge snapshot in the plan phase, where it is still meaning...
 ```
 
-**Batch 21** -- The Lean compliance checker and its context strand: harvest contract, trust surfaces, probes (4/7 done)
-
-```
-/orchestrate 516, 399, 550
-399 ready           Record three measured lean4 gotchas: IO-forced timing harnesses, docstring/se...
-516 ready           Stop the Lean plan compliance check failing on not-yet-reached end-state deli...
-550 ready           Probe the Lean LSP index state at dispatch start and propagate the degraded e...
-398 done            Record that a grep for dependents misses rw-site definitional unfolding, and ...
-463 done            State that lean_goal's empty goals_after is not evidence a declaration elabor...
-504 done            Reconcile the Lean Goals-block harvester with its documented contract
-537 done            Plan-compliance spot-check misses evidence-probe-scoped Goals
-```
-
-**Batch 22** -- The narrow unusedArguments remedy, then the gate-naming and replay-window record over it (1/2 done)
-
-```
-/orchestrate 576
-576 ready           Record the Lean verification-tier gate-naming rule, the Constraints-consumed ...
-549 done            Give the Lean unusedArguments remedy a narrow route instead of the wholesale ...
-```
-
-**Batch 23** -- Settle the pinned Challenge block's authoring rules, then the five plan records quoting them
-
-```
-/orchestrate 539, 540, 544, 593, 594, 595, 596
-540 blocked:539     Record five measured lean4 facts: the decide-synthesis working form, the axio...
-544 blocked:539     Make a fixture-dependent Lean gate statement expressible and mechanically che...
-593 blocked:599     Require pinned Lean Challenge signatures to be measured at plan time
-594 blocked:593,599 Size symmetric-pair phases and iteration obligations separately
-595 blocked:539,593,594,599  Define Goal Polarity semantics for decision-gate plans
-596 blocked:593,594,595,599  Separate generator-written files from hand-edited read-only scope de...
-539 ready           State the precedence and snapshot-prerequisite rules for a lean plan's pinned...
-```
-
-**Batch 24** -- Migrate the mis-sited agent-system records, first the seven then the delta accumulated since
+**Batch 20** -- Migrate the mis-sited agent-system records, first the seven then the delta accumulated since
 
 ```
 /orchestrate 390, 481
@@ -334,15 +377,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 390 ready           Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one...
 ```
 
-**Batch 25** -- Close the lake-build-guard replay hole at both entry points it is reachable from
-
-```
-/orchestrate 410, 533
-533 blocked:410     lake-build-guard replays stale result for env lean FILE
-410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
-```
-
-**Batch 26** -- Literature: the degraded-retrieval contract, the zero-result case, and the Zotero export
+**Batch 21** -- Literature: the degraded-retrieval contract, the zero-result case, and the Zotero export
 
 ```
 /orchestrate 453, 546, 437
@@ -351,7 +386,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 453 ready           Carry the degraded-retrieval signal into the zero-result case, where the brie...
 ```
 
-**Batch 27** -- The books extension's reconciliation surface; its corpus refactor stays held on an external pin
+**Batch 22** -- The books extension's reconciliation surface; its corpus refactor stays held on an external pin
 
 ```
 /orchestrate 383, 384, 342
@@ -360,17 +395,16 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 ```
 
-**Batch 28** -- Four standalone rulings: /tag's version gate, the telemetry consumer, routing, cslib context
+**Batch 23** -- Three standalone rulings: /tag's version gate, the telemetry consumer, the cslib context set
 
 ```
-/orchestrate 456, 421, 529, 530
+/orchestrate 456, 421, 530
 421 ready           Close three gaps in the telemetry --meta evidence consumer
 456 ready           Exempt private npm/Cargo manifests from /tag's version gate
-529 ready           Evaluate whether formal:logic implement routing should resolve to a Lean-capa...
 530 ready           Land the three agent-system context extensions recorded by the cslib omega-au...
 ```
 
-**Batch 29** -- Documentation and standards conformance: boundary docs, skeletons, census method, one note (1/4 done)
+**Batch 24** -- Documentation and standards conformance: boundary docs, skeletons, census method, one note (1/4 done)
 
 ```
 /orchestrate 473, 522, 640

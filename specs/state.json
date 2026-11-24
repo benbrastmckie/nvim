@@ -14992,6 +14992,7 @@
       "parent_task": null,
       "topic": "agent-system",
       "dependencies": [
+        399,
         539
       ],
       "file_scope": [
@@ -17538,6 +17539,7 @@
       "description": "Add three new conditions to the Lean plan-authoring gate-collisions checklist, each one a fact a\nplan can enumerate in advance rather than discover when a phase's verification turns out not to\ncover what it needed to.\n\nMEASURED, NOT HYPOTHESIZED. All three come from completed Lean work in the consumer repository\n/home/benjamin/Projects/BimodalLogic. Citations are issue-log entries, by entry_id:\n  - specs/898_plus_invariance_base_without_saturation/issues.jsonl  iss_1794279386715_kPDOR6\n  - specs/897_universal_cover_oriented_forest_two_way_bounded/issues.jsonl  iss_1794271994301_33gjJM\n  - specs/897_universal_cover_oriented_forest_two_way_bounded/issues.jsonl  iss_1794271994258_ZM5jTE\n\nCONDITION A -- A PER-PHASE VERIFICATION TIER THAT NAMES ONLY BUILD-SHAPED CHECKS IS SILENT ABOUT\nTHE REPOSITORY'S MARKER, INDEX AND LINTER-BASELINE GATES. This is the sharpest of the three and\nthe reason this record exists. Four consecutive phases each closed on a green full `lake build`\nplus the plan's own declared interface-tier dependent builds plus `verify-deploy.sh --only-gate 4`,\nand all four were COMMITTED on that evidence. `scripts/check-module-invariants.sh`, which no\nphase's Verification Tier named, then reported five classes of failure introduced by exactly those\nphases: C34 closed-vocabulary marker violations (twelve), C34b (three), C34a (one), C15 (two), C16\n(two), plus a stale invariant baseline. All were repaired in a later phase, so nothing shipped\nbroken -- but the evidence four phase commits rested on was silent about real failures those\nphases had introduced. The generalizable fact is that a full build covers NONE of the docstring-\nmarker, index-anchoring or linter-baseline gates, so a tier naming only build-shaped checks cannot\nsee them.\n\nState the rule with a trigger a plan author can check before writing the criterion, not as a\nblanket instruction. `check-module-invariants.sh` belongs in a phase's Verification Tier when that\nphase does any of three things: (i) touches a `Constraints consumed:` docstring marker; (ii) adds\nor changes a `docs/theorem-index.md` row; or (iii) changes which binders a proof actually reads --\nwhich is what C16's `unusedArguments` linter detects, and is the least obvious of the three\nbecause a proof refactor that leaves a signature untouched still meets it.\n\nCONDITION B -- A BRACKETED BUNDLING BINDER PLUS A CONSTRAINT NAMED IN PROSE OWES A MARKER LINE,\nAND THE MARKER VOCABULARY IS CLOSED. Two distinct facts, both observed, that belong together\nbecause the second is the trap inside the first.\n\nC34b flags any declaration whose docstring names a constraint while the declaration carries a\nbracketed BUNDLING binder: the bundle supplies the constraint, so a prose mention without a marker\nline reads as an unmarked constraint claim. The observed instance was a declaration carrying\n`[F.IsRegular]` whose docstring named Saturation; the gate's own remedy is a\n`Constraints consumed:` line enumerating ALL FOUR constraints that binder supplies --\nCompositionality, Seriality, Limit, Saturation -- so that C34a stays green too. Enumerating only\nthe one the prose happened to mention satisfies C34b and then fails C34a. Any new declaration that\ntakes such a binder and mentions a constraint name in prose owes this line.\n\nThe trap: the `Constraints consumed:` marker vocabulary is CLOSED. A side-attributing form -- the\nshape `source F': <constraints>; base F: none`, which reads naturally and which a plan did in fact\nspecify -- is INADMISSIBLE on the marker line, because the parser accepts only vocabulary terms\nthere. That is what produced twelve of the C34 violations cited above: a plan specified a marker\nform the gate cannot accept, and every declaration written to that plan inherited it. A plan that\nneeds to express side attribution puts it in prose around the marker, never on the marker line.\n\nCONDITION C -- `lake-build-guard.sh` REPLAYS A RECORDED RESULT WITHIN ITS 900s WINDOW, SO A BUILD\nISSUED RIGHT AFTER AN EDIT CAN REPORT THE PRE-EDIT VERDICT. Observed: the guard replayed a\nrecorded result of age 115s for a build issued immediately after an edit, reporting a warning that\nedit had already fixed. `--no-share` is required for any build issued after an edit that lands\ninside the replay window. State the window as the checkable condition (an edit newer than the\nrecorded result) rather than as a blanket \"always pass --no-share\", which would discard the\nsharing the guard exists to provide.\n\nALREADY DOCUMENTED IN THIS SAME FILE -- DO NOT ADD A CONDITION FOR EITHER, AND DO NOT RESTATE\nTHEM. Two further collisions recurred in the same two tasks and are ALREADY covered by this\nchecklist's existing conditions, verified by reading the file as it stands:\n  - A Lean line-count change drifting `typst/generated/status.typ`'s `formalsystem-line-count` and\n    being refused by the pre-commit gate is Condition 1's surface (b), including the\n    `--fix`-plus-stage remedy and the file-scope consequence.\n  - `linter.style.longFile` tripping against a file's in-source baseline, and the\n    bump-per-the-documented-convention remedy, is Condition 7, including its acceptance window.\nBoth recurred ANYWAY, which makes them evidence about DISCOVERABILITY rather than about missing\ncontent: the conditions exist and were not reached by the authoring dispatch. Do not treat that as\nlicence to restate them more loudly. If research concludes the discoverability gap is the real\ndefect, say so as a finding and raise it separately rather than duplicating two conditions.\n\nWHY CONDITIONS A AND B ARE ONE RECORD BUT MUST STAY TWO CONDITIONS. They interact -- the\n`Constraints consumed:` marker is the subject of A's trigger (i) and of all of B -- and they are\nnonetheless different obligations addressed to different readers at different moments: A is about\nWHICH GATE a phase's verification criterion must name, read by a plan author choosing a tier; B is\nabout WHAT A DECLARATION'S DOCSTRING OWES, read by an implementer writing the declaration. They\nare filed as one record because they land in one file and would otherwise race it, and they must\nappear as two separately-triggered conditions because a reader checks them separately. A single\nmerged condition covering both would be unreachable from either reader's question.\n\nSCOPE BOUND, deliberate. Extend the EXISTING checklist file; no new context file. The core\nplan-format Verification Tiers section is DELIBERATELY EXCLUDED from file_scope: the gate named\nhere is a consumer-repository script, not a universal tier rule, and that file is claimed by\nseveral other open records. If research concludes a core-side cross-reference is genuinely\nrequired, STOP and raise it rather than taking that territory.\n\nTERRITORY. `agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md`\nis also claimed by the open record `lean_unusedarguments_narrow_remedy_route`, whose subject --\nthe narrow remedy route for the `unusedArguments` finding -- is adjacent to this record's\nCondition A trigger (iii), which names that same linter as a TRIGGER without prescribing its\nremedy. A dependency edge on that record is declared to serialize the shared file. Read its landed\nstate first: if it has already added a condition covering that linter, Condition A cites it for\nthe remedy and states only the trigger, rather than restating it.\n\nExtending any of these files changes its recorded `line_count`, so\n`agent-system/extensions/lean/index-entries.json` is part of THIS change and is declared in\nfile_scope, not left as a follow-up.\n\nSOURCE-STORE BOUNDARY. Edit under the source store, never under a deployed `.claude/**` tree,\nwhich is a gitignored artifact regenerated by the next deploy. Re-derive the store rather than\ntrusting this note: `jq -r '.extensions.lean.source_dir' .claude-extensions.json` in the consumer\nrepository. Note that `source_dir` is PER-EXTENSION, at `.extensions.<name>.source_dir`; a\ntop-level `jq -r '.source_dir'` returns null and must not be read as the key being absent.\n\nDELIVERABLE HYGIENE. Every edited file lies outside `specs/**`, so its prose carries no\ntask-number references and no record-versioning language. The gate names, check identifiers\n(C34, C34a, C34b, C15, C16), script names, the marker string and the vocabulary terms are durable\nanchors and may be cited; the originating task numbers and issue entry_ids may NOT appear in the\nguidance prose -- they live in this record only. Describe each condition as a fact a plan author\nchecks, never as a narration of a past incident.\n\nACCEPTANCE. (1) Each of the three conditions states a trigger the reader can check BEFORE writing\na criterion, and names the concrete command or marker form at issue rather than describing one.\n(2) Condition A names all three trigger conditions and says plainly that a full build covers none\nof the gates in question. (3) Condition B states both the enumerate-all-constraints duty and the\nclosed-vocabulary inadmissibility of the side-attributing form, and says why satisfying C34b alone\ncan still fail C34a. (4) Condition C states the replay window as a checkable condition rather than\na blanket flag instruction. (5) No condition duplicates existing Condition 1 or Condition 7.\n(6) `index-entries.json`'s `line_count` for the edited file agrees with the file as landed.\n(7) A redeploy reports a clean verify.\n",
       "topic": "agent-system",
       "dependencies": [
+        533,
         549
       ],
       "file_scope": [
@@ -17790,7 +17792,8 @@
       "topic": "agent-system",
       "dependencies": [
         543,
-        547
+        547,
+        551
       ],
       "effort": "high",
       "file_scope": [
@@ -22741,7 +22744,7 @@
       "gate": "/slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.",
       "progress": {
         "status": "active",
-        "note": "Ruled, not built: slice.md absent, the inference route and /merge still present, and five of the six successors have no task record."
+        "note": "Ruled, not built: slice.md absent. Six successor records plus their 16 edges are owed to a foreground runbook run."
       },
       "review": {
         "state": "prepared",
@@ -22778,7 +22781,7 @@
             694
           ],
           "description": "Last: doc parity, redeploy and the operator runbook, once /slice has opened a real stack",
-          "rationale": "Last regardless: the ruling orders it after successors 1, 4 and 5. Marked EXT-BLOCKED rather than ready because its real predecessor is a task record that does not exist; the dependency graph cannot express that, and an operator reading 'ready' would dispatch doc parity and a runbook for a command that is not on disk. Its edges onto 691 and 692 are satisfied-but-stale and its edge onto 693 points at an abandoned, archived task; all three are to be replaced by one edge onto the /slice build record once that record exists. No edge can be written for that today."
+          "rationale": "694 still carries its creation-time edges onto 692 and the abandoned 693. The abandoned edge is dangling, there is no edge-removal flag, and the creation runbook replaces both with one edge onto the slice build in a single step -- leave it to that step rather than working around it. Until then 694 renders ext-blocked and is not dispatchable."
         }
       ]
     },
@@ -22788,7 +22791,7 @@
       "aim": "Settle which paths a phase commit may drop and from which root, and land the phase-commit boundary detector, so the generated-path declaration that the slice size bar counts through has no open predecessor left.",
       "gate": "The containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and the generated-path declaration behind the slice size bar has no open dependency left.",
       "progress": {
-        "status": "planned",
+        "status": "active",
         "note": "The chain's open end is 553 and 513, the two open predecessors of the generated-path declaration under the slice size bar."
       },
       "review": {
@@ -22851,6 +22854,112 @@
           ],
           "description": "Make a phase closing without its commit detectable, on a landing target it can name",
           "rationale": "The second predecessor line of 670: 513 supplies the expected-ref parameter the two-root work makes per tree, and it waits on the landing-target contract (479) and the edge-rationale record (438). Three waves deep and off the critical path, so sited after the commit-script chain."
+        }
+      ]
+    },
+    {
+      "id": "M6",
+      "title": "The dispatch handoff contract: what one dispatch hands the next",
+      "aim": "Make the handoff one dispatch writes mean the same thing at every authoring site and every consumer: a declared blockers shape, a terminal-status vocabulary, a stale handoff recorded as a defect, and an aux revision that can clear the blocker it answers.",
+      "gate": "Every handoff-authoring site states the blockers shape it writes; a blocker-triggered aux revision clears its blocker through triage; a stale or schema-violating handoff leaves a ledger entry; a pending user question is not charged as a failure; and a superseded in-flight dispatch is refused at consumption time.",
+      "progress": {
+        "status": "planned",
+        "note": "551 and 577 are ready now; 518 waits on the handoff-validator repair carried in the commit-layer chain."
+      },
+      "batches": [
+        {
+          "task_ids": [
+            551,
+            577
+          ],
+          "description": "The two ready handoff defects: the recurring stale handoff, then the aux revision triage drops",
+          "rationale": "Both edit skill-orchestrate/SKILL.md's handoff surface, so they are sequenced rather than separated: a territory edge 577-after-551 was written on this pass. 551 goes first as the live recurrence -- its stale-handoff detection has fired six times over four weeks -- and it also carries the missing-ledger-entry half."
+        },
+        {
+          "task_ids": [
+            646,
+            609
+          ],
+          "description": "A non-failure outcome must not read as a failure: the status vocabulary and the charged question",
+          "rationale": "646 settles how return-meta admits a terminal status that is not a phase name; 609 stops a pending user question being charged into failed_tasks and killing its dependents. Same defect shape at two consumers. 609 is already edged after 577, so it follows the first batch."
+        },
+        {
+          "task_ids": [
+            518,
+            571
+          ],
+          "description": "Then the blockers admission contract at every authoring site, and the superseded-dispatch refusal",
+          "rationale": "518 waits on 472 (the handoff-validator crash), which sits in the commit-layer milestone ranked ahead, and 571 waits on 518. Both are ordering constraints, not grounds for dropping either member. The two share five agent-contract files and are already ordered, so they belong in one batch."
+        }
+      ]
+    },
+    {
+      "id": "M7",
+      "title": "Lean plan contracts, compliance checks and the build-guard replay hole",
+      "aim": "Make a Lean plan's pinned Challenge block authorable and checkable at plan time, stop the compliance check failing on end-state deliverables it cannot yet see, land the measured lean4 context records, and close the build-guard's stale-replay hole at both entry points.",
+      "gate": "The Challenge block has stated precedence, snapshot and measurement rules plus a mechanically checkable fixture-dependent form; the compliance check passes a plan whose end-state deliverables are unreached; the LSP-index and snapshot-scope probes are in place; lake-build-guard refuses a stale replay at both entry points; and formal:logic implement routing is ruled on.",
+      "progress": {
+        "status": "active",
+        "note": "The harvest contract, the trust surfaces and the plan-time snapshot landed; the authoring rules, the checks and the replay hole remain."
+      },
+      "batches": [
+        {
+          "task_ids": [
+            504,
+            398,
+            463,
+            537,
+            549,
+            451
+          ],
+          "description": "Landed: the plan-time Challenge snapshot, the goals harvest contract, trust surfaces, probe scope",
+          "rationale": "Kept so the milestone's done-count reports the part of the Lean strand that is actually built. 451 moved here from the baseline-relative batch, where it served only as 452's predecessor."
+        },
+        {
+          "task_ids": [
+            516,
+            550,
+            462,
+            399
+          ],
+          "description": "Ready now: the compliance check's end-state blind spot, the LSP-index probe, the snapshot scope",
+          "rationale": "Every member has satisfied predecessors today, and no two share a file. 399 edits lean4-syntax.md and index-entries.json, which 540 also edits, so a territory edge 540-after-399 was written on this pass rather than co-batching them unordered."
+        },
+        {
+          "task_ids": [
+            539,
+            599
+          ],
+          "description": "Unblock the plan records: the Challenge authoring rules and a deferral form for Lean sources",
+          "rationale": "Grouped by a shared blocking relationship, not a theme: 539 gates 540, 544 and 595, and 599 gates 592 through 596. 599 is itself a Lean task -- the batch-gate deferral directive names only agent-system narrowing forms and covers no Lean library source. It moved out of the dispatch-composition batch, which ranked behind the records it gates."
+        },
+        {
+          "task_ids": [
+            540,
+            544,
+            593,
+            594,
+            595,
+            596
+          ],
+          "description": "The plan records those rules gate: measured signatures, polarity, phase sizing, generated scope",
+          "rationale": "All six wait on 539 or 599 or both, and 593 through 596 are a chain among themselves, so the batch serializes on its own edges. Four of them edit core plan-format.md; the chain already orders every pair that shares it."
+        },
+        {
+          "task_ids": [
+            410,
+            533,
+            576
+          ],
+          "description": "The stale-replay hole at both lake-build-guard entry points, then the record over its window",
+          "rationale": "576's Condition C states the replay window as a plan-authoring workaround, which 410 and 533 are about to remove; authoring it first would document a fixed defect. A 576-after-533 edge was written on this pass (533 is already after 410)."
+        },
+        {
+          "task_ids": [
+            529
+          ],
+          "description": "Rule whether a formal:logic implement phase touching .lean files reaches the Lean agent",
+          "rationale": "Routing ruling with one file in scope and no predecessor; it moved out of the four-standalone-rulings batch because its subject is Lean capability at dispatch, not a standalone agent-system ruling."
         }
       ]
     },
@@ -22945,16 +23054,6 @@
         },
         {
           "task_ids": [
-            646,
-            551,
-            577,
-            609
-          ],
-          "description": "What one dispatch hands the next: the return-meta vocabulary, the stale handoff, two aux-plan gaps",
-          "rationale": "- **One surface, eight defects, and the surface is the handoff itself.** Six of the eight declare\n  `orchestrate-cycle-postflight.sh` and its suite -- still the most contended single path in the\n  backlog. Batching is the default here precisely because of that overlap, not in spite of it.\n\n- **`556` leads and an edge was written for it.** `556` and `472` are the same incident\n  (`validate-handoff.sh` Check 7 indexing a string-shaped `blockers` element, jq exit 5 escaping\n  `set -euo pipefail` as an undocumented crash) filed twice, from opposite ends. `556` owns the\n  ruling -- three authorities disagree about the canonical `blockers` shape and it says in its own\n  text to settle that FIRST, because the ruling decides which side of the fix is the\n  non-conforming one. `472` then conforms the validator, the postflight attribution and the\n  authoring instructions to whatever `556` ruled. The two share three declared paths\n  (`validate-handoff.sh`, its suite, `orchestrator-handoff-schema.json`), so this is an order a\n  record states over real shared territory: **`472` is now declared behind `556`**.\n\n- **`646` is the same class on the other carrier.** `.return-meta.json`'s status vocabulary has\n  no room for terminal outcomes that are legitimate but are not lifecycle-phase names, and all\n  four such values emitted across five extensions are rejected by the validator meant to govern\n  them. A validator that refuses every legitimate value is indistinguishable, to a caller, from\n  one that found a real fault -- the identical failure mode `556` and `472` close on the handoff.\n\n- **`551`, `519`, `570`, `577`, `609` are the failure-accounting half.** `551` closes a\n  stale-handoff detection that has fired across at least twelve distinct records (one of them ten\n  times) plus a detection that reached the user with no ledger entry behind it. `519` stops an\n  infrastructure transport death being charged as the task's own failure, and `570` -- already\n  edged behind it -- stops the stall signal counting commits it cannot attribute to the dispatch\n  under judgement. `577` makes a blocker-triggered aux revision consumable by triage, and `609`\n  (already edged behind `577`) stops a pending user question charging its own task into\n  `failed_tasks` and killing its dependents. A mis-charged failure propagates: it kills dependents\n  that were never broken, which is why this sits above the correctness batches rather than among\n  them.\n\n- **The remaining in-batch overlaps were deliberately left unedged.** Five members claim\n  `orchestrate-cycle-postflight.sh`; edging all ten unordered pairs would chain defects that are\n  genuinely independent, and co-membership is this list's ordering judgment, not graph evidence.\n  The admission gate's own `file_scope_collision` deferral serializes them within the batch\n  mechanically, and array position states the intended order. Reshaped: its commit-layer, declaration and detector members moved to M4, where they are sited as the prerequisites of the batch-worktree landing work."
-        },
-        {
-          "task_ids": [
             586,
             605
           ],
@@ -22987,14 +23086,11 @@
         },
         {
           "task_ids": [
-            599,
             592,
             520,
-            565,
-            518,
-            571
+            565
           ],
-          "description": "Dispatch composition: gate narrowing, starting position, deploy order, prior art, stale seq",
+          "description": "Dispatch composition: a re-verified starting position, deploy ordering, archived prior-art paths",
           "rationale": "- **What the dispatch body says is what the agent believes.** Four of the six declare\n  `orchestrate-build-dispatch.sh` and its suite; the batch is the composition surface itself.\n\n- `599` gives the batch-gate-deferral directive a narrowing form covering a phase that touches\n  only project sources rather than the agent-system deploy tree -- today that directive defers\n  work it has no reason to defer, which is throughput. `592`, already edged behind it,\n  re-verifies or timestamps a task's recorded starting position at composition time, so a\n  dispatch stops being briefed from a stale read.\n\n- `520` emits deploy ordering in the implement dispatch body, `565` resolves archived prior-art\n  paths when composing dispatch and task-description context (today an archived path silently\n  resolves to nothing), and `571` invalidates an in-flight dispatch whose `dispatch_seq` has been\n  superseded, at consumption time -- a superseded dispatch that still gets consumed is work done\n  against a decision already reversed.\n\n- **`518` sits immediately before `571` on purpose.** `571` is edged behind it, and `518` is the\n  propagation record: it states the `blockers[]` admission contract and the\n  continuation-on-partial requirement at every handoff-authoring site, across 47 agent files. It\n  depends on `472` (batch three), which is where the shape it propagates gets ruled -- propagating\n  before the ruling would write the wrong contract into 47 files at once."
         },
         {
@@ -23083,49 +23179,13 @@
         },
         {
           "task_ids": [
-            451,
-            462,
             452,
             566,
             509,
             588
           ],
-          "description": "Snapshot the Lean Challenge at plan time, then the baseline-relative and redeploy gate rules",
+          "description": "The baseline-relative gate criterion, then the cycle-check call sites and the redeploy rules",
           "rationale": "- **One chain, and every edge in it is already carried.** `451` takes the Lean Challenge snapshot\n  in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the\n  status gate correctly refuses. `462` gives `lean-challenge-snapshot.sh --check` a scope limit so\n  a research prototype under `specs/` stops forcing a false ambiguity failure. `452` depends on\n  `451` and requires a verification criterion over a repo-wide gate with standing pre-existing\n  findings to be baseline-relative rather than absolute; `566` and `509` depend on `452`, and\n  `588` on `509`.\n\n- **`452` is the hinge, and it is the reason this batch is not lower.** An absolute criterion over\n  a gate that already carries standing findings is unsatisfiable, so it either blocks a conforming\n  dispatch or gets waived -- the same signal-destroying choice batch one exists to remove, one\n  level up in the plan contract. `509` then makes a redeploy phase declarable without polluting\n  `file_scope` and bars a pre-redeploy phase from asserting a deployed-vs-source drift gate, and\n  `588` bars a pre-redeploy step from naming a deploy-tree-resolved subject unless it declares how\n  it gets a true read.\n\n- `566` documents that the `validate-state.sh` cycle check requires `--deep` at every call site\n  that specifies it.\n\n- **Cross-batch overlap, left to array position**: `452`, `509` and `588` claim\n  `validate-artifact.sh` alongside batch seven's members, and `plan-format.md` alongside the plan\n  authoring batch below. Fourteen open records claim `plan-format.md`; edging on that path would\n  merge most of the backlog into one run."
-        },
-        {
-          "task_ids": [
-            504,
-            516,
-            398,
-            399,
-            463,
-            550,
-            537
-          ],
-          "description": "The Lean compliance checker and its context strand: harvest contract, trust surfaces, probes",
-          "rationale": "- **Batched on `lean-plan-compliance-check.sh` and `lean/index-entries.json`**, each claimed\n  several ways across these members. `504` reconciles the Goals-block harvester with its documented\n  contract and `516` (edged behind it) stops the compliance check failing on not-yet-reached\n  end-state deliverables; `537` closes the spot-check's evidence-probe-scoped Goals miss.\n\n- **The trust-surface half**: `463` states that `lean_goal`'s empty `goals_after` is not evidence\n  a declaration elaborates and points step verification at that statement, and `550` (edged behind\n  it) probes the Lean LSP index state at dispatch start and propagates the degraded evidence tier\n  downstream. A verification step that reads an empty result as a pass is a false green, which is\n  why these two rank above the authoring records below.\n\n- **The context half**: `398` records that a grep for dependents misses rw-site definitional\n  unfolding and makes that guidance reachable at plan time; `399` (edged behind it) records three\n  measured gotchas -- IO-forced timing harnesses, docstring/`set_option` order, shadowed `decide`.\n\n- **Cross-batch note**: `560` (batch one) claims `lean-plan-compliance-check.sh` too. It clears a\n  deploy-blocking shellcheck finding in that file and runs first; the overlap is resolved by array\n  position rather than an edge."
-        },
-        {
-          "task_ids": [
-            549,
-            576
-          ],
-          "description": "The narrow unusedArguments remedy, then the gate-naming and replay-window record over it",
-          "rationale": "- `549` gives the Lean `unusedArguments` remedy a narrow route instead of the wholesale\n  `runLinter --update` rewrite; `576`, already edged behind it, then records the verification-tier\n  gate-naming rule, the Constraints-consumed marker duty, and the build-guard replay window over\n  the result.\n\n- **Kept as its own two-record run rather than folded into the Lean batches on either side.**\n  `576` also claims `lean/index-entries.json`, which `398`, `399`, `536`, `539` and `540` claim\n  across three different batches; splitting those into separate runs rather than edging them on\n  co-membership is the standing treatment for that path."
-        },
-        {
-          "task_ids": [
-            539,
-            540,
-            544,
-            593,
-            594,
-            595,
-            596
-          ],
-          "description": "Settle the pinned Challenge block's authoring rules, then the five plan records quoting them",
-          "rationale": "- **`539` is the root and everything else here quotes it.** It states the precedence and\n  snapshot-prerequisite rules for a Lean plan's pinned Challenge block; `540`, `544` and `595`\n  depend on it directly, and `593`-`596` form a further chain among themselves. Eleven in-batch\n  path overlaps, all already carried by direct edges.\n\n- `540` records five measured Lean facts (the `decide`-synthesis working form, the axiom-free\n  `maxRecDepth` remedy, the probe guard's total arithmetic, instance synthesis at a coerced\n  carrier, structural recursion not reducing by `rfl`). `544` makes a fixture-dependent gate\n  statement expressible and mechanically checkable in a Challenge block. `593` requires pinned\n  signatures to be measured at plan time, `594` sizes symmetric-pair phases and iteration\n  obligations separately, `595` defines Goal Polarity semantics for decision-gate plans, and `596`\n  separates generator-written files from hand-edited read-only scope declarations.\n\n- **`593`-`596` all depend on `599` (batch eight) and `593` on `451` (batch eighteen)**, both of\n  which run earlier. Those are ordering constraints satisfied by array position.\n\n- **Placed here because it is plan-authoring quality, not execution correctness.** Every member\n  makes a future plan better; none unblocks a dispatch that is currently stuck."
         },
         {
           "task_ids": [
@@ -23134,14 +23194,6 @@
           ],
           "description": "Migrate the mis-sited agent-system records, first the seven then the delta accumulated since",
           "rationale": "- `390` migrates seven mis-sited agent-system tasks out of the consumer repository and retires one\n  duplicated upstream; `481`, already edged behind it, rules on and migrates the 32-record delta\n  accumulated since that first migration. The order is forced -- `481` is defined relative to\n  `390`'s result.\n\n- **This is backlog siting, not machinery**, so it ranks below everything that changes how a\n  dispatch runs. It does matter: a task sited in a repository whose filesystem does not contain\n  its declared edit target cannot be executed there at all."
-        },
-        {
-          "task_ids": [
-            410,
-            533
-          ],
-          "description": "Close the lake-build-guard replay hole at both entry points it is reachable from",
-          "rationale": "- `410` gates result sharing on a `pre==post` fingerprint in `lake-build-guard.sh`; `533`, already\n  edged behind it, closes the same stale-replay behaviour for the `env lean FILE` entry point. One\n  mechanism, two call sites, and the second is only expressible once the first has settled what a\n  valid share looks like.\n\n- **A stale replay is a false green on a build**, which is why this is not lower; it sits here\n  rather than higher because the surface is one script in the Lean extension and nothing in the\n  core lifecycle reads it."
         },
         {
           "task_ids": [
@@ -23165,10 +23217,9 @@
           "task_ids": [
             456,
             421,
-            529,
             530
           ],
-          "description": "Four standalone rulings: /tag's version gate, the telemetry consumer, routing, cslib context",
+          "description": "Three standalone rulings: /tag's version gate, the telemetry consumer, the cslib context set",
           "rationale": "- **A batch of genuinely independent records, grouped because each is a single ruling with no\n  predecessor and no shared territory to serialize against.** This is the one place in the list\n  where membership is not a shared-file claim, and it is stated rather than disguised.\n\n- `456` exempts private npm/Cargo manifests from `/tag`'s version gate -- today that gate is\n  unpassable for a private manifest, so the command cannot complete. `421` closes three gaps in\n  the telemetry `--meta` evidence consumer. `529` evaluates whether `formal:logic` implement\n  routing should resolve to a Lean-capable agent. `530` lands the three agent-system context\n  extensions recorded by the cslib omega-automata survey.\n\n- **Each is small and each is real**; none is on a path another record waits for, which is\n  precisely why they rank here rather than higher."
         },
         {
