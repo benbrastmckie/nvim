@@ -1,10 +1,96 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/700_bind_push_grant_to_pushed_ref/summaries/01_bind-grant-to-pushed-ref-summary.md",
+      "summary": "All four plan phases completed: push_branch grant mint/consume now binds to the named ref's own commit instead of bare HEAD, nine new/amended suite cases, one clarifying doc sentence, and a clean redeploy (41 checks, 0 failures)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Bound a push_branch grant's mint and consume to the named ref's own commit (via refs/heads/<ref>) instead of bare HEAD, fixing both the too-strict and too-loose failure modes for a non-checked-out-ref grant. Added nine new/amended suite cases across two test files proving the three acceptance behaviours, one clarifying sentence in git-safety.md, and redeployed with a clean 41-check verify."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/git-safety.md",
+    "agent-system/extensions/core/hooks/please-grant.sh",
+    "agent-system/extensions/core/scripts/lib/push-grant-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh",
+    "agent-system/extensions/core/scripts/tests/test-please-grant.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-touched.sh's dual-mode run-all.sh resolution always prefers the deployed .claude/scripts/tests/run-all.sh mirror over the agent-system/extensions/core source-store copy whenever both exist at a tree root -- it never falls through to the source-store copy in a repo that already has a deployed tree. This means running verify-touched.sh (or any run-all.sh-based gate check) against a source-store edit BEFORE a redeploy only re-exercises the stale deployed code, never the edit itself, even though the check appears to pass. For genuine pre-redeploy proof that a source-store edit works, run the relevant test-*.sh file directly from its source-store path (bash agent-system/extensions/<ext>/scripts/tests/test-X.sh) -- its own SCRIPT_DIR-relative sourcing then resolves hooks/libs from the source store, not the deployed mirror.",
+      "category": "PATTERN",
+      "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/summaries/01_bind-grant-to-pushed-ref-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["verify-touched.sh", "source store", "deployed mirror", "dual-mode resolution", "pre-redeploy verification"]
+    },
+    {
+      "content": "When writing a new regression-suite case meant to prove a bug fix, verify empirically (via a scratch copy of the pre-fix files, e.g. git show <commit>~1:path > scratch-copy, never touching the live working tree) that the case actually FAILS against the pre-fix code, rather than assuming it does from the task description. In one case this surfaced that two of four planned 'proves the fix' cases were actually satisfied by the OLD code too (vacuously, because the old bug was 'too strict' in a way that happened to also produce the expected-blocked outcome for the new negative cases) -- they were still valid as forward-looking regression pins, but mis-describing them as discriminating evidence would have been wrong. Record the honest finding rather than the assumed one.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/summaries/01_bind-grant-to-pushed-ref-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["regression test", "discriminating case", "scratch copy verification", "fix-proving tests", "vacuous pass"]
+    },
+    {
+      "content": "A test-only mint/fixture helper that hardcodes its own binding logic (e.g. a suite's mint_grant_in binding every grant to bare HEAD regardless of the action's own named ref) can model a production code path LESS faithfully than the suite's pass rate suggests -- it may be structurally incapable of exercising a whole class of valid scenarios (here: any non-checked-out-ref grant) until the helper itself is updated to mirror the real binding logic. When fixing a production binding/resolution bug, audit every test-fixture helper that independently re-implements the same binding logic, not just the production call sites.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/700_bind_push_grant_to_pushed_ref/summaries/01_bind-grant-to-pushed-ref-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["test fixture fidelity", "mint helper", "fixture drift", "test-only reimplementation"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "verify-touched.sh dual-mode run-all.sh resolution",
+      "predicate": "finding is",
+      "value": "always resolves the deployed .claude/scripts/tests/run-all.sh mirror ahead of the agent-system source-store copy when both exist at a tree root, so a gate/suite check run against a source-store edit before redeploy silently re-tests the stale deployed code rather than the edit.",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/verify-touched.sh:_vt_resolve_run_all_sh"
+    },
+    {
+      "subject": "generate-context-line-counts.sh",
+      "predicate": "finding is",
+      "value": "hard-refuses to run from the agent-system source store (requires a deployed .claude/scripts/ or .opencode/scripts/ tree), so an index-entries.json line_count mismatch introduced by a source-store prose edit cannot be fixed before a redeploy -- it is deploy-headless.sh's own automatic pre-deploy step, not a standalone remedy available mid-task.",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/generate-context-line-counts.sh"
+    },
+    {
+      "subject": "push-grant HEAD_SHA field rename vs. semantic change",
+      "predicate": "decision is",
+      "value": "kept the on-disk grant field name HEAD_SHA unchanged while changing which commit it holds (the named ref's own commit for push_branch, HEAD's for every other class), because a rename would have rippled into every grant-field assertion across the suite for a label-only diff and risked misattributing a behavioral regression to the rename itself.",
+      "confidence": 0.85,
+      "source_loc": "specs/700_bind_push_grant_to_pushed_ref/plans/01_bind-grant-to-pushed-ref.md Decision D2"
+    },
+    {
+      "subject": "test-guard-git-push.sh mint_grant_in helper pre-fix fidelity",
+      "predicate": "finding is",
+      "value": "bound every fixture grant to bare HEAD regardless of the action's own named ref, which is structurally MORE PERMISSIVE than production please-grant.sh ever was and made it impossible to write a positive (allowed) case for a non-checked-out-ref grant until the helper itself was updated to mirror the real refs/heads/<ref> resolution.",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh mint_grant_in"
+    },
+    {
+      "subject": "'refused once the granted ref moves' regression case discriminating power",
+      "predicate": "correction is",
+      "value": "this consume-side case does NOT discriminate pre-fix from post-fix code -- empirically confirmed via a scratch copy that the pre-fix bare-HEAD matching logic already refuses ANY non-checked-out-ref grant unconditionally (the 'too strict' bug), so the case passes vacuously both before and after the fix. Only the 'survives an unrelated HEAD commit while the granted ref itself is untouched' case actually discriminates old from new behavior for this change.",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"
+    },
+    {
+      "subject": "push_branch grant ref resolution form",
+      "predicate": "finding is",
+      "value": "git rev-parse --verify --quiet \"refs/heads/${REF}\" with no second fallback form is the correct fail-closed resolution for a push_branch-class grant at both mint and consume time; REF is guaranteed a bare branch name (never a full ref path) by every grammar form (/please free-text, /merge, /pr) that can set action_class=push_branch, confirmed by a full grep audit of both please-grant.sh and push-grant-lib.sh.",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/hooks/please-grant.sh"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795543276_2f1165",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
