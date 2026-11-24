@@ -56,7 +56,49 @@ This log is write-only from every dispatch's perspective:
   codebase.
 - **Recording is always non-fatal.** A failure to record an issue or win must never fail the
   dispatch that attempted it. Every call site uses the documented non-fatal invocation form (see
-  `scripts/issue-record.sh`'s header).
+  `scripts/issue-record.sh`'s header). An **argument-shaped refusal** (the invocation named a
+  flag `issue-record.sh` does not recognize) is self-recorded as an ordinary entry in this same
+  file rather than vanishing silently under that redirection — see "Argument-Shaped Refusal
+  Entries" below. The caller's own exit status is still unaffected either way.
+
+### Argument-Shaped Refusal Entries
+
+When `issue-record.sh`'s argument parser hits a flag it does not recognize, it does not simply
+exit with nothing written (the behaviour of every other refusal class). Instead it self-records
+one schema-valid entry into the resolved task's own `issues.jsonl` — the same file the
+conclusion stage already reads — and exits `2` (distinct from exit `1`, used for every
+content-shaped refusal: a missing/empty required field, an unresolvable `--task`, an
+unrecognized value for a true closed-set field, and so on). This exists because the prescribed
+non-fatal invocation form (`>/dev/null 2>&1 || echo "Note: ..." >&2`) discards the script's own
+stderr diagnostic, so a mistyped flag was otherwise indistinguishable from any other refusal and
+the caller's intended entry was simply lost with no signal.
+
+The refusal entry's shape:
+- `kind`: `"issue"`
+- `class`: `"knowledge-capture gap"` (one of the 18 seed classes — see "Seed Class Enum" below)
+- `severity`: `"minor"`
+- `what_happened`: generated prose naming the offending flag and quoting the caller's own
+  `--what-happened` value verbatim when one was parsed before the unrecognized flag (or stating
+  explicitly that none was)
+- `tags.issue_record_refusal`: an object carrying at least `flag` (the offending flag) and,
+  when the caller passed one, `caller_tags_json` (the caller's raw `--tags-json` string,
+  preserved as a string rather than merged in as structured tags) — see "The `tags` Seam" below
+  for the general convention this uses; no schema change was needed.
+
+Every other optional field the caller may have already parsed (`--evidence-path`,
+`--cost-value`/`--cost-unit`, `--resolution`, `--suggested-channel`, `--tags-json` itself) is
+discarded on this path rather than carried into the refusal entry; `--task-dir`/`--task`,
+`--phase`, and `--session` are preserved when already parsed, since they are what let the entry
+reach the right task directory at all.
+
+**Stated residual**: when the unrecognized flag precedes (or otherwise prevents resolving)
+`--task-dir`/`--task`, no task directory resolves and no entry can be appended. This case still
+exits `2` with stderr only — unavoidable by construction, since there is nowhere to write the
+entry.
+
+A refusal entry is an **ordinary line to every reader**: the conclusion stage's
+`group_by(.class)` grouping and every other consumer handle it with no consumer-side change, and
+nothing anywhere special-cases it.
 
 ## When an Agent Should Record
 

@@ -313,7 +313,7 @@ passed` line against a pre-edit baseline run captured before the first edit.
 
 ---
 
-### Phase 3: Documentation Parity and the Agent-Facing Discoverability Pointer [NOT STARTED]
+### Phase 3: Documentation Parity and the Agent-Facing Discoverability Pointer [COMPLETED]
 
 **Goal**: `context/formats/issue-log.md` and the rendered agent-facing invocation template agree
 with the implemented behaviour, and the index entry's derived `line_count` is regenerated in the
@@ -321,27 +321,31 @@ same change that moves it.
 
 **Tasks**:
 
-- [ ] Re-read each target file immediately before editing.
-- [ ] In `context/formats/issue-log.md`'s "CAPTURE ONLY — A Hard Boundary" section, extend the
+- [x] Re-read each target file immediately before editing. *(completed)*
+- [x] In `context/formats/issue-log.md`'s "CAPTURE ONLY — A Hard Boundary" section, extend the
       "**Recording is always non-fatal.**" bullet (lines 57-59) to state that an argument-shaped
       refusal (an unrecognized flag) is self-recorded as an ordinary entry carrying
       `tags.issue_record_refusal`, and that the caller's exit status is still unaffected.
-- [ ] Add a short subsection documenting the refusal entry's shape — `kind: issue`,
+      *(completed)*
+- [x] Add a short subsection documenting the refusal entry's shape — `kind: issue`,
       `class: knowledge-capture gap`, `severity: minor`, the `tags.issue_record_refusal` keys —
       and exit code `2`, cross-referencing "The `tags` Seam" rather than duplicating it. State the
       residual (a mistyped task-resolution flag appends nothing and exits 2 with stderr only).
-- [ ] Note in that subsection that a refusal entry is an ordinary line to every reader: the
+      *(completed: "Argument-Shaped Refusal Entries" subsection added under "CAPTURE ONLY")*
+- [x] Note in that subsection that a refusal entry is an ordinary line to every reader: the
       conclusion stage's `group_by(.class)` read-side grouping handles it with no consumer change,
-      and nothing special-cases it.
-- [ ] In `scripts/orchestrate-build-dispatch.sh`'s rendered `## Issue Log` block, add one static
+      and nothing special-cases it. *(completed)*
+- [x] In `scripts/orchestrate-build-dispatch.sh`'s rendered `## Issue Log` block, add one static
       sentence after the invocation template (after the line ending
       `"Note: issue recording failed (non-fatal)\" >&2"`, before the `kind: win` paragraph)
       telling an agent whose fallback note fires to look in the task's own `issues.jsonl` for a
       refusal entry naming the mistyped flag, and to re-run with corrected flags. Leave the
-      template's own `>/dev/null 2>&1` redirection unchanged.
-- [ ] Regenerate the derived index `line_count` for the edited context file:
+      template's own `>/dev/null 2>&1` redirection unchanged. *(completed; confirmed no `${...}`
+      interpolation in the added line)*
+- [x] Regenerate the derived index `line_count` for the edited context file:
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`,
-      then review the diff to confirm only `line_count` values changed.
+      then review the diff to confirm only `line_count` values changed. *(completed: exactly one
+      value changed, formats/issue-log.md 334 -> 376)*
 
 **Timing**: 45 minutes
 

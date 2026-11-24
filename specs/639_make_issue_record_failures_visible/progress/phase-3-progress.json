@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Documentation Parity and the Agent-Facing Discoverability Pointer",
+  "started_at": "2026-11-24T05:13:00Z",
+  "last_updated": "2026-11-24T05:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read each target file immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend issue-log.md non-fatal bullet to mention argument-shaped refusal self-recording", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 3, "description": "Add subsection documenting refusal entry shape and exit code 2", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 4, "description": "Note that a refusal entry is an ordinary line to every reader", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 5, "description": "Add one static discoverability sentence to orchestrate-build-dispatch.sh's rendered Issue Log block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 6, "description": "Regenerate index-entries.json line_count via generate-context-line-counts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "test-orchestrate-build-dispatch.sh": "238 passed, 0 failed",
+    "test-orchestrate-cycle-plan.sh": "472 passed, 0 failed, including Group 27 Case F (identical digest with the Issue Log placeholder line present, confirming the new static sentence needed no strip-pattern change)",
+    "generate-context-line-counts.sh check mode": "CHECK PASSED: all line_count values exact (no drift)",
+    "interpolation_check": "grep '\\${' over the added orchestrate-build-dispatch.sh line: no match",
+    "declined_call_sites_unmodified": "git status --short on git-commit-phase.sh, orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh: clean (no output)",
+    "index_entries_diff": "exactly one line_count changed: formats/issue-log.md 334 -> 376"
+  }
+}

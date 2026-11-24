@@ -3810,7 +3810,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Per-task issues.jsonl schema: entry field table, 18-class seed taxonomy, severity scale, CAPTURE-ONLY boundary, and the six relation verdicts against existing issue-bearing surfaces",
-      "line_count": 334,
+      "line_count": 376,
       "keywords": [
         "issues",
         "jsonl",
