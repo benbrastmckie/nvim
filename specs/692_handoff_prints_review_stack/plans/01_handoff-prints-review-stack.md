@@ -1,7 +1,7 @@
 # Implementation Plan: Task #692
 
 - **Task**: 692 - Handoff prints the review stack
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None declared
 - **Research Inputs**: `specs/692_handoff_prints_review_stack/reports/01_handoff-prints-review-stack.md`

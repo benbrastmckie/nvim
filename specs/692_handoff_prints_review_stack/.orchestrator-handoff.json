@@ -1,20 +1,25 @@
 {
   "schema": 1,
   "task_number": 692,
-  "phase": "plan",
-  "status": "planned",
-  "dispatch_seq": 5,
-  "session_id": "sess_1795472390_63c292_692",
-  "phases_completed": 0,
+  "phase": "implement",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "session_id": "sess_1795484837_9a6a6b",
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Wrote a three-phase plan for Phase 5 of the parent stack-PR design record, scoped strictly to this record's two declared file_scope paths (milestone-review-handoff.sh and its suite). Phase 1 wires the non-fatal cut/show call plus the refusal arm and rewrites the suite's Case 3, closing green because the default fixtures exercise exactly the refusal arm; Phase 2 installs review-stack-prepare.sh in the sandbox and proves the success arm with a new fixture; Phase 3 redeploys and runs the scoped touched-path check. All three premise lines and both suite baselines (18 and 38 passing) were re-measured against live state and confirmed unchanged.",
+  "summary": "Wired milestone-review-handoff.sh to call review-stack-prepare.sh's cut then show non-fatally: on success it prints and writes the real per-PR review stack in place of the old hardcoded /please+/merge pair; on refusal (including a missing script) it prints the refusal reason and /please push <branch> alone, with no /merge line, plus a HEAD-binding grant line on both arms. test-milestone-review-handoff.sh covers both arms, moving from 18 to 19 passing cases; deploy-headless.sh landed clean. The one measured regression, test-orchestrate-conclusion-roadmap.sh's Case H, is the predicted, out-of-scope breakage named in the plan's Risks table and recorded as an owed follow-up for a separate record.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/692_handoff_prints_review_stack/summaries/01_handoff-prints-review-stack-summary.md",
+      "summary": "Three-phase implementation wiring review-stack-prepare.sh cut/show into milestone-review-handoff.sh, suppressing the unusable /merge on the refusal arm, with both arms covered by the suite (18 -> 19 cases)."
+    },
     {
       "type": "plan",
       "path": "specs/692_handoff_prints_review_stack/plans/01_handoff-prints-review-stack.md",
-      "summary": "Three-phase plan: cut/show wiring plus refusal arm, success-arm fixture and case, redeploy and scoped verification."
+      "summary": "Three-phase plan, all phases COMPLETED, with a Phase 3 Verification Notes subsection recording the dual verify-touched.sh invocation and its result."
     }
   ],
   "blockers": [],
-  "notes": "Known out-of-scope breakage carried forward as an owed follow-up, not actioned: test-orchestrate-conclusion-roadmap.sh Case H (assertion near line 507) requires both /please push and a bare /merge in a sandbox that never installs review-stack-prepare.sh, so it goes RED by design once this work lands. Also owed to a separate record: the parent plan's conclusion-stage.md and git-workflow-narrative.md prose updates and the index-entries.json line_count reconciliation they require. Plan-time finding beyond the research report: review-stack-prepare.sh's show subcommand runs the full resolver chain before rsp_show_stack, so it carries its own refusal surface (10-13, 20, 30-32) on top of manifest_missing (50); the plan checks show's exit status separately."
+  "notes": "Owed follow-ups, not actioned (outside this record's declared file_scope): (1) test-orchestrate-conclusion-roadmap.sh Case H (assertion at line 512) now fails by design, since its sandbox never installs review-stack-prepare.sh and the handoff correctly takes the missing-script refusal arm there; a future record should either install review-stack-prepare.sh in that suite's sandbox or rewrite Case H to the refusal-arm shape, matching this record's own Case 3 rewrite. (2) The parent design record's conclusion-stage.md / git-workflow-narrative.md prose updates and the index-entries.json line_count reconciliation they require remain undone. Verification detail: the complete gate set (verify-deploy.sh at full depth) was deferred to this multi-task /orchestrate batch's once-per-invocation close per the dispatch's Batch Gate Deferral directive; Phase 3 discharged its own full tier via verify-touched.sh run twice (no-arg batch-wide form, then scoped to this record's 2 touched files), isolating the one attributable Case H failure from an unrelated test-gate-cache-equivalence.sh timeout caused by shared-tree contention from concurrent sibling dispatches this cycle."
 }

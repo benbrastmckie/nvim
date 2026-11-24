@@ -1,10 +1,113 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/692_handoff_prints_review_stack/summaries/01_handoff-prints-review-stack-summary.md",
+      "summary": "Three-phase implementation wiring review-stack-prepare.sh cut/show into milestone-review-handoff.sh, suppressing the unusable /merge on the refusal arm, with both arms covered by the suite (18 -> 19 cases)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wired milestone-review-handoff.sh to call review-stack-prepare.sh cut then show: on success it prints and writes the real per-PR review stack; on refusal (including a missing script) it prints the refusal reason and /please push <branch> alone, with no /merge line, plus a HEAD-binding grant line on both arms. test-milestone-review-handoff.sh covers both arms (18 -> 19 cases); deploy-headless.sh landed clean; the one measured regression (test-orchestrate-conclusion-roadmap.sh Case H) is the predicted, out-of-scope breakage, recorded as an owed follow-up."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/milestone-review-handoff.sh",
+    "agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a non-fatal subprocess outcome must be computed inside a shell script's top-level per-item `while` loop (not inside a function), use plain variable assignment, never `local` -- `local` outside a function is a bash error that silently fails to declare the variable, under `set -uo pipefail` without `-e` the script continues with the variable unset rather than aborting loudly.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/692_handoff_prints_review_stack/summaries/01_handoff-prints-review-stack-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "bash",
+        "local",
+        "scope",
+        "while-loop",
+        "set -uo pipefail"
+      ]
+    },
+    {
+      "content": "To call a subprocess non-fatally and surface only its REFUSED:/error reason on failure while suppressing its own advisory stderr NOTE lines on success, capture stdout and stderr separately (stdout via command substitution, stderr via a `mktemp` file read afterward) rather than a single `2>&1` combined capture -- a combined capture cannot discriminate 'surface on success' output from 'extract-only, never surface' advisory lines.",
+      "category": "PATTERN",
+      "source_artifact": "specs/692_handoff_prints_review_stack/summaries/01_handoff-prints-review-stack-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "bash",
+        "stderr",
+        "mktemp",
+        "subprocess",
+        "refusal-arm"
+      ]
+    },
+    {
+      "content": "verify-touched.sh's no-arg form derives touched paths from the WHOLE shared working tree (uncommitted changes plus the committed diff against its determined base), not just the current dispatch's own edits -- during a multi-task /orchestrate batch with several concurrent sibling dispatches, this can resolve a much larger suite set (and surface unrelated failures/timeouts from shared-tree contention) than a dispatch's own Tier Justification predicted. Re-running verify-touched.sh scoped to the dispatch's own explicit file paths isolates the attributable signal from batch-wide noise.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/692_handoff_prints_review_stack/summaries/01_handoff-prints-review-stack-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-touched",
+        "batch",
+        "orchestrate",
+        "scoped-verification",
+        "noise"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "review-stack-prepare.sh resolver ordering",
+      "predicate": "finding is",
+      "value": "cut/show resolve integration_branch, then review_base, then remote, then platform, in that fixed order -- a missing review_base declaration (no --review-base and no .claude-extensions.json review_base key) refuses with exit 10 (review_base_undeclared) before remote/platform resolution ever runs, so a default fixture with no declared remote still exercises the review_base refusal cleanly.",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh:1538-1547"
+    },
+    {
+      "subject": "push-grant-lib.sh HEAD_SHA binding",
+      "predicate": "finding is",
+      "value": "A /please push grant's HEAD_SHA field is fixed at mint time and the grant is consumable only when it equals the repository's current HEAD -- confirming that a grant typed against one commit is invalidated by any intervening commit, which is the mechanism the new HEAD-binding line in milestone-review-handoff.sh's output now states explicitly to the operator.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/lib/push-grant-lib.sh:453,464"
+    },
+    {
+      "subject": "deploy-tree-first test resolution staleness window",
+      "predicate": "finding is",
+      "value": "A test suite using common_test_resolve_subject's deploy-tree-first mode exercises the STALE deployed copy of an edited script until the next deploy-headless.sh run, even after a sibling suite resolving the same script directly from the source store already reflects the edit -- observed concretely: test-orchestrate-conclusion-roadmap.sh (deploy-tree-first) still passed an assertion against the OLD milestone-review-handoff.sh behavior after test-milestone-review-handoff.sh (direct source-store path) already exercised the NEW behavior, until deploy-headless.sh ran.",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh:39-44"
+    },
+    {
+      "subject": "Sandboxed Bash tool call auto-backgrounding threshold",
+      "predicate": "finding is",
+      "value": "In this harness/sandbox, a foreground Bash tool call appears to auto-background after roughly 180 seconds of wall time regardless of the declared `timeout` parameter (observed auto-backgrounding at 180s even with timeout=550000ms requested), and any `sleep` command (bare, or chained with other commands) is unconditionally blocked by the harness with a message to use Monitor's until-loop idiom or run_in_background instead. This makes the bounded_build_waiter.md canonical kill-0-loop idiom (captured pid, liveness loop, outer timeout, all inside one blocking Bash call) impossible to execute literally in this environment; the practical compliant fallback for a dispatch-contract-constrained wait is repeated no-sleep status checks (kill -0 on the real OS PID via `ps`) interleaved with other legitimate independent work, never a filler ping loop.",
+      "ko_type": "finding",
+      "confidence": 0.75,
+      "source_loc": "task 692 implementation phase, Phase 3 verify-touched.sh wait"
+    },
+    {
+      "subject": "review-stack-prepare.sh fallback task attribution",
+      "predicate": "finding is",
+      "value": "A task with no landing proof is attributed via rsp_fallback_attribution, which matches commit subjects against the regex `^task <N>(:| phase )` on the integration branch, bounded below by the task's `created` time -- the exact same convention and regex milestone-review-handoff.sh's own task_review_line fallback already uses independently. Confirmed empirically: review-stack-prepare.sh cut succeeded against a 2-task fixture where one task had a landing proof and the other had none but a matching phase-commit subject, producing two independent review units with no task_unattributable refusal.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh:424-453,468-497"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795484837_9a6a6b",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }
