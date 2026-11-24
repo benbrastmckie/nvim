@@ -918,10 +918,16 @@
           "path": "specs/692_handoff_prints_review_stack/plans/01_handoff-prints-review-stack.md",
           "type": "plan",
           "summary": "Three-phase plan: cut/show wiring plus refusal arm, success-arm fixture and case, redeploy and scoped verification."
+        },
+        {
+          "path": "specs/692_handoff_prints_review_stack/summaries/01_handoff-prints-review-stack-summary.md",
+          "type": "summary",
+          "summary": "Three-phase implementation wiring review-stack-prepare.sh cut/show into milestone-review-handoff.sh, suppressing the unusable /merge on the refusal arm, with both arms covered by the suite (18 -> 19 cases)."
         }
       ],
       "next_artifact_number": 2,
-      "roadmap_annotation": "plan predates the /slice ruling: revise before dispatch, to print /slice and drop the review.ref write"
+      "roadmap_annotation": "plan predates the /slice ruling: revise before dispatch, to print /slice and drop the review.ref write",
+      "completion_summary": "Wired milestone-review-handoff.sh to call review-stack-prepare.sh cut then show: on success it prints and writes the real per-PR review stack; on refusal (including a missing script) it prints the refusal reason and /please push <branch> alone, with no /merge line, plus a HEAD-binding grant line on both arms. test-milestone-review-handoff.sh covers both arms (18 -> 19 cases); deploy-headless.sh landed clean; the one measured regression (test-orchestrate-conclusion-roadmap.sh Case H) is the predicted, out-of-scope breakage, recorded as an owed follow-up."
     },
     {
       "project_number": 691,

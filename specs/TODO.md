@@ -387,6 +387,7 @@ VERIFY BY: the command file's own documented contract being internally consisten
 - **Dependencies**: Task 695
 - **Research**: [692_handoff_prints_review_stack/reports/01_handoff-prints-review-stack.md]
 - **Plan**: [692_handoff_prints_review_stack/plans/01_handoff-prints-review-stack.md]
+- **Summary**: [692_handoff_prints_review_stack/summaries/01_handoff-prints-review-stack-summary.md]
 
 **Description**: RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE IMPLEMENTING. specs/decisions/review-slices-are-declared-tasks.md amends the landing record's L3/L4 and its "Interface to review submission": a review slice is declared before the work (S1/S2) and lands by an ordinary scoped commit (S4), rather than being reconstructed from landing proofs by plumbing at review time. This record's own deliverable SURVIVES the amendment intact -- see that record's "What is retained from the inference route" section, which keeps the resolvers, the manifest, show, record-request and restack wired. Do NOT widen scope to implement slices here. The one thing to check at implementation time: any prose this record adds must not assert that a review unit is INFERRED from path overlap or dependency topology, because that is no longer the primary route.
 
