@@ -6,7 +6,7 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M5: /slice: the one path from a work branch to a stack of review pull requests](#milestone-m5) | active | 3/7 | prepared |
+| [M5: /slice: the one path from a work branch to a stack of review pull requests](#milestone-m5) | active | 5/7 | prepared |
 | [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 9/21 | none |
 | [M3: Batch worktree isolation off a per-batch branch](#milestone-m3) | planned | - | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
@@ -19,19 +19,13 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Make /slice the single user-invoked path from a work-branch tip to a reviewable stack of pull requests on a chosen target, refuse a slice too large to review, and delete every other route to review.
 
-- **Progress**: active -- 1/4 batches, 3/7 tasks done -- Landing half landed and ruled; the /slice build, size bar, deletions and grant-binding successors are not task records yet.
+- **Progress**: active -- 2/4 batches, 5/7 tasks done -- Landing half landed and ruled; the /slice build, size bar, deletions and grant-binding successors are not task records yet.
 - **Review**: prepared on `refs/heads/master` (updated 2026-11-24)
 - **Gate**: /slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.
 
 **Batch 1** (done) -- Landed: integration-branch admission, one reviewable commit per task, and the branch docs
 
-**Batch 2** -- Retire the old review exits: the handoff prints /slice, and the retired ref-land script goes
-
-```
-/orchestrate 692, 690
-690 blocked:692     milestone-ref-land.sh re-creates a deliberately retired milestone ref
-692 ready           handoff_prints_review_stack   <- plan predates the /slice ruling: revise before dispatch, to print /slice and drop the review.ref write
-```
+**Batch 2** (done) -- Retire the old review exits: the handoff prints /slice, and the retired ref-land script goes
 
 **Batch 3** -- Declare generated paths, so a slice diff reads and its size bar counts hand-written lines
 
@@ -44,7 +38,7 @@ Make /slice the single user-invoked path from a work-branch tip to a reviewable 
 
 ```
 /orchestrate 694
-694 blocked:692,693 stack_pr_redeploy_and_second_repo_demo   <- revise first: its edges onto the handoff and the /merge record belong on the /slice build record
+694 blocked:693     stack_pr_redeploy_and_second_repo_demo   <- revise first: its edges onto the handoff and the /merge record belong on the /slice build record
 ```
 
 <a id="milestone-m4"></a>
@@ -442,12 +436,13 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 672 HOLD            Classify every remaining project-root consumer as code-root, state-root or both
 674 HOLD            Build batch worktree cleanup, retention on partial batches, and orphan report...
 686 HOLD            Create the per-batch worktree and batch branch when isolation is declared on
+665 blocked:697     Record the last dispatching orchestration batch in a displaced Previous work ...
 688 blocked:501     dispatch_redeploy_clears_staleness_verdict
 664 ready           Add a /tmp sweep pass to /refresh for dead scratchpad sessions and agent-test...
-665 ready           Record the last dispatching orchestration batch in a displaced Previous work ...
 680 ready           gate_cache_key_in_deployed_repos
 684 ready           Sweep and fix stale command and sub-mode references across the source store
 689 ready           oversized_plan_phase_count_advisory
 693 ready           merge_command_stack_mode   <- ruled abandon: /merge is removed and --stack is never built
 696 ready           narrow_batch_gate_stage_verify_deploy_invocation
+697 ready           case_h_assertion_review_stack_refusal_arm
 ```
