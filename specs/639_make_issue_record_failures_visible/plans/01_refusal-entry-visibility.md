@@ -1,7 +1,7 @@
 # Implementation Plan: Task #639
 
 - **Task**: 639 - Make issue-record.sh failures visible instead of silently losing the evidence entry
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/639_make_issue_record_failures_visible/reports/01_issue-record-failure-visibility.md

@@ -24,14 +24,25 @@
       "category": "PATTERN",
       "source_artifact": "specs/639_make_issue_record_failures_visible/summaries/01_refusal-entry-visibility-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["argument parsing", "refusal mode", "bash CLI", "exit code discrimination", "issue-record.sh"]
+      "suggested_keywords": [
+        "argument parsing",
+        "refusal mode",
+        "bash CLI",
+        "exit code discrimination",
+        "issue-record.sh"
+      ]
     },
     {
       "content": "verify-touched.sh's suite-selection mapping can sweep in a suite entirely unrelated to the actually-touched files (observed: editing orchestrate-build-dispatch.sh's rendered Issue Log block pulled in test-orchestrate-conclusion-roadmap.sh, whose only failure concerned milestone-review-handoff.sh/review-stack-prepare.sh -- files never touched). When a scoped touched-path run shows a failure, check whether the failing suite's content actually exercises any of the declared touched files before assuming a regression; a coarse suite-to-file mapping can legitimately surface a concurrent sibling task's own in-flight breakage.",
       "category": "INSIGHT",
       "source_artifact": "specs/639_make_issue_record_failures_visible/summaries/01_refusal-entry-visibility-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["verify-touched.sh", "suite selection", "cross-task contamination", "COMPLETED WITH EXCLUSIONS"]
+      "suggested_keywords": [
+        "verify-touched.sh",
+        "suite selection",
+        "cross-task contamination",
+        "COMPLETED WITH EXCLUSIONS"
+      ]
     }
   ],
   "sapience_notes": [
@@ -82,7 +93,11 @@
     "session_id": "sess_1795494587_0fa3fc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }
