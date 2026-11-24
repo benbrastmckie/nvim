@@ -1,7 +1,7 @@
 # Implementation Plan: Task #645
 
 - **Task**: 645 - Repair seven failing Gate 8 suites (remaining scope: the `.mcp.json` merge defect)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/645_repair_seven_failing_gate8_suites/reports/01_mcp-merge-defect-already-fixed.md

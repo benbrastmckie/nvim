@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 13,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 17,
+  "phases_completed": 2,
   "phases_total": 2,
-  "summary": "Re-validated the task description's premise against live state and found the single remaining in-scope defect already closed: test-mcp-merge-target.sh runs 7 passed / 0 failed exit 0, and merge.lua's new_object recursing branch is committed and clean. Wrote a two-phase verification-and-close plan scoping zero code edits -- phase 1 captures the verbatim suite and known-failures evidence for acceptance criteria 2, 3 and 4; phase 2 redeploys for criterion 5 and defers the complete gate set to the orchestration close for criterion 1. Also recorded that the description's agent-system/extensions/core/** edit-target line does not apply to this defect, whose fix lives in primary Neovim plugin code.",
+  "summary": "Confirmed live that the .mcp.json merge defect (test-mcp-merge-target.sh Assertions C and E) was already fixed and committed before this dispatch began; no code edit was scoped. Phase 1 captured verbatim evidence: 7 passed / 0 failed exit 0, known-failures.txt unchanged at 4 rows, git-clean on all three named paths, and the live new_object recursing branch in merge.lua. Phase 2 ran deploy-headless.sh (RESULT=landed_verify_clean) and a scoped Gate 8 check (PASS), recording the complete gate set as deferred to the orchestration close's batch-gate stage rather than independently run.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/645_repair_seven_failing_gate8_suites/summaries/01_mcp-merge-closure-confirmation-summary.md",
+      "summary": "States the merge code (not the test) was the wrong side, that Assertions C and E are one fault, quotes all verbatim evidence, and records the acceptance-criterion-1 deferral to the batch-gate stage."
+    },
+    {
       "type": "plan",
       "path": "specs/645_repair_seven_failing_gate8_suites/plans/01_mcp-merge-closure-confirmation.md",
-      "summary": "Two-phase verification-and-close plan; no code edit scoped, whole-tree claim declared on the deploy phase."
+      "summary": "Both phases marked [COMPLETED] with per-item completion annotations carrying verbatim evidence."
     }
   ]
 }

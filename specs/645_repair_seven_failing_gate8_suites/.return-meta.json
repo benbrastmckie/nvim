@@ -1,10 +1,97 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/645_repair_seven_failing_gate8_suites/summaries/01_mcp-merge-closure-confirmation-summary.md",
+      "summary": "Confirms the .mcp.json merge defect (test-mcp-merge-target.sh Assertions C/E) was already fixed and committed before this dispatch began; no code edit scoped. Live-verified 7 passed/0 failed, known-failures.txt unchanged at 4 rows, deploy-headless.sh landed_verify_clean, scoped Gate 8 check green, and the complete gate set correctly deferred to the batch-gate stage."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Confirmed the named .mcp.json merge defect was already fixed and committed (commit 3c7f91a92) before this dispatch began; no code edit was needed. Live-verified test-mcp-merge-target.sh at 7 passed / 0 failed with both Assertions C and E PASS, known-failures.txt unchanged at 4 rows, and deploy-headless.sh reporting RESULT=landed_verify_clean. The merge code (not the test's expectation) was the wrong side, and Assertions C and E are one fault, not two."
+  },
+  "modified_files": [
+    "specs/645_repair_seven_failing_gate8_suites/plans/01_mcp-merge-closure-confirmation.md",
+    "specs/645_repair_seven_failing_gate8_suites/summaries/01_mcp-merge-closure-confirmation-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-deploy.sh's batch-gate-pending deferral is enforced mechanically, not just advisory: when a non-stale specs/.orchestration/batch-gate-pending-{session_id}.json marker exists for the current session, an UNFILTERED verify-deploy.sh invocation refuses outright with a literal 'DEFERRED' message naming --only-gate/--gate8-touched (scoped-now) or --override-batch-gate-deferral (reserved for the batch-gate stage's own discharger) as the only two ways forward. A confirmatory implementation dispatch inside a multi-task batch should quote this exact refusal verbatim as positive evidence that the deferral is live, not drift -- rather than treating the refusal as a blocker to work around.",
+      "category": "PATTERN",
+      "source_artifact": "specs/645_repair_seven_failing_gate8_suites/summaries/01_mcp-merge-closure-confirmation-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "batch-gate-pending",
+        "verify-deploy DEFERRED",
+        "scoped gate check",
+        "override-batch-gate-deferral"
+      ]
+    },
+    {
+      "content": "deploy-headless.sh's own inline verification pass supplies --skip-slow --override-batch-gate-deferral to itself, so running deploy-headless.sh inside a batch whose own gate stage has a pending deferral marker does not get misreported as drift or conflated with the batch-gate stage's own eventual full run -- the deploy's self-check and the batch's deferred full sweep are two independently-tracked checks that can both be green without duplicating work.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/645_repair_seven_failing_gate8_suites/summaries/01_mcp-merge-closure-confirmation-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "deploy-headless.sh",
+        "override-batch-gate-deferral",
+        "landed_verify_clean"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "lua/neotex/plugins/ai/shared/extensions/merge.lua remove_tracked",
+      "predicate": "root cause was",
+      "value": "remove_tracked's three tracked-entry types (new_array, new_object, new_value) were originally one branch doing unconditional wholesale t[key] = nil. For an object-shaped merge target (.mcp.json's mcpServers map), the first extension to populate that key is tracked as new_object, so wholesale removal deleted the entire object including any hand-written sibling key living inside it. The fix (commit 3c7f91a92) split new_object into its own branch recursing into info.children (mirroring the existing merged branch) and only pruning the object once empty, with a defensive no-children fallback. new_array/new_value correctly keep unconditional removal since a scalar or freshly-created array has no nested tracked structure a sibling could hide in.",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "lua/neotex/plugins/ai/shared/extensions/merge.lua:583-602"
+    },
+    {
+      "subject": "test-mcp-merge-target.sh Assertions C and E",
+      "predicate": "are",
+      "value": "one fault, not two: both exercise the identical tracked record (mcpServers -> mcpfixture-server) through remove_tracked's new_object arm. Assertion C observes survival immediately post-regenerate (a forced reload's retract-then-remerge round trip); Assertion E observes survival one step further, post-unload. Same code path, same tracked record, two observation points in one sequence.",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh"
+    },
+    {
+      "subject": "verify-deploy.sh batch-gate deferral mechanism",
+      "predicate": "measured behavior is",
+      "value": "when a non-stale specs/.orchestration/batch-gate-pending-{session_id}.json marker exists, an unfiltered verify-deploy.sh invocation refuses with a literal DEFERRED message rather than running the full gate set, directing the caller to --only-gate/--gate8-touched for a scoped check now or --override-batch-gate-deferral reserved for the batch-gate stage's own discharger. This prevents the full 42-gate battery from running once per concurrent dispatch inside a multi-task /orchestrate batch instead of once per batch.",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/.orchestration/batch-gate-pending-*.json"
+    },
+    {
+      "subject": "task 645 description staleness",
+      "predicate": "demonstrates that",
+      "value": "a task description's 'remaining scope' framing (seven Gate 8 findings, one substantive defect remaining) had already gone stale by the time the implementation dispatch began -- the named defect was fixed by a commit postdating the description's own last revision. A confirmatory dispatch correctly re-verified every carried figure live (suite pass/fail counts, known-failures.txt row count, git-clean status, live code presence) rather than trusting the description or even the prior plan/report at face value, and all matched.",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "specs/645_repair_seven_failing_gate8_suites/plans/01_mcp-merge-closure-confirmation.md"
+    },
+    {
+      "subject": "task 645 source-store edit-target line",
+      "predicate": "did not apply because",
+      "value": "the task description declared 'SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/**', but the actual defect and its already-landed fix lived in lua/neotex/plugins/ai/shared/extensions/merge.lua and init.lua (primary Neovim plugin code, never mirrored under agent-system/) plus a contract-doc update under agent-system/extensions/nvim/ (a different extension than core). Only the unchanged test file lived under agent-system/extensions/core/. A description's declared edit-target line can be wrong for a specific defect even when correct for the task's general domain.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "lua/neotex/plugins/ai/shared/extensions/merge.lua"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795494587_0fa3fc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 2,
+    "phases_total": 2
   }
 }

@@ -13,7 +13,7 @@ next_project_number: 698
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,640,645,646,663,664,671,674,679,680,684,686,689,694,696,697 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,640,646,663,664,671,674,679,680,684,686,689,694,696,697 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,665 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,697 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -161,7 +161,6 @@ next_project_number: 698
 631 [NOT STARTED] — Replace test-typescript-verify.sh's fixed-depth REPO\_ROOT...
 632 [NOT STARTED] — Stop orchestrator-context-budget.json's derivation log from...
 640 [NOT STARTED] — Add a derived-percentage bug class to the census methodology...
-645 [IMPLEMENTING] — Fix the .mcp.json merge defect that drops a hand-authored...
 533 [NOT STARTED] — lake-build-guard replays stale result for env lean FILE
 536 [NOT STARTED] — Source-store-aware commit path and plan-time...
   └─ 548 [NOT STARTED] — Harvest a plan's declared contingency files into file\_scope,...
@@ -1352,12 +1351,13 @@ ACCEPTANCE CRITERIA:
 ---
 
 ### 645. Fix the .mcp.json merge defect that drops a hand-authored server entry across load and unload
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [645_repair_seven_failing_gate8_suites/reports/01_mcp-merge-defect-already-fixed.md]
 - **Plan**: [645_repair_seven_failing_gate8_suites/plans/01_mcp-merge-closure-confirmation.md]
+- **Summary**: [645_repair_seven_failing_gate8_suites/summaries/01_mcp-merge-closure-confirmation-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
