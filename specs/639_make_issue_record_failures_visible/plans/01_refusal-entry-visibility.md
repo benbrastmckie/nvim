@@ -378,7 +378,7 @@ does carry interpolation, extend the strip pattern in this same phase and add th
 
 ---
 
-### Phase 4: Redeploy and Default-Mode Verification [NOT STARTED]
+### Phase 4: Redeploy and Default-Mode Verification [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: the deployed tree matches the edited source store, so the suite and every narrowed gate
 run is non-vacuous in its default subject-resolution mode, and the task's full gate obligation is
@@ -386,20 +386,27 @@ discharged or explicitly deferred.
 
 **Tasks**:
 
-- [ ] Confirm Phases 1-3 are committed and `git status --short` shows no unexpected foreign
+- [x] Confirm Phases 1-3 are committed and `git status --short` shows no unexpected foreign
       modification (concurrent-sibling discipline: a foreign commit or in-flight edit is reported,
-      not dismissed).
-- [ ] Regenerate the deployed tree: `bash .claude/scripts/deploy-headless.sh`. This also re-runs
+      not dismissed). *(completed: all foreign uncommitted modifications observed were other
+      tasks' own `specs/**` files in this shared multi-task batch — none overlap this task's
+      four edit targets; reported, not dismissed)*
+- [x] Regenerate the deployed tree: `bash .claude/scripts/deploy-headless.sh`. This also re-runs
       `generate-context-line-counts.sh --write` automatically, idempotently with Phase 3.
-- [ ] Re-run `bash .claude/scripts/tests/test-issue-record.sh` in default (deploy-tree-first)
+      *(completed: `[deploy-headless] RESULT=landed_verify_clean`, 41 checks, 0 failures)*
+- [x] Re-run `bash .claude/scripts/tests/test-issue-record.sh` in default (deploy-tree-first)
       subject mode — with no `CORE_TEST_SUBJECT_MODE` set — and confirm all cases including the
       four new ones pass against the deployed copy. This is the acceptance-criterion-5 run.
-- [ ] Exercise the deployed script once by hand against a throwaway scratch task directory
+      *(completed: 31 passed, 0 failed)*
+- [x] Exercise the deployed script once by hand against a throwaway scratch task directory
       (never a live task's `issues.jsonl`) to confirm the end-to-end behaviour the description's
       criterion 1 names: the documented invocation form, a mistyped flag, a visible refusal entry.
-- [ ] Run the scoped touched-path check over this task's own touched paths and record its verdict
+      *(completed: direct exit 2 with one refusal entry naming --session-id and the caller's
+      prose; documented redirected form left caller exit 0)*
+- [x] Run the scoped touched-path check over this task's own touched paths and record its verdict
       in the phase's verification notes, together with the explicit deferral of the complete gate
-      set to the orchestration close.
+      set to the orchestration close. *(completed with one exclusion — see
+      `#### Reasoned Exclusions` below)*
 
 **Timing**: 45 minutes
 
@@ -414,28 +421,38 @@ discharged or explicitly deferred.
 **Verification**:
 - `bash .claude/scripts/deploy-headless.sh` completes without error.
 - `bash .claude/scripts/tests/test-issue-record.sh` (no `CORE_TEST_SUBJECT_MODE`) exits 0 with zero failures — criterion 5, against the deployed copy.
-- `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/scripts/issue-record.sh agent-system/extensions/core/scripts/tests/test-issue-record.sh agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh agent-system/extensions/core/context/formats/issue-log.md` reports a green narrowed verdict, run *after* the redeploy so it is not vacuous.
-- Under `/orchestrate`, the complete gate set (`bash .claude/scripts/verify-deploy.sh`) is explicitly deferred to the orchestration close's once-per-invocation batch gate stage, and that deferral is recorded in this phase's verification notes rather than discharged independently here. A standalone, non-orchestrated run of this plan runs the complete set directly instead.
+- `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/scripts/issue-record.sh agent-system/extensions/core/scripts/tests/test-issue-record.sh agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh agent-system/extensions/core/context/formats/issue-log.md` reports a green narrowed verdict, run *after* the redeploy so it is not vacuous. **22 of 23 selected suites passed** (`test-issue-record.sh`, `test-orchestrate-build-dispatch.sh`, and `test-orchestrate-cycle-plan.sh` — the three suites covering this task's own four edit targets — all green); the one failure, `test-orchestrate-conclusion-roadmap.sh` Case H, is excluded below with evidence that it is unrelated to this task's edits.
+- Under `/orchestrate`, the complete gate set (`bash .claude/scripts/verify-deploy.sh`) is explicitly deferred to the orchestration close's once-per-invocation batch gate stage, and that deferral is recorded in this phase's verification notes rather than discharged independently here. (`deploy-headless.sh`'s own internal verification battery, run as a direct consequence of this phase's own prescribed `deploy-headless.sh` step above, is not an independent extra full sweep — it is that command's ordinary built-in behavior.) A standalone, non-orchestrated run of this plan runs the complete set directly instead.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `test-orchestrate-conclusion-roadmap.sh` Case H ("expected literal /please and /merge lines") failure, surfaced by the Phase 4 `verify-touched.sh` scoped run | Not applicable to this task: `milestone-review-handoff.sh` and `review-stack-prepare.sh` are outside this task's declared `file_scope` and were never touched by any of its four edits (`issue-record.sh`, its test suite, `orchestrate-build-dispatch.sh`, `issue-log.md`). The failure traces to concurrent sibling tasks reshaping the stack-based PR/merge flow, not to this task's refusal-entry work. | `git status --short agent-system/` was clean (no uncommitted drift) at verification time, so the deployed copy reflects committed history, not an in-flight edit; `git log --oneline -3 -- .../milestone-review-handoff.sh .../review-stack-prepare.sh` shows the two most recent touching commits are `9d9386f1c` (task 692 phase 1: wire cut/show and the refusal arm) and `70f77aa77` (task 691 phase 3: move refs, rewrite the manifest, and redeploy); `specs/state.json`'s task 691 entry declares `agent-system/extensions/core/scripts/review-stack-prepare.sh` in its own `file_scope`. The failing stderr shows the `/please push master` line present but the expected `/merge` line absent — a flow-shape change, not an issue-recording defect. Recorded cross-task via `issue-record.sh` (`entry_id: iss_1795497640271_xQnaY2`, `class: "cross-task ownership/territory"`). No residual work remains for this task: the observation is filed and the three suites that do cover this task's own four edit targets (`test-issue-record.sh`, `test-orchestrate-build-dispatch.sh`, `test-orchestrate-cycle-plan.sh`) are all green. |
 
 ## Testing & Validation
 
-- [ ] Criterion 1: a deliberately mistyped flag, invoked in the exact documented form, leaves an
+- [x] Criterion 1: a deliberately mistyped flag, invoked in the exact documented form, leaves an
       attributable record — `tags.issue_record_refusal` naming the flag — in the task's own
       `issues.jsonl` (Phase 2 case (w); Phase 4 hand-exercise against the deployed copy).
-- [ ] Criterion 2: the caller's exit status is still 0 under the documented form for every
+      *(verified)*
+- [x] Criterion 2: the caller's exit status is still 0 under the documented form for every
       refusal class, argument-shaped or content-shaped (Phase 2 cases (w), (z); existing case (i)
-      unchanged).
-- [ ] Criterion 3: `test-issue-record.sh` carries a regression case covering the mistyped-flag
+      unchanged). *(verified)*
+- [x] Criterion 3: `test-issue-record.sh` carries a regression case covering the mistyped-flag
       path under output redirection (Phase 2 case (w)), proven non-vacuous by failing against
-      pre-Phase-1 behaviour.
-- [ ] Criterion 4: `issue-record.sh`'s header invocation-contract comment and exit-code block
+      pre-Phase-1 behaviour. *(verified)*
+- [x] Criterion 4: `issue-record.sh`'s header invocation-contract comment and exit-code block
       (Phase 1) and `context/formats/issue-log.md` (Phase 3) both describe the implemented
-      behaviour, including the stated residual.
-- [ ] Criterion 5: the full `test-issue-record.sh` suite passes — in source-store subject mode
-      (Phases 1-2) and in default deployed mode after the redeploy (Phase 4).
-- [ ] No regression in the suites that resolve `orchestrate-build-dispatch.sh`:
+      behaviour, including the stated residual. *(verified)*
+- [x] Criterion 5: the full `test-issue-record.sh` suite passes — in source-store subject mode
+      (Phases 1-2) and in default deployed mode after the redeploy (Phase 4). *(verified: 31
+      passed, 0 failed in both modes)*
+- [x] No regression in the suites that resolve `orchestrate-build-dispatch.sh`:
       `test-orchestrate-build-dispatch.sh` and `test-orchestrate-cycle-plan.sh` (Phase 3).
-- [ ] `generate-context-line-counts.sh` check mode reports no `line_count` drift (Phase 3).
+      *(verified: 238 passed/0 failed and 472 passed/0 failed respectively)*
+- [x] `generate-context-line-counts.sh` check mode reports no `line_count` drift (Phase 3).
+      *(verified: CHECK PASSED)*
 
 ## Artifacts & Outputs
 

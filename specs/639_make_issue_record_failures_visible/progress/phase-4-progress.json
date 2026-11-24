@@ -1,0 +1,32 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy and Default-Mode Verification",
+  "started_at": "2026-11-24T05:13:30Z",
+  "last_updated": "2026-11-24T05:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm Phases 1-3 committed; check for foreign modification", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Regenerate deployed tree via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-run test-issue-record.sh in default mode against deployed copy", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Hand-exercise deployed script against scratch task directory", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run verify-touched.sh scoped to this task's touched paths and record verdict", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "verify-touched.sh scoped run reports a green narrowed verdict",
+      "type": "altered",
+      "reason": "22 of 23 selected suites green; one unrelated suite failure (test-orchestrate-conclusion-roadmap.sh Case H) traced to concurrent sibling tasks 691/692's stack-based merge-flow changes, outside this task's file_scope. Closed as [COMPLETED WITH EXCLUSIONS] per the five-condition admission test, with a full Reasoned Exclusions record in the plan and a cross-task issue-record.sh entry (iss_1795497640271_xQnaY2).",
+      "annotation": "*(deviation: altered -- one unrelated suite excluded with evidence, see Reasoned Exclusions)*"
+    }
+  ],
+  "verification": {
+    "deploy-headless.sh": "RESULT=landed_verify_clean, 41 checks, 0 failures",
+    "test-issue-record.sh_default_mode": "31 passed, 0 failed",
+    "deployed_hand_exercise": "direct invocation exits 2 with one refusal entry naming --session-id and caller's prose preserved; documented redirected form leaves caller exit 0",
+    "verify-touched.sh_scoped": "22 of 23 suites green; test-orchestrate-conclusion-roadmap.sh Case H failed, excluded as unrelated cross-task drift (see plan's Reasoned Exclusions)",
+    "cross_task_issue_recorded": "iss_1795497640271_xQnaY2 (class: cross-task ownership/territory)"
+  }
+}
