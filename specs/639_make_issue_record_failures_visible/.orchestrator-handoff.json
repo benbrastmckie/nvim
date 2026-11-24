@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a four-phase implementation plan adopting the research report's recommended candidate with one substitution: an unknown-flag refusal self-records a schema-valid refusal entry into the task's own issues.jsonl (carrying tags.issue_record_refusal and the caller's own --what-happened prose) and exits with a new distinct code 2, so the dropped evidence is recovered through a channel the prescribed >/dev/null 2>&1 redirection cannot reach and that an existing consumer already reads. Flag aliasing and a contract-wide stderr unswallowing are declined with grounds under the plan's Decisions section, and the three call-site scripts in file_scope are deliberately left unedited. Phases: mechanism plus header contract, four regression cases, documentation parity plus the agent-facing discoverability pointer and the regenerated index line_count, then a redeploy with default-mode verification. Plan-time premise re-validation confirmed the defect live with drifted line numbers, and found that CORE_TEST_SUBJECT_MODE=source-store removes the deploy-before-exercise step the description assumed.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/639_make_issue_record_failures_visible/plans/01_refusal-entry-visibility.md",
+      "summary": "Four-phase plan: refusal mode and exit code 2 in issue-record.sh, four regression cases, documentation parity plus dispatch-template pointer, redeploy and default-mode verification."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": [],
+  "next_action_hint": "Dispatch the implement phase for task 639; Phase 4 declares __WHOLE_TREE__ because it invokes deploy-headless.sh, so admit it accordingly against any concurrent whole-tree claim.",
+  "dispatch_seq": 14
+}
