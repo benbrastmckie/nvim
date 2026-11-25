@@ -6,12 +6,12 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M5: /slice: the one path from a work branch to a stack of review pull requests](#milestone-m5) | active | 5/13 | prepared |
+| [M5: /slice: the one path from a work branch to a stack of review pull requests](#milestone-m5) | active | 7/13 | prepared |
 | [M4: Close the commit-layer and detector chain the slice size bar waits on](#milestone-m4) | active | 9/21 | none |
 | [M6: The dispatch handoff contract: what one dispatch hands the next](#milestone-m6) | planned | 0/6 | none |
 | [M7: Lean plan contracts, compliance checks and the build-guard replay hole](#milestone-m7) | active | 6/22 | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
-| [M1: Current work](#milestone-m1) | active | 11/78 | none |
+| [M1: Current work](#milestone-m1) | active | 12/78 | none |
 | [M3: Batch worktree isolation off a per-batch branch](#milestone-m3) | planned | - | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
@@ -21,7 +21,7 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Make /slice the single user-invoked path from a work-branch tip to a reviewable stack of pull requests on a chosen target, refuse a slice too large to review, and delete every other route to review.
 
-- **Progress**: active -- 2/7 batches, 5/13 tasks done -- Scheduled, not built: slice.md is still absent. The six build records now exist, batched in dependency order behind the build itself.
+- **Progress**: active -- 2/7 batches, 7/13 tasks done -- Scheduled, not built: slice.md is still absent. The six build records now exist, batched in dependency order behind the build itself.
 - **Review**: prepared on `refs/heads/master` (updated 2026-11-24)
 - **Gate**: /slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.
 
@@ -29,42 +29,42 @@ Make /slice the single user-invoked path from a work-branch tip to a reviewable 
 
 **Batch 2** (done) -- Closed: the retired ref-land script's deletion, and the handoff task that closed unrevised
 
-**Batch 3** -- Build /slice and bind the push grant; the build closes only on an operator-opened request
+**Batch 3** -- Build /slice and bind the push grant; the build closes only on an operator-opened request (1/2 done)
 
 ```
-/orchestrate 699, 700
-699 ready           slice_command_build
-700 ready           bind_push_grant_to_pushed_ref
+/orchestrate 699
+699 PARTIAL         slice_command_build
+700 done            bind_push_grant_to_pushed_ref
 ```
 
-**Batch 4** -- Then the measured size bar and the handoff that prints /slice, both behind the build
+**Batch 4** -- Then the measured size bar and the handoff that prints /slice, both behind the build (1/2 done)
 
 ```
-/orchestrate 701, 702
-701 blocked:699     slice_bar_measurement_and_declaration
+/orchestrate 702
 702 blocked:699     narrow_handoff_to_print_slice
+701 done            slice_bar_measurement_and_declaration
 ```
 
 **Batch 5** -- Delete the inference route, then /merge -- only once /slice has opened a real request
 
 ```
 /orchestrate 703, 704
-703 blocked:701,702 delete_review_stack_inference_route
-704 blocked:699,700,702,703  remove_merge_command
+703 blocked:702     delete_review_stack_inference_route
+704 blocked:699,702,703  remove_merge_command
 ```
 
 **Batch 6** -- Declare generated paths, so a slice diff reads and its size bar counts hand-written lines
 
 ```
 /orchestrate 655
-655 blocked:513,553,701  Declare generated paths so they collapse in review   <- until this lands the size bar miscounts wherever generated files ride in a slice
+655 blocked:513,553 Declare generated paths so they collapse in review   <- until this lands the size bar miscounts wherever generated files ride in a slice
 ```
 
 **Batch 7** -- Last: doc parity, redeploy and the runbook, proven by a slice opened in a second repo
 
 ```
 /orchestrate 694
-694 blocked:699,700,701,702,703,704  stack_pr_redeploy_and_second_repo_demo   <- acceptance is one real slice pushed and opened in a second repository, so it stays last
+694 blocked:699,702,703,704  stack_pr_redeploy_and_second_repo_demo   <- acceptance is one real slice pushed and opened in a second repository, so it stays last
 ```
 
 <a id="milestone-m4"></a>
@@ -229,7 +229,7 @@ Make a repository bindable to a shared Sapience project and workable by a second
 
 Work already scheduled when this store adopted milestones. Divide it into real milestones on a later /roadmap run.
 
-- **Progress**: active -- 2/24 batches, 11/78 tasks done
+- **Progress**: active -- 2/24 batches, 12/78 tasks done
 - **Review**: none
 
 **Batch 1** (done) -- Support a gitignored specs tree: price the durability exposure, then the predicate and demotion fix
@@ -419,13 +419,13 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 ```
 
-**Batch 23** -- Three standalone rulings: /tag's version gate, the telemetry consumer, the cslib context set
+**Batch 23** -- Three standalone rulings: /tag's version gate, the telemetry consumer, the cslib context set (1/3 done)
 
 ```
-/orchestrate 456, 421, 530
-421 ready           Close three gaps in the telemetry --meta evidence consumer
+/orchestrate 456, 530
 456 ready           Exempt private npm/Cargo manifests from /tag's version gate
 530 ready           Land the three agent-system context extensions recorded by the cslib omega-au...
+421 done            Close three gaps in the telemetry --meta evidence consumer
 ```
 
 **Batch 24** -- Documentation and standards conformance: boundary docs, skeletons, census method, one note (1/4 done)
@@ -496,6 +496,8 @@ Run each batch in its own worktree off its own batch branch so concurrent dispat
 674 HOLD            Build batch worktree cleanup, retention on partial batches, and orphan report...
 686 HOLD            Create the per-batch worktree and batch branch when isolation is declared on
 688 blocked:501     dispatch_redeploy_clears_staleness_verdict
+705 blocked:699     slice_size_signoff_at_proposal_prompt
+706 blocked:684     delete_memory_extension_and_repoint_refs
 664 ready           Add a /tmp sweep pass to /refresh for dead scratchpad sessions and agent-test...
 665 ready           Record the last dispatching orchestration batch in a displaced Previous work ...
 680 ready           gate_cache_key_in_deployed_repos
