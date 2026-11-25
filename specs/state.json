@@ -2573,6 +2573,7 @@
       "last_updated": "2026-11-23T08:51:25Z",
       "session_id": "sess_1795423838_da01e8",
       "dependencies": [
+        664,
         673
       ],
       "file_scope": [
@@ -15570,7 +15571,10 @@
       "effort": "small",
       "parent_task": 587,
       "topic": "core-agent-system",
-      "dependencies": [],
+      "dependencies": [
+        512,
+        706
+      ],
       "file_scope": [
         "agent-system/extensions/memory/context/project/memory/memory-setup.md",
         "agent-system/extensions/memory/context/project/memory/memory-troubleshooting.md",
@@ -18402,7 +18406,9 @@
       "created": "2026-11-20T17:15:40Z",
       "last_updated": "2026-11-20T17:15:40Z",
       "session_id": "sess_1795162800_4a7b2e",
-      "dependencies": [],
+      "dependencies": [
+        586
+      ],
       "file_scope": [
         "agent-system/extensions/core/commands/refresh.md",
         "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
@@ -18479,7 +18485,8 @@
       "last_updated": "2026-11-20T18:45:37Z",
       "session_id": "sess_1795198159_2f76a2",
       "dependencies": [
-        697
+        697,
+        702
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/roadmap-integration.sh",
@@ -19074,8 +19081,9 @@
   ],
   "active_goal": "Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.",
   "primary_goals": [
+    "Two things come first: work that improves `/slice`, the one path from a work branch to a review stack, and work that deletes a surface the system no longer needs. A net deletion counts as progress.",
     "`/orchestrate` is the only lifecycle entry point, and it is token-cheap by construction: delegate, read back compact verdicts, ask the user only when a decision is genuinely the user's. `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`.",
-    "Counts and rosters are generated (`generate-task-order.sh --print`, `roadmap-integration.sh --regenerate`, `orchestrate-suggest-next-batch.sh --next-batch`). Never transcribe one here. As of 2026-11-24: **117 open (7 held), 28 awaiting `/todo` archival**."
+    "Counts and rosters are generated (`generate-task-order.sh --print`, `roadmap-integration.sh --regenerate`, `orchestrate-suggest-next-batch.sh --next-batch`). Never transcribe one here; read the generated dashboard instead."
   ],
   "roadmap_context": {
     "rules": [
@@ -19093,7 +19101,7 @@
     ],
     "conventions": [
       "`orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json <tasks>` — space-separated. Admits what you expect; `md5sum specs/state.json` unchanged.",
-      "`validate-state.sh --deep` — measure before your work too; today's baseline is 0 failed, 8 warnings (2026-11-11).",
+      "`validate-state.sh --deep` — measure before your work too; today's baseline is 0 failed, 10 warnings (2026-11-24).",
       "`verify-deploy.sh --skip-slow` — before and after, and compare. **Never concurrently with the battery.** A standing red is not permission to ignore a new one.",
       "To tell a working dispatch from a stranded one, read artifact mtimes and live child processes. Absent `.orchestrator-handoff.json` is NOT a stall signal — research never writes one.",
       "Edges go through `state-write.sh`, acyclicity confirmed afterwards by `validate-state.sh --deep`. `--depends-on-add` cannot reach a `not_started` task, and there is no edge-removal flag at all.",
@@ -19118,10 +19126,10 @@
       "id": "M5",
       "title": "/slice: the one path from a work branch to a stack of review pull requests",
       "aim": "Make /slice the single user-invoked path from a work-branch tip to a reviewable stack of pull requests on a chosen target, refuse a slice too large to review, and delete every other route to review.",
-      "gate": "/slice exists with check, build and status; its size bar refuses an unreviewable slice; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.",
+      "gate": "/slice exists with check, build and status; an oversized slice is signed off or refused at the proposal prompt; one real slice has been pushed by a typed grant and opened as a pull request on a chosen target; the inference route and /merge are deleted; and the handoff, the branch docs and the operator runbook name /slice.",
       "progress": {
         "status": "active",
-        "note": "Scheduled, not built: slice.md is still absent. The six build records now exist, batched in dependency order behind the build itself."
+        "note": "slice.md is still absent and the build is partial; the size bar is now an interactive sign-off, not a measured declaration."
       },
       "review": {
         "state": "prepared",
@@ -19156,11 +19164,11 @@
         },
         {
           "task_ids": [
-            701,
+            705,
             702
           ],
-          "description": "Then the measured size bar and the handoff that prints /slice, both behind the build",
-          "rationale": "The two wave-2 successors of the build, batched together BECAUSE they share a file and are deliberately not edged: both reconcile index-entries.json for the line-count check, and the operator ruled that overlap is to be sequenced at dispatch rather than ordered by an edge, since neither presupposes the other. DO NOT ADD A 702-AFTER-701 EDGE. Run the batch as a sequence, or dispatch at width 1.\n\n701 adds the two bar sources the build ships without -- a declared slice_bar object and the 75th-percentile nearest-rank measurement over merged requests on the chosen target -- and adds the slice_bar section to repo-level-declarations.md, the document whose review_base section the next batch deletes. 702 is a new record for work the ruling had assigned to a now-terminal task, so its deliverable is live in the tree and 702 undoes it: the handoff stops calling review-stack-prepare.sh, stops writing review.ref, and prints one line, /slice.\n\nCross-batch reading duty, recorded here rather than invented as an edge: 665 (the displaced Previous work section, in no batch) claims context/formats/roadmap-format.md and scripts/tests/test-orchestrate-conclusion-roadmap.sh, both of which 702 edits -- Case H of that suite is retargeted to the one-line /slice output. 665 is wave 1 and this batch is wave 2, so the pair never shares a wave, and neither record's text presupposes the other. Whichever lands second re-reads the other's edit instead of assuming the file it was written against."
+          "description": "Then the interactive size sign-off and the handoff that prints /slice, both behind the build",
+          "rationale": "The declared slice_bar object and the 75th-percentile measurement were ruled out, so the measured-bar record is dropped from the member list rather than carried as a done member it never was: its subject is overturned, not delivered, and leaving it here would report an abandoned record in the milestone done-count. Its successor is the interactive sign-off at the proposal prompt, which the ruling does want and which sits behind the build for the same reason the measured bar did. The handoff narrowing rides with it: both edit surfaces the build creates, and neither can be checked before slice.md exists."
         },
         {
           "task_ids": [
@@ -19183,6 +19191,55 @@
           ],
           "description": "Last: doc parity, redeploy and the runbook, proven by a slice opened in a second repo",
           "rationale": "Last, and its blocker is now a real record rather than a dangling edge. Its dependencies read [691, 695, 699, 700, 701, 702, 703, 704]: the edge onto the abandoned 693 is gone and the six build records it was waiting for exist, so roadmap_ext_blocked is cleared on this pass and it renders as an ordinary dependency-blocked member at wave 5.\n\nIt stays last on its own acceptance rather than on its edges: doc parity and the operator runbook are only proven by one real slice pushed and opened as a pull request in a SECOND repository, which cannot be attempted until /slice has worked once here. It shares four files with 704 (merge-sources/claudemd.md, docs/guides/user-guide.md, README.md, index-entries.json) and is already ordered after it, so the /merge rename lands there and the runbook here."
+        }
+      ]
+    },
+    {
+      "id": "M8",
+      "title": "Delete what the agent system no longer needs",
+      "aim": "Remove the surfaces the operator has ruled out and the residue the system leaves behind: the memory extension and its command, references to commands that do not exist, untracked litter, and content sitting in the wrong store.",
+      "gate": "The memory extension and /distill are gone with every surviving citation repointed; no source-store file names a command or sub-mode that does not exist, and a lint refuses the class; every residue class has a disposition /refresh can sweep; and no repo-specific content remains in the shared store.",
+      "progress": {
+        "status": "active",
+        "note": "Nothing dispatched yet; two members already carry artifacts, and the sweep that finds the references is the ready head."
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": [
+        {
+          "task_ids": [
+            684,
+            706
+          ],
+          "description": "Delete the memory extension and /distill, after the sweep that finds every reference to them",
+          "rationale": "The deletion is already edged behind the sweep, and the order is the economical one: the sweep enumerates every surviving reference to a command or sub-mode that does not exist, which is exactly the citation set the deletion has to repoint. Running the deletion first would hand the sweep a moving target. The sweep declares no file_scope and the deletion declares the extension directory, so there is no in-batch collision."
+        },
+        {
+          "task_ids": [
+            618,
+            338,
+            664
+          ],
+          "description": "What the system leaves behind: residue dispositions, the tracked/ignored split, the /tmp sweep",
+          "rationale": "One subject in three places: what the system leaves on disk and who is responsible for removing it. The residue policy rules per class, the tracked/ignored classification settles which task-support files are even meant to persist, and the /refresh sweep is the only measured one -- 32G across 68,871 entries, 25G of it idle scratchpad sessions, with eleven documented passes and none touching /tmp. The three declared scopes are disjoint. The /tmp sweep carries a new edge onto the suite-cost consumer, which is partial and already writing claude-refresh.sh and its matcher test; that is an ordering constraint across batches, not a reason to site it anywhere but here."
+        },
+        {
+          "task_ids": [
+            512,
+            590
+          ],
+          "description": "The dead-command-recommendation lint, both claimants: builtin exemption and the /ide reds",
+          "rationale": "Both claimants edit scripts/lint/lint-dead-command-recommendations.sh, and the overlap predicate does NOT see it: the /ide record declares scripts/lint-dead-command-recommendations.sh, a path that does not exist in the source store (the real file is under scripts/lint/), so a stale path declaration hides a real in-batch collision. The edge added on this pass serializes them behind the exemption, which also shrinks the finding set the /ide record then has to resolve. The /ide record additionally declares two memory-extension docs the deletion in batch 1 removes outright, so it is edged behind that too and lands last in this milestone by construction."
+        },
+        {
+          "task_ids": [
+            390,
+            481,
+            457
+          ],
+          "description": "Get what does not belong out of the shared store: leaked domain files, then the mis-sited records",
+          "rationale": "Three records with one subject: content sitting in a store that is not its own. Four domain files belonging to consuming repos sit in the shared source store; the task records themselves were filed in the wrong repository, first seven of them and then the delta accumulated since, which is already edged in order. The migrations share specs/state.json and TODO.md with each other and are ordered; the leaked-file record is disjoint from both. It does share plan-file-scope-harvest.sh with two records in other milestones, unordered against both -- reported as a proposed three-way serialization rather than decided here."
         }
       ]
     },
@@ -19371,7 +19428,7 @@
       "gate": "A collaborator with their own account and a plain Claude Code install goes from a fresh clone of a linked repo to a verified project note without help; every automatic write and retrieval resolves the linked project rather than a directory-name label; loading or unloading the extension is the only switch over a repo's capture; no registered MCP entry carries the Sapience token.",
       "progress": {
         "status": "active",
-        "note": "Link, policy and token work landed; capture coupling then collaborator setup remain."
+        "note": "Only the collaborator setup remains open: a fresh clone of a linked repo to a verified note, unaided."
       },
       "review": {
         "state": "none"
@@ -19438,10 +19495,11 @@
             629,
             630,
             631,
-            632
+            632,
+            680
           ],
-          "description": "Make verify-deploy's verdict mean something again: the live reds, one roster row, two gate rulings",
-          "rationale": "- **This is the head because every other batch's gate stage reads it.** A batch that runs while\n  the gate set returns a red verdict nobody can attribute gets one of two outcomes: the gate\n  blocks work that did nothing wrong, or the operator learns to ignore the gate. Both destroy the\n  signal the rest of this list is ordered around, so restoring the verdict precedes everything.\n\n- **Re-measured 2026-11-19 by running the gates and suites directly, the red surface has moved\n  under this batch, and the members no longer describe it exactly.** Two members' premises no\n  longer reproduce, the rest still bite, and one red here is owned by no record's subject. Each\n  is named below rather than left to a future dispatch to rediscover. **The batch is six members\n  rather than seven**: the duplicate-ledger disposition has landed. The batch keeps its position\n  regardless -- what changed is which reds are live, not whether the verdict matters.\n\n- **Still red, and the measurement is unchanged.** `645`'s `.mcp.json` merge defect runs 5\n  passed / 2 failed: assertion C reports a hand-written server entry as `MISSING` after a\n  load/regenerate cycle, and assertion E reports the same entry disturbed by a subsequent unload.\n  That is a data-loss shape against a user's own file and it is exactly the remaining scope\n  `645` declares. `560` still clears the three standing findings that keep `deploy-headless.sh`\n  from reaching `RESULT=landed_verify_clean`. `629` still fixes the two-engine allow-list drop\n  that makes `test-deploy-propagation.sh` expected-red BY DESIGN, and `630`, already edged behind\n  it, still writes the roster rows for that suite and `test-gate-registry-resolution.sh` so\n  `run-all.sh` stops calling an expected failure NEW.\n\n- **The duplicate-ledger member has landed and is out of `task_ids`, and this prose is corrected\n  rather than merely shortened.** The 68KB phantom inside the core source store -- whose contents\n  disagreed with the root ledger a resolver reads -- was deleted and its cause established, the\n  disposition recorded at\n  `specs/633_stray_duplicate_deploy_ledger_in_core_source_store/summaries/01_stray-ledger-disposition-summary.md`.\n  Rendering already hid the terminal member; what rendering cannot fix is an authored bullet that\n  still claimed it as a live red, which is the one thing a maintenance pass owes by hand.\n  **The disposition is closed but the WRITER is not**, and that half is a separate record seated\n  in the loader batch far below: the extension loader resolves its load target as\n  `opts.project_dir or vim.fn.getcwd()` with no git-root resolution, so nothing yet stops the\n  next mis-rooted load recreating the phantom. No member of this batch owns that writer and no\n  edge joins the two -- the disposition is complete, so there is nothing left here for the writer\n  fix to wait on, and nothing here waiting on it.\n\n- **One red here is owned by no open record's SUBJECT, and a dispatch must not treat it as out of\n  scope.** `test-lint-unit-integration-boundary.sh` is red at 14 passed / 1 failed, reporting one\n  violation: `test-orchestrate-close-status-bind.sh` is discovered under `scripts/tests/` with no\n  row in `scripts/tests/suite-classification.data`. That suite was added by the\n  orchestration-close battery work, which landed after `645`'s description was written -- so\n  `645` records this suite as resolved at 15/0 and instructs an implementer not to re-diagnose\n  it. The earlier fix is intact and is not regressed; this is a second, later cause with the same\n  symptom. The remedy is a one-line data edit (`basename<TAB>unit|integration<TAB>reason`), and\n  `645` already claims the failing suite and already carries \"verify-deploy.sh completes its full\n  gate set with exit 0\" as acceptance criterion 1, which cannot be met while the row is missing.\n  No edge is filed to the only other open claimant of `suite-classification.data` (`646`, batch\n  six): its subject is the return-meta terminal status vocabulary, it touches that file only\n  for its own new suite, and the two batches never dispatch concurrently, so array position\n  already resolves the overlap.\n\n- **`631`'s acceptance criterion is already satisfied in the live tree, which makes it a closure\n  candidate rather than a dispatch.** It asks that `lint-test-root-resolution.sh` report 0\n  violations; gate 29's lint reports `0 violation(s) across 219 file(s)`, and\n  `test-typescript-verify.sh` now resolves its root via `git rev-parse --show-toplevel` rather\n  than the fixed-depth walk the record was filed against. Nothing here re-opens it -- that is a\n  status question for a backlog pass, not a roadmap ordering judgment -- but it must not be\n  carried as a live red.\n\n- **`632` is no longer a red and is now purely preventive, so its ordering argument has\n  dissolved.** Gate 4 reports `PASS: 0 unexempted task-reference occurrences`, and\n  `orchestrator-context-budget.json`'s derivation entries now cite dates and the file's own\n  rounding convention rather than a task number inline. The ceiling move that used to be the\n  recurrence trigger has already happened and did not re-break the gate, so the previous\n  \"`632` before the ceiling move\" ordering no longer applies. What stays open is `632`'s actual\n  deliverable: the unmade ruling between exempting the derivation field and changing the house\n  style for its entries, so the next move cannot re-break the gate by accident.\n\n- **Two suites the most recent close battery named as red were re-run this pass and are green.**\n  `test-gate-lock.sh` passes 27 / 0, confirming `645`'s own triage of it as lock contention\n  rather than a defect -- and, separately, confirming the premise of the gate-acquire bracketing\n  record that has since completed, which is why the no-edge ruling between those two stood.\n  `test-lint-state-writer-boundary.sh` also passes, matching the load-induced-flake triage filed\n  against it during that same battery. Neither needs a record.\n\n- **The lane is free.** No member declares `__WHOLE_TREE__`, and the only cross-batch overlap is\n  `560`'s `lean-plan-compliance-check.sh` against the Lean compliance strand far below, resolved\n  by array position rather than an edge."
+          "description": "Make verify-deploy and its verdict mean something again: the standing reds, a roster row, the cache",
+          "rationale": "- **This is the head because every other batch's gate stage reads it.** A batch that runs while\n  the gate set returns a red verdict nobody can attribute gets one of two outcomes: the gate\n  blocks work that did nothing wrong, or the operator learns to ignore the gate. Both destroy the\n  signal the rest of this list is ordered around, so restoring the verdict precedes everything.\n\n- **Re-measured 2026-11-19 by running the gates and suites directly, the red surface has moved\n  under this batch, and the members no longer describe it exactly.** Two members' premises no\n  longer reproduce, the rest still bite, and one red here is owned by no record's subject. Each\n  is named below rather than left to a future dispatch to rediscover. **The batch is six members\n  rather than seven**: the duplicate-ledger disposition has landed. The batch keeps its position\n  regardless -- what changed is which reds are live, not whether the verdict matters.\n\n- **Still red, and the measurement is unchanged.** `645`'s `.mcp.json` merge defect runs 5\n  passed / 2 failed: assertion C reports a hand-written server entry as `MISSING` after a\n  load/regenerate cycle, and assertion E reports the same entry disturbed by a subsequent unload.\n  That is a data-loss shape against a user's own file and it is exactly the remaining scope\n  `645` declares. `560` still clears the three standing findings that keep `deploy-headless.sh`\n  from reaching `RESULT=landed_verify_clean`. `629` still fixes the two-engine allow-list drop\n  that makes `test-deploy-propagation.sh` expected-red BY DESIGN, and `630`, already edged behind\n  it, still writes the roster rows for that suite and `test-gate-registry-resolution.sh` so\n  `run-all.sh` stops calling an expected failure NEW.\n\n- **The duplicate-ledger member has landed and is out of `task_ids`, and this prose is corrected\n  rather than merely shortened.** The 68KB phantom inside the core source store -- whose contents\n  disagreed with the root ledger a resolver reads -- was deleted and its cause established, the\n  disposition recorded at\n  `specs/633_stray_duplicate_deploy_ledger_in_core_source_store/summaries/01_stray-ledger-disposition-summary.md`.\n  Rendering already hid the terminal member; what rendering cannot fix is an authored bullet that\n  still claimed it as a live red, which is the one thing a maintenance pass owes by hand.\n  **The disposition is closed but the WRITER is not**, and that half is a separate record seated\n  in the loader batch far below: the extension loader resolves its load target as\n  `opts.project_dir or vim.fn.getcwd()` with no git-root resolution, so nothing yet stops the\n  next mis-rooted load recreating the phantom. No member of this batch owns that writer and no\n  edge joins the two -- the disposition is complete, so there is nothing left here for the writer\n  fix to wait on, and nothing here waiting on it.\n\n- **One red here is owned by no open record's SUBJECT, and a dispatch must not treat it as out of\n  scope.** `test-lint-unit-integration-boundary.sh` is red at 14 passed / 1 failed, reporting one\n  violation: `test-orchestrate-close-status-bind.sh` is discovered under `scripts/tests/` with no\n  row in `scripts/tests/suite-classification.data`. That suite was added by the\n  orchestration-close battery work, which landed after `645`'s description was written -- so\n  `645` records this suite as resolved at 15/0 and instructs an implementer not to re-diagnose\n  it. The earlier fix is intact and is not regressed; this is a second, later cause with the same\n  symptom. The remedy is a one-line data edit (`basename<TAB>unit|integration<TAB>reason`), and\n  `645` already claims the failing suite and already carries \"verify-deploy.sh completes its full\n  gate set with exit 0\" as acceptance criterion 1, which cannot be met while the row is missing.\n  No edge is filed to the only other open claimant of `suite-classification.data` (`646`, batch\n  six): its subject is the return-meta terminal status vocabulary, it touches that file only\n  for its own new suite, and the two batches never dispatch concurrently, so array position\n  already resolves the overlap.\n\n- **`631`'s acceptance criterion is already satisfied in the live tree, which makes it a closure\n  candidate rather than a dispatch.** It asks that `lint-test-root-resolution.sh` report 0\n  violations; gate 29's lint reports `0 violation(s) across 219 file(s)`, and\n  `test-typescript-verify.sh` now resolves its root via `git rev-parse --show-toplevel` rather\n  than the fixed-depth walk the record was filed against. Nothing here re-opens it -- that is a\n  status question for a backlog pass, not a roadmap ordering judgment -- but it must not be\n  carried as a live red.\n\n- **`632` is no longer a red and is now purely preventive, so its ordering argument has\n  dissolved.** Gate 4 reports `PASS: 0 unexempted task-reference occurrences`, and\n  `orchestrator-context-budget.json`'s derivation entries now cite dates and the file's own\n  rounding convention rather than a task number inline. The ceiling move that used to be the\n  recurrence trigger has already happened and did not re-break the gate, so the previous\n  \"`632` before the ceiling move\" ordering no longer applies. What stays open is `632`'s actual\n  deliverable: the unmade ruling between exempting the derivation field and changing the house\n  style for its entries, so the next move cannot re-break the gate by accident.\n\n- **Two suites the most recent close battery named as red were re-run this pass and are green.**\n  `test-gate-lock.sh` passes 27 / 0, confirming `645`'s own triage of it as lock contention\n  rather than a defect -- and, separately, confirming the premise of the gate-acquire bracketing\n  record that has since completed, which is why the no-edge ruling between those two stood.\n  `test-lint-state-writer-boundary.sh` also passes, matching the load-induced-flake triage filed\n  against it during that same battery. Neither needs a record.\n\n- **The lane is free.** No member declares `__WHOLE_TREE__`, and the only cross-batch overlap is\n  `560`'s `lean-plan-compliance-check.sh` against the Lean compliance strand far below, resolved\n  by array position rather than an edge. The gate-cache repair joins this batch because it is the same surface: verify-deploy --skip-unchanged degrades to a full run in every deployed repo because the cache key cannot be computed there, and its own control case is one of the reds an agent re-reports on every fallback sweep. It declares no file_scope, so it carries no in-batch collision against the five members that do."
         },
         {
           "task_ids": [
@@ -19452,6 +19510,15 @@
           ],
           "description": "Hard stops: task creation dies on a big verdict, a lock never reaps, a run never converges",
           "rationale": "- **Each member is a measured way the system stops making progress, not a way it makes wrong\n  progress.** That is why they sit above every correctness batch below: a correctness fix lands\n  one dispatch at a time, and these three decide whether a dispatch happens at all.\n\n- `475` is the sharpest: the audit-evidence gate passes the whole verdict as one `--argjson`,\n  bypassing the transparent spill `state-write.sh` already implements for caller-supplied values,\n  so a large verdict kills the write with `Argument list too long` and **no task can be created**.\n  The single writer for `specs/state.json` failing closed on size is a whole-system stop.\n\n- `613` is an availability defect in the lock layer. `session_liveness()` confirms liveness with\n  `kill -0` on a pid that is `pid_source: ancestor-claude` -- the shared process -- so every\n  session ever registered from one claude process reads pid-alive forever, and\n  `cmd_acquire`'s stale-overlap escalation overrides the 30-minute heartbeat threshold that would\n  have recovered it. Observed live: an orphaned `/revise` lock blocked an `/orchestrate` task for\n  two full cycles.\n\n- `514` is the cost side of the same shape. The convergence guard counts `probed_dispatch`, not\n  the dispatch set actually emitted, so two byte-identically zero-dispatch cycles incremented\n  nothing and the run had to be stopped by operator judgment. Every such cycle is budget spent\n  for no work.\n\n- `574` is here because it is the documentation half of `514`'s subject and shares `task-lock.sh`\n  with `613`: the cycle-budget contract describes remaining budget without stating shared-pool\n  semantics, which is how an operator mis-reads what a stalled run has left.\n\n- **No in-batch path overlap carries an unordered collision**: `475` is alone on\n  `state-write.sh`, `613` declares no territory at all (see the scope note in the trailing prose),\n  and `514`/`574` share only the state-machine document."
+        },
+        {
+          "task_ids": [
+            688,
+            689,
+            696
+          ],
+          "description": "Orchestration cycles spent on nothing: the double redeploy, the oversized plan, the batch gate",
+          "rationale": "Three independently measured ways a cycle is paid for and returns nothing: a completion write refused as stale by a gate reading a signal the dispatch own deploy already satisfied, an under-decomposed plan admitted on artifact existence alone, and a batch-gate stage spending 45 minutes to return two findings attributable to nothing. Two came out of one session conclusion and the third out of the next, so they are measured against the same orchestration shape. Declared scopes are disjoint (postflight and freshness lib, predispatch review, and none), so the batch admits unordered."
         },
         {
           "task_ids": [
@@ -19529,27 +19596,10 @@
         },
         {
           "task_ids": [
-            512,
-            590
+            502
           ],
-          "description": "The dead-command-recommendation lint, both claimants together: builtin exemption and /ide reds",
-          "rationale": "- **Batched because they edit the same lint, not because they are both small.** `512` (PLANNED)\n  exempts built-in commands from the dead-command-recommendation lint; `590` (RESEARCHED) resolves\n  the findings that lint reports for `/ide`. Running them as separate batches would mean two runs\n  rewriting one file with no stated order between them.\n\n- **RE-MEASURE BOTH BEFORE PLANNING.** `590` may already be satisfied in the source store, and\n  its declared `file_scope` names the lint one directory above where the file actually sits -- so\n  it cannot collide with `512` mechanically even though the two edit the same lint. That\n  declaration defect is the reason no edge is written here: there is no measured\n  `file_scope_collision` to write one against, and co-membership alone is not evidence of a\n  missing graph edge. Fix `590`'s declaration as part of the work.\n\n- `512` declares `__WHOLE_TREE__`, so the pair serializes to width one regardless."
-        },
-        {
-          "task_ids": [
-            502,
-            457
-          ],
-          "description": "Stop repo content leaking to the store, and make a report name the surfaces it stales",
-          "rationale": "- **A generated surface nobody declared is a surface nobody regenerates**, and the stale copy is\n  then read as truth by the next dispatch. All four members are about making that surface visible\n  at the point it is created.\n\n- `455` pre-flags the predictable first-run module-invariant failures that wiring a new module\n  forces, where the generated-surface knowledge already lives. `502` requires research reports to\n  enumerate the generated doc-sync surfaces they touch -- the research-phase counterpart. `517`\n  (edged behind `455`) requires a phase commit to regenerate and stage the derived surfaces it\n  stales, which is the enforcement end.\n\n- `457` is here because it is the same leak in the other direction: repo-specific content has\n  leaked into the shared agent-system source store, where every consuming repository reads it. It\n  is edged behind `455` already and shares `plan-file-scope-harvest.sh` with it.\n\n- **Below the enforcement batch** because these are contracts to be written rather than checks\n  that are currently lying. Reshaped: its commit-layer, declaration and detector members moved to M4, where they are sited as the prerequisites of the batch-worktree landing work."
-        },
-        {
-          "task_ids": [
-            618,
-            338
-          ],
-          "description": "Rule on what the system leaves behind: a per-class residue policy and the tracked/ignored split",
-          "rationale": "- **A pair, because `338` is the mechanical half of `618`'s ruling.** `618` is a GOAL record: work\n  out what leaves files behind in this repository's working tree, uncommitted and un-ignored, and\n  produce a per-class disposition verdict -- ignored where the file is runtime state, committed\n  where it is durable provenance, never a third pile a human triages by eye. `338` then classifies\n  every task-support file as tracked or ignored against that verdict.\n\n- **This is health, but diagnostic health**, which is why it sits mid-list rather than at the\n  head: residue does not break a dispatch, it makes every `git status` read untrustworthy and so\n  makes the commit-scope batches above harder to verify. Doing it after those batches land also\n  means the census is taken against a tree whose known drop/contamination paths are already fixed,\n  rather than against one where they are not.\n\n- `618` declares no `file_scope` at all -- see the scope note in the trailing prose. Narrow that\n  declaration before probing this batch."
+          "description": "Require a research report to name the generated doc-sync surfaces it stales",
+          "rationale": "- **A generated surface nobody declared is a surface nobody regenerates**, and the stale copy is\n  then read as truth by the next dispatch. All four members are about making that surface visible\n  at the point it is created.\n\n- `455` pre-flags the predictable first-run module-invariant failures that wiring a new module\n  forces, where the generated-surface knowledge already lives. `502` requires research reports to\n  enumerate the generated doc-sync surfaces they touch -- the research-phase counterpart. `517`\n  (edged behind `455`) requires a phase commit to regenerate and stage the derived surfaces it\n  stales, which is the enforcement end.\n\n- `457` is here because it is the same leak in the other direction: repo-specific content has\n  leaked into the shared agent-system source store, where every consuming repository reads it. It\n  is edged behind `455` already and shares `plan-file-scope-harvest.sh` with it.\n\n- **Below the enforcement batch** because these are contracts to be written rather than checks\n  that are currently lying. Reshaped: its commit-layer, declaration and detector members moved to M4, where they are sited as the prerequisites of the batch-worktree landing work. The leaked-content record moved to the removal milestone, where its subject is getting content out of the shared store rather than reporting a surface. What is left here is the doc-sync enumeration duty on its own, which is what the description now states."
         },
         {
           "task_ids": [
@@ -19561,6 +19611,13 @@
           ],
           "description": "The backlog and selection surfaces: corroboration, duplicate rows, one question renderer",
           "rationale": "- **The operator-facing surface, batched on real shared territory**: `context/workflows/\n  meta-interview.md` is claimed by `438`, `479`, `492` and `581`; `commands/task.md` by `438`,\n  `479` and `492`; `context/patterns/backlog-reconciliation.md` by `491`, `492` and `559`;\n  `multi-task-creation-standard.md` by `438`, `492` and `559`. Seven records over four shared\n  files is a batch by measurement, not by theme.\n\n- **The order is the graph's**: `438` (dependency-edge rationale conflates semantic and\n  serialization grounds, and a semantic edge is filed with no check against landed artifacts) ->\n  `479` (every task must name a landing target) -> `492` (corroboration computable, confirm prompt\n  gated on it), with `491` (the Pass-2 semantic scorer whose normalization inflates against\n  verbose records) ahead of `492` and `580` (AskUserQuestion's real four-option ceiling) ahead of\n  `581`. `581` extracts one shared option renderer and adopts it across all four selection\n  surfaces, and depends on `580`, `438`, `479` and `492` -- so it is last by necessity.\n\n- `559` settles the low-specificity shared-path case that produces spurious duplicate-of-open\n  verdicts, plus Component 7 under `/orchestrate`.\n\n- **Placed below the correctness batches** because this is the quality of what gets filed and\n  chosen, not whether a filed task can be executed. It is the highest-ranked batch that is not\n  about the machinery itself. Reshaped: its commit-layer, declaration and detector members moved to M4, where they are sited as the prerequisites of the batch-worktree landing work."
+        },
+        {
+          "task_ids": [
+            665
+          ],
+          "description": "Displace one record of the last dispatching batch into the generated roadmap",
+          "rationale": "A batch of one: the roadmap renderer is a single surface and the operator settled the semantics (only a dispatching invocation displaces, exactly one record retained). It is sited after the selection surfaces rather than earlier because it shares roadmap-format.md and the conclusion-roadmap test with the handoff narrowing in the slice milestone, which the priority order puts first; the edge added on this pass makes that ordering mechanical rather than a reading of batch position."
         },
         {
           "task_ids": [
@@ -19590,14 +19647,6 @@
         },
         {
           "task_ids": [
-            390,
-            481
-          ],
-          "description": "Migrate the mis-sited agent-system records, first the seven then the delta accumulated since",
-          "rationale": "- `390` migrates seven mis-sited agent-system tasks out of the consumer repository and retires one\n  duplicated upstream; `481`, already edged behind it, rules on and migrates the 32-record delta\n  accumulated since that first migration. The order is forced -- `481` is defined relative to\n  `390`'s result.\n\n- **This is backlog siting, not machinery**, so it ranks below everything that changes how a\n  dispatch runs. It does matter: a task sited in a repository whose filesystem does not contain\n  its declared edit target cannot be executed there at all."
-        },
-        {
-          "task_ids": [
             453,
             546,
             437
@@ -19608,20 +19657,18 @@
         {
           "task_ids": [
             383,
-            384,
-            342
+            384
           ],
-          "description": "The books extension's reconciliation surface; its corpus refactor stays held on an external pin",
-          "rationale": "- `383` adds a `/reconcile` command aggregating `docs-stage.sh` and `book-health.sh --json` drift\n  into one report and proposing follow-up tasks; `384`, already edged behind it, then adjudicates\n  whether a reconciliation postflight lifecycle hook is warranted and adds it only if the ruling is\n  yes. All three members claim `books/manifest.json`, which is why they run together.\n\n- **`342` is HOLD and is listed as an ordering constraint, not as available work.** The corpus\n  refactor waits on an external version stamp reaching `0.1.0` in the consuming repository; the\n  lift is an owner action, and `/orchestrate` admits a held record only under an explicit forcing\n  flag. It is kept in the batch rather than cut so the territory overlap stays visible.\n\n- **Last of the extension batches** because nothing in the core lifecycle depends on any of it."
+          "description": "The books extension reconciliation surface: the /reconcile command, then the lifecycle-hook ruling",
+          "rationale": "- `383` adds a `/reconcile` command aggregating `docs-stage.sh` and `book-health.sh --json` drift\n  into one report and proposing follow-up tasks; `384`, already edged behind it, then adjudicates\n  whether a reconciliation postflight lifecycle hook is warranted and adds it only if the ruling is\n  yes. All three members claim `books/manifest.json`, which is why they run together.\n\n- **`342` is HOLD and is listed as an ordering constraint, not as available work.** The corpus\n  refactor waits on an external version stamp reaching `0.1.0` in the consuming repository; the\n  lift is an owner action, and `/orchestrate` admits a held record only under an explicit forcing\n  flag. It is kept in the batch rather than cut so the territory overlap stays visible.\n\n- **Last of the extension batches** because nothing in the core lifecycle depends on any of it. The held corpus refactor is dropped from the member list, not demoted: the standing rule sites held work in no batch, because /orchestrate refuses a held task and an operator cannot run the printed line as written. It returns here when the external pin it waits on resolves and the hold lifts."
         },
         {
           "task_ids": [
             456,
-            421,
             530
           ],
-          "description": "Three standalone rulings: /tag's version gate, the telemetry consumer, the cslib context set",
-          "rationale": "- **A batch of genuinely independent records, grouped because each is a single ruling with no\n  predecessor and no shared territory to serialize against.** This is the one place in the list\n  where membership is not a shared-file claim, and it is stated rather than disguised.\n\n- `456` exempts private npm/Cargo manifests from `/tag`'s version gate -- today that gate is\n  unpassable for a private manifest, so the command cannot complete. `421` closes three gaps in\n  the telemetry `--meta` evidence consumer. `529` evaluates whether `formal:logic` implement\n  routing should resolve to a Lean-capable agent. `530` lands the three agent-system context\n  extensions recorded by the cslib omega-automata survey.\n\n- **Each is small and each is real**; none is on a path another record waits for, which is\n  precisely why they rank here rather than higher."
+          "description": "Two standalone rulings: /tag version gate and the cslib context extensions",
+          "rationale": "- **A batch of genuinely independent records, grouped because each is a single ruling with no\n  predecessor and no shared territory to serialize against.** This is the one place in the list\n  where membership is not a shared-file claim, and it is stated rather than disguised.\n\n- `456` exempts private npm/Cargo manifests from `/tag`'s version gate -- today that gate is\n  unpassable for a private manifest, so the command cannot complete. `421` closes three gaps in\n  the telemetry `--meta` evidence consumer. `529` evaluates whether `formal:logic` implement\n  routing should resolve to a Lean-capable agent. `530` lands the three agent-system context\n  extensions recorded by the cslib omega-automata survey.\n\n- **Each is small and each is real**; none is on a path another record waits for, which is\n  precisely why they rank here rather than higher. The telemetry-consumer member was abandoned, so it is dropped from the member list rather than reported as a done member it never was. The two survivors remain genuinely standalone rulings with no shared surface."
         },
         {
           "task_ids": [
@@ -19642,7 +19689,7 @@
       "gate": "A batch runs in an isolated worktree off its batch branch; a partial batch retains its worktree and /refresh reports it as an orphan; and every remaining project-root consumer is classified code-root, state-root or both, with the write-time and git-guard hooks honouring that split.",
       "progress": {
         "status": "planned",
-        "note": "All five members held and sited in no batch; the slice ruling finds isolation irrelevant to review, so abandon-or-hold is the operator's."
+        "note": "All five members held and in no batch. The slice ruling leaves isolation irrelevant to review; retire or keep is the operator call."
       },
       "review": {
         "state": "none"
