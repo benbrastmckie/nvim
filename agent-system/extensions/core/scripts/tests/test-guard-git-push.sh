@@ -77,8 +77,11 @@ make_push_fixture() {
 }
 
 # mint_grant_in <repo> <action_class> <remote> <ref> <force> <request> <mint_source>
-# Sources push-grant-lib.sh with cwd set to <repo> and mints exactly one grant, bound to that
-# repo's current HEAD. Revokes any pre-existing grant first (at-most-one-live convention).
+# Sources push-grant-lib.sh with cwd set to <repo> and mints exactly one grant, bound to the
+# commit of the ref it names: for push_branch, the resolved commit of refs/heads/<ref> -- or no
+# mint at all when that ref does not resolve, mirroring please-grant.sh's own fail-closed
+# refusal; for every other action class, that repo's current HEAD. Revokes any pre-existing
+# grant first (at-most-one-live convention).
 mint_grant_in() {
   local repo="$1" action="$2" remote="$3" ref="$4" force="$5" request="$6" mint_source="$7" sha
   (
@@ -86,9 +89,44 @@ mint_grant_in() {
     # shellcheck source=../lib/push-grant-lib.sh
     source "$LIB"
     pg_grant_revoke
-    sha="$(git rev-parse HEAD)"
+    if [ "$action" = "push_branch" ]; then
+      sha="$(git rev-parse --verify --quiet "refs/heads/${ref}" 2>/dev/null)" || sha=""
+    else
+      sha="$(git rev-parse HEAD 2>/dev/null)" || sha=""
+    fi
+    [ -n "$sha" ] || exit 0
     pg_grant_mint "$action" "$remote" "$ref" "$force" "$sha" "$request" "$mint_source" >/dev/null 2>&1
   )
+}
+
+# make_plumbing_branch <repo> <name> -- creates refs/heads/<name> at a brand-new commit
+# (parented on the repo's current HEAD, same tree), using plumbing only (commit-tree +
+# update-ref) so the branch is NEVER checked out -- the same shape a plumbing-built ref (e.g.
+# /slice's own update-ref-only construction) takes. feature-x stays the checked-out branch
+# throughout. Echoes the new commit's SHA.
+make_plumbing_branch() {
+  local repo="$1" name="$2" tree parent commit
+  parent="$(git -C "$repo" rev-parse HEAD)"
+  tree="$(git -C "$repo" rev-parse "HEAD^{tree}")"
+  commit="$(GIT_AUTHOR_NAME="Test Suite" GIT_AUTHOR_EMAIL="test@example.com" \
+            GIT_COMMITTER_NAME="Test Suite" GIT_COMMITTER_EMAIL="test@example.com" \
+            git -C "$repo" commit-tree "$tree" -p "$parent" -m "plumbing: create $name")"
+  git -C "$repo" update-ref "refs/heads/${name}" "$commit"
+  echo "$commit"
+}
+
+# advance_plumbing_branch <repo> <name> -- advances an existing plumbing branch to ANOTHER new
+# commit parented on its own current tip (never on HEAD), still without checkout -- models the
+# granted ref itself being rebuilt between mint and push. Echoes the new commit's SHA.
+advance_plumbing_branch() {
+  local repo="$1" name="$2" tree parent commit
+  parent="$(git -C "$repo" rev-parse "refs/heads/${name}")"
+  tree="$(git -C "$repo" rev-parse "refs/heads/${name}^{tree}")"
+  commit="$(GIT_AUTHOR_NAME="Test Suite" GIT_AUTHOR_EMAIL="test@example.com" \
+            GIT_COMMITTER_NAME="Test Suite" GIT_COMMITTER_EMAIL="test@example.com" \
+            git -C "$repo" commit-tree "$tree" -p "$parent" -m "plumbing: advance $name")"
+  git -C "$repo" update-ref "refs/heads/${name}" "$commit"
+  echo "$commit"
 }
 
 # run_hook_in <repo> <command> -- echoes exit code
@@ -212,7 +250,10 @@ code="$(run_hook_in "$repo" "git push origin feature-x")"
 rm -rf "$repo"
 [ "$code" -eq 2 ] && common_test_pass "invalidation: expired grant (700s old) blocked" || common_test_fail "invalidation: expired grant expected exit 2, got $code"
 
-# wrong branch
+# wrong branch -- "other-branch" never exists as a real git branch in this fixture, so since
+# the ref-bound mint change this now mints NOTHING AT ALL (fail-closed at mint time, the same
+# mechanism the dedicated fail-closed case below pins), not merely a wrong-REF-field grant; the
+# observable outcome (blocked) is unchanged.
 repo="$(make_push_fixture)"
 mint_grant_in "$repo" push_branch origin other-branch 0 "x" please
 code="$(run_hook_in "$repo" "git push origin feature-x")"
@@ -226,7 +267,11 @@ code="$(run_hook_in "$repo" "git push origin feature-x")"
 rm -rf "$repo"
 [ "$code" -eq 2 ] && common_test_pass "invalidation: wrong remote blocked" || common_test_fail "invalidation: wrong remote expected exit 2, got $code"
 
-# HEAD moved since mint
+# HEAD moved since mint -- the checked-out-branch regression case the plan names explicitly:
+# a grant for the checked-out branch must still be killed by a commit on HEAD inside the
+# window, exactly as before the ref-bound mint/match change (refs/heads/feature-x IS what HEAD
+# resolves to while feature-x is checked out, so this case continues to exercise the identical
+# regression under the new code).
 repo="$(make_push_fixture)"
 mint_grant_in "$repo" push_branch origin feature-x 0 "x" please
 echo more >> "${repo}/tracked.txt"
@@ -235,6 +280,57 @@ git -C "$repo" commit -q -m "moved HEAD"
 code="$(run_hook_in "$repo" "git push origin feature-x")"
 rm -rf "$repo"
 [ "$code" -eq 2 ] && common_test_pass "invalidation: HEAD moved since mint blocked" || common_test_fail "invalidation: HEAD moved expected exit 2, got $code"
+
+# =====================================================================
+# Ref-bound grant cases: a push_branch grant for a ref other than the checked-out branch
+# (the plumbing-built-ref case /slice's own update-ref-only construction produces) binds to,
+# and is matched against, that ref's own commit -- never HEAD.
+# =====================================================================
+
+# survival: an unrelated commit on the checked-out branch does not kill a grant bound to a
+# different, non-checked-out ref
+repo="$(make_push_fixture)"
+make_plumbing_branch "$repo" slice-a >/dev/null
+mint_grant_in "$repo" push_branch origin slice-a 0 "x" please
+echo more >> "${repo}/tracked.txt"
+git -C "$repo" add tracked.txt
+git -C "$repo" commit -q -m "unrelated commit on feature-x"
+code="$(run_hook_in "$repo" "git push origin slice-a")"
+remaining="$(grant_count_in "$repo")"
+rm -rf "$repo"
+if [ "$code" -eq 0 ] && [ "$remaining" -eq 0 ]; then
+  common_test_pass "ref-bound: grant for a non-checked-out ref survives an unrelated commit on the checked-out branch, consumed on push"
+else
+  common_test_fail "ref-bound survival: expected exit 0 + grant consumed, got exit=$code remaining=$remaining"
+fi
+
+# refusal: the granted ref itself moving after mint invalidates the grant
+repo="$(make_push_fixture)"
+make_plumbing_branch "$repo" slice-b >/dev/null
+mint_grant_in "$repo" push_branch origin slice-b 0 "x" please
+advance_plumbing_branch "$repo" slice-b >/dev/null
+code="$(run_hook_in "$repo" "git push origin slice-b")"
+remaining="$(grant_count_in "$repo")"
+rm -rf "$repo"
+if [ "$code" -eq 2 ] && [ "$remaining" -eq 1 ]; then
+  common_test_pass "ref-bound: grant is refused once the granted ref itself moves after mint"
+else
+  common_test_fail "ref-bound ref-moved refusal: expected exit 2 + grant untouched, got exit=$code remaining=$remaining"
+fi
+
+# fail-closed: a push_branch grant whose REF does not resolve under refs/heads/ -- including
+# the literal sentinel "HEAD" a detached-HEAD derivation in guard-git-push.sh can produce --
+# mints nothing at all, so the subsequent push is blocked for having no live grant.
+repo="$(make_push_fixture)"
+mint_grant_in "$repo" push_branch origin HEAD 0 "x" please
+mint_count="$(grant_count_in "$repo")"
+code="$(run_hook_in "$repo" "git push origin feature-x")"
+rm -rf "$repo"
+if [ "$mint_count" -eq 0 ] && [ "$code" -eq 2 ]; then
+  common_test_pass "ref-bound: fail-closed -- a push_branch grant whose REF (HEAD) does not resolve under refs/heads/ mints nothing; push is blocked"
+else
+  common_test_fail "ref-bound fail-closed: expected mint_count=0 and push blocked, got mint_count=$mint_count code=$code"
+fi
 
 # force-vs-non-force mismatch (grant is non-force, request is --force-with-lease)
 repo="$(make_push_fixture)"

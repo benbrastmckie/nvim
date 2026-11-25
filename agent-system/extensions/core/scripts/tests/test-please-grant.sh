@@ -198,6 +198,57 @@ rm -rf "$repo"
 [ "$n" -eq 1 ] && common_test_pass "at-most-one-live-grant: two mints leave exactly 1 grant file" || common_test_fail "at-most-one-live-grant: expected 1, got $n"
 
 # =====================================================================
+# Ref-bound mint cases: a push_branch grant binds HEAD_SHA to the NAMED ref's own commit, not
+# bare HEAD -- the mint-time half of the ref-bound-grant change.
+# =====================================================================
+
+# mint-side: an existing non-checked-out branch ("master", never checked out again after the
+# fixture's initial checkout -b feature-x) binds to its OWN commit, not to feature-x's (HEAD).
+# feature-x is advanced first so master's commit provably differs from HEAD's.
+repo="$(make_fixture)"
+echo "feature work" >> "${repo}/tracked.txt"
+git -C "$repo" add tracked.txt
+git -C "$repo" commit -q -m "feature-x advances past master"
+master_sha="$(git -C "$repo" rev-parse refs/heads/master)"
+head_sha="$(git -C "$repo" rev-parse HEAD)"
+run_mint_in "$repo" "/please push origin master" >/dev/null
+n="$(grant_count_in "$repo")"
+grant_file="$(grant_files_in "$repo" | head -n1)"
+bound_sha="$(field_in "$grant_file" HEAD_SHA)"
+rm -rf "$repo"
+if [ "$n" -eq 1 ] && [ "$bound_sha" = "$master_sha" ] && [ "$bound_sha" != "$head_sha" ]; then
+  common_test_pass "ref-bound mint: /please push origin master (non-checked-out) binds HEAD_SHA to master's own commit, not HEAD"
+else
+  common_test_fail "ref-bound mint non-checked-out: expected exactly 1 grant bound to master=$master_sha (differs from HEAD=$head_sha), got n=$n bound=$bound_sha"
+fi
+
+# mint-side: a push_branch grant naming a branch that does not exist mints nothing (fail-closed
+# -- refs/heads/<ref> does not resolve).
+repo="$(make_fixture)"
+run_mint_in "$repo" "/please push origin does-not-exist" >/dev/null
+n="$(grant_count_in "$repo")"
+rm -rf "$repo"
+[ "$n" -eq 0 ] && common_test_pass "ref-bound mint: push_branch grant for a nonexistent branch mints nothing (fail-closed)" || common_test_fail "ref-bound mint nonexistent-branch: expected 0 grants, got $n"
+
+# mint-side fail-closed: the pathological typed line naming the literal branch "HEAD" (the
+# Risks table's detached-HEAD sentinel) mints nothing -- refs/heads/HEAD does not resolve.
+repo="$(make_fixture)"
+run_mint_in "$repo" "/please push HEAD to origin" >/dev/null
+n="$(grant_count_in "$repo")"
+rm -rf "$repo"
+[ "$n" -eq 0 ] && common_test_pass "ref-bound mint: fail-closed -- a push_branch request naming the literal branch HEAD mints nothing" || common_test_fail "ref-bound mint REF=HEAD: expected 0 grants, got $n"
+
+# mint-side regression: a grant for the checked-out branch still binds HEAD_SHA to HEAD
+# (refs/heads/feature-x IS what HEAD resolves to while feature-x is checked out).
+repo="$(make_fixture)"
+head_sha2="$(git -C "$repo" rev-parse HEAD)"
+run_mint_in "$repo" "/please push origin feature-x" >/dev/null
+grant_file2="$(grant_files_in "$repo" | head -n1)"
+bound_sha2="$(field_in "$grant_file2" HEAD_SHA)"
+rm -rf "$repo"
+[ "$bound_sha2" = "$head_sha2" ] && common_test_pass "ref-bound mint regression: a grant for the checked-out branch still binds HEAD_SHA to HEAD" || common_test_fail "ref-bound mint checked-out-branch regression: expected HEAD_SHA=$head_sha2, got $bound_sha2"
+
+# =====================================================================
 # Audit case: a mint appends exactly one push_grant_issued line with remote/ref/sha/force
 # =====================================================================
 repo="$(make_fixture)"

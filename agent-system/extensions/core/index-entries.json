@@ -1828,7 +1828,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Git safety guidelines and patterns",
-      "line_count": 703,
+      "line_count": 706,
       "keywords": [
         "standards",
         "git",
@@ -3248,7 +3248,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 730,
+      "line_count": 731,
       "keywords": [
         "runtime-files",
         "cleanup",

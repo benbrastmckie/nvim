@@ -41,6 +41,7 @@ All 20 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE 
 | `/roadmap` | `/roadmap [instruction]` | Maintain the milestone, batch and context entries specs/ROADMAP.md renders from |
 | `/telemetry` | `/telemetry --meta\|--review "<question>"\|--dream` | Cross-repo improvement proposals, ad hoc telemetry inquiry, and prompt-history theme surfacing |
 | `/merge` | `/merge` | Create pull/merge request for current branch |
+| `/slice` | `/slice [description]` | Propose, build, and track a stack of reviewable slices cut from the current work ref (user-only) |
 | `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |
 | `/tag` | `/tag` | Create semantic version tag (user-only) |
 | `/recap` | `/recap` | Speak the latest `/orchestrate` run's recap through piper, or print it (user-only) |
