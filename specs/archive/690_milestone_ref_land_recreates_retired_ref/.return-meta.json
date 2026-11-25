@@ -1,0 +1,121 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/690_milestone_ref_land_recreates_retired_ref/summaries/01_milestone-ref-land-deletion-summary.md",
+      "summary": "Deleted milestone-ref-land.sh and its test suite, removed all machine-read declarations, re-pointed the ref-plumbing idiom's implementation citation to review-stack-prepare.sh, reconciled index-entries.json, and redeployed to a clean verify."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Deleted the orphaned milestone-ref-land.sh utility, its dedicated test suite, and all four machine-read declarations (two manifest rows, one suite-classification row); re-pointed context/patterns/ref-plumbing-landing.md and context/standards/git-workflow-narrative.md to cite review-stack-prepare.sh as the live implementation of the ref-plumbing idiom, keeping every technique section byte-unchanged; reworded test-milestone-review-handoff.sh's header comment to credit no file; reconciled index-entries.json's line_count; and redeployed to a clean verify (RESULT=landed_verify_clean, 41/41 checks passed) after removing two orphaned deployed-tree copies the deploy's own orphan handling left behind."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/milestone-ref-land.sh",
+    "agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/context/patterns/ref-plumbing-landing.md",
+    "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+    "agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh",
+    "agent-system/extensions/core/index-entries.json",
+    ".claude/scripts/milestone-ref-land.sh",
+    ".claude/scripts/tests/test-milestone-ref-land.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "On this harness, a foreground Bash call is auto-backgrounded after roughly 180s of output silence even when its own `timeout` parameter is raised far above that threshold (tested at 570000ms) -- the harness's silence heuristic, not the declared ceiling, triggers the detach. The reliable pattern for a genuinely long local verification battery (e.g. a 100+ suite narrowed run-all.sh invocation) is: launch with `setsid bash -c '... > logfile 2>&1; echo EXIT:$? >> logfile' < /dev/null > /dev/null 2>&1 & disown`, capture the inner pid via `pgrep -af`, then poll with a `for i in $(seq 1 N); do sleep 10; kill -0 \"$pid\" 2>/dev/null || break; done` loop kept under ~170s total per Bash call so the poll call itself is never auto-backgrounded. Never rely on the harness's own background-task notification to resume a dispatched subagent, since that path hands the dispatch back unfinished.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/690_milestone_ref_land_recreates_retired_ref/summaries/01_milestone-ref-land-deletion-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "bounded-wait",
+        "auto-background",
+        "verify-touched",
+        "setsid",
+        "polling"
+      ]
+    },
+    {
+      "content": "deploy-headless.sh's whole-tree orphan detection (gate 13) flags deployed-but-undeclared files (e.g. a deployed copy of a script just deleted from the source store) but does not remove them on a failed verify -- it reports `RESULT=landed_verify_red` and leaves the orphan in place. The remedy is to remove the orphaned deployed-tree file explicitly (`.claude/**` is gitignored and disposable, so a direct `rm` is safe) and either re-run a scoped `verify-deploy.sh --only-gate 13,3,5 --skip-unchanged` for a fast confirmation or re-run `deploy-headless.sh` once more for the literal clean-verify record.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/690_milestone_ref_land_recreates_retired_ref/summaries/01_milestone-ref-land-deletion-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "deploy-headless",
+        "orphan-detection",
+        "gate13",
+        "verify-deploy",
+        "redeploy"
+      ]
+    },
+    {
+      "content": "verify-touched.sh's suite-resolution for an edit to manifest.json or suite-classification.data (high-fan-in files many suites declare as corpus inputs) triggers a 100+ suite narrowed run-all.sh battery even at the plan's declared `interface` tier, not a handful of directly-dependent suites. Budget accordingly (10-20+ minutes under concurrent batch load) rather than assuming 'interface' implies a cheap check; a manifest/classification-data edit is itself the costly case this tier exists to catch.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/690_milestone_ref_land_recreates_retired_ref/summaries/01_milestone-ref-land-deletion-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "verify-touched",
+        "verification-tier",
+        "manifest.json",
+        "suite-classification",
+        "scope-hypothesis"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "Claude Code Bash tool auto-backgrounding",
+      "value": "A foreground Bash call on this harness is auto-backgrounded after roughly 180s of output silence regardless of the declared `timeout` parameter (confirmed at 570000ms); the only reliable way to wait out a long local command is to setsid-detach it to a log file and poll liveness via `kill -0` on the captured pid in short (<170s) loops, never relying on the harness's background-task notification to resume the dispatch.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "specs/690_milestone_ref_land_recreates_retired_ref/progress/phase-1-progress.json"
+    },
+    {
+      "subject": "deploy-headless.sh orphan handling",
+      "value": "deploy-headless.sh's whole-tree orphan detection (gate 13) flags a deployed-but-undeclared file left over from a source-store deletion, but does not remove it; a failed verify (landed_verify_red) with an orphan finding requires the deployed copy to be removed explicitly before a clean verify is achievable.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/690_milestone_ref_land_recreates_retired_ref/progress/phase-3-progress.json"
+    },
+    {
+      "subject": "verify-touched.sh suite-resolution fan-out",
+      "value": "Editing manifest.json or suite-classification.data (declared corpus inputs for many suites) causes verify-touched.sh to select a 100+ suite narrowed battery even at the plan's declared 'interface' verification tier, costing 10-20+ minutes under concurrent batch load rather than a handful of directly-dependent checks.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "specs/690_milestone_ref_land_recreates_retired_ref/progress/phase-1-progress.json"
+    },
+    {
+      "subject": "gate-lock mutex staleness window",
+      "value": "The shared gate-lock mutex (/run/user/1000/.gate-lock, used to serialize gate-8/verify-deploy runs) has a 1800s staleness window; a crashed holder's dead PID does not release the lock faster than that window elapsing, so a bounded wait shorter than 1800s can time out on a stale lock even after confirming the holder process is already dead via kill -0.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/690_milestone_ref_land_recreates_retired_ref/progress/phase-3-progress.json"
+    },
+    {
+      "subject": "milestone-ref-land.sh deletion rationale",
+      "value": "A documentation reference to a dead utility (not just a live code caller) can itself be the invocation vector for unexplained system behavior -- this task treated re-pointing the ref-plumbing pattern's two context documents as part of the fix, not cosmetic cleanup, specifically because the task description's leading hypothesis for a consumer repository's unexplained ref advances was an agent reading one of those documents and running the deleted script by hand.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.8,
+      "source_loc": "specs/690_milestone_ref_land_recreates_retired_ref/plans/01_milestone-ref-land-deletion.md"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795484837_9a6a6b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
+  }
+}

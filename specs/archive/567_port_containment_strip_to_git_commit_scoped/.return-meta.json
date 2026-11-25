@@ -1,0 +1,101 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/567_port_containment_strip_to_git_commit_scoped/summaries/01_port-containment-strip-summary.md",
+      "summary": "Closes Site 3 of the three documented Containment-predicate sites: git-commit-scoped.sh's V10 resolution block now strips every deployed-tree file_scope entry exactly as git-commit-phase.sh's Site-2 Self-Check already does, pinned by a new Z19 case and Case 26's restored end-to-end assertion, with git-staging-scope.md updated to record the closure."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Ported git-commit-phase.sh's Site-2 deployed-tree file_scope strip into git-commit-scoped.sh's V10 resolution block (Site 3), closing the gap where a .claude-prefixed file_scope entry admitted at Site 2 was still independently vetoed at Site 3. Added regression case Z19, restored test-git-commit-phase.sh's Case 26 to its full end-to-end assertion, confirmed Case 20 unaffected, and updated git-staging-scope.md to record that only the read-only proposed_file_scope_lookup annotation remains site-2-only."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When porting an identical mechanism between two documented chokepoints of the same predicate (e.g. git-commit-phase.sh's Site-2 Containment Self-Check and git-commit-scoped.sh's Site-3 V10 resolution), check each site's own local conventions before copying verbatim: one site may define a warn() helper while the sibling site has no such helper and uses inline `echo \"WARN: ...\" >&2` instead, and loop variable names used at one site (e.g. `entry`) may already be in use by an unrelated function at the other site, requiring distinct names to avoid shadowing/collision.",
+      "category": "PATTERN",
+      "source_artifact": "specs/567_port_containment_strip_to_git_commit_scoped/summaries/01_port-containment-strip-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "containment-sites",
+        "git-commit-scoped.sh",
+        "git-commit-phase.sh",
+        "porting-mechanisms",
+        "warn-convention"
+      ]
+    },
+    {
+      "content": "To sanity-check that a new regression case genuinely pins the behaviour it claims to (rather than passing for an incidental reason), temporarily revert the fix in the working copy only (never committed), re-run the suite, and confirm the new case specifically fails with the expected error shape -- then restore the fix and verify `git diff` against HEAD is empty before proceeding. This is cheap and catches a case that would pass regardless of the fix.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/567_port_containment_strip_to_git_commit_scoped/summaries/01_port-containment-strip-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "regression-testing",
+        "sanity-check",
+        "temporary-revert",
+        "test-pinning"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "git-commit-scoped.sh V10 Containment resolution",
+      "value": "The V10 effective-scope resolution block in git-commit-scoped.sh now strips every deployed-tree (.claude/.claude//.claude/*) file_scope entry immediately after the raw containment_scope_arr population loop and before the non-emptiness guard, mirroring git-commit-phase.sh's own Site-2 Containment Self-Check. A file_scope consisting solely of deployed-tree entries now fails open (disables the V10 check entirely) at both sites, not just one.",
+      "predicate": "decision made is",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+    },
+    {
+      "subject": "git-commit-scoped.sh warning convention",
+      "value": "git-commit-scoped.sh defines no warn() helper function; every V9/V10/V13 warning in that script is an inline `echo \"WARN: git-commit-scoped.sh: ...\" >&2` call. This differs from git-commit-phase.sh, which does define a warn() helper. Porting a warning call between the two scripts requires translating the convention, not copying verbatim.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.95,
+      "source_loc": "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+    },
+    {
+      "subject": "test-git-commit-scoped.sh Z-series fixture helper",
+      "value": "build_repo_with_scope(task_number, project_name, file_scope_json) in test-git-commit-scoped.sh seeds specs/999_probe/a.txt, specs/999_probe/b.txt (both inside the implicit task-directory scope member, so neither can ever be the dropped path in a partial-drop case), and specs/998_sibling/out.txt under a genuinely separate sibling task directory specifically so callers have an out-of-scope candidate path available without extra setup.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
+    },
+    {
+      "subject": "proposed_file_scope_lookup asymmetry between Containment sites",
+      "value": "After closing the deployed-tree strip asymmetry between git-commit-phase.sh (Site 2) and git-commit-scoped.sh (Site 3), exactly one deliberate asymmetry remains between the two sites: Site 2's read-only proposed_file_scope_lookup, which only annotates a repeat drop's warning text and never affects the admit/reject decision. It stays unmirrored at Site 3 because Site 3 has no equivalent drop-warning-annotation surface to mirror it onto -- not an oversight, a structural absence.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/context/standards/git-staging-scope.md"
+    },
+    {
+      "subject": "Admitting-union design for proposed_file_scope was tried and rejected",
+      "value": "An earlier design that would union proposed_file_scope into containment_scope_arr (so a path proposed by Site 2 would be admitted by Site 3 too) was built and rejected: it regressed test-git-commit-phase.sh's own idempotence fixture (Case 20), because Site 3 independently vetoes a path Site 2 admits only on the strength of a not-yet-merged deposit, making Site 2 either falsely report success or hard-fail on a path that genuinely never lands. The deployed-tree strip ported in this task is a narrower, independently-safe fix that does not reintroduce this rejected design.",
+      "predicate": "correction is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/context/standards/git-staging-scope.md"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795400947_bb64cf",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "question": "With isolation off, the integration branch keeps one commit per phase and one commit per task is built only on the review branch at PR time. Accept that, or pay for per-task commits on the integration branch itself?",
+    "answer": "Accept: phase commits stay on the integration branch; the review branch carries one commit per task",
+    "cycle": 6,
+    "timestamp": "2026-11-23T15:07:01Z",
+    "description_fingerprint": "daa5d7a3c430f8e8a7e633e4ef8c9946d67add97467b1d1a28d786ade6a60a3c",
+    "obligation": "The task criterion that a multi-task batch produces one reviewable unit per completed task on the integration branch with its phase list recorded, discharged by a per-task landing proof and completion-commit body rather than by a squash commit."
+  }
+]

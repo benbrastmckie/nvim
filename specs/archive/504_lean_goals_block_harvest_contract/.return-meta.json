@@ -1,0 +1,101 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/504_lean_goals_block_harvest_contract/summaries/01_goals-block-harvest-contract-summary.md",
+      "summary": "Narrowed lean-plan-compliance-check.sh's Goals-prose fallback harvest to a per-bullet leading-identifier-run, re-baselined four affected test cases, added regression coverage (C20-C22), and corrected a stale fixture comment."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Narrowed lean-plan-compliance-check.sh's Goals-prose fallback harvest to a per-bullet leading-identifier-run (matching plan-format.md's documented contract and lean-challenge-snapshot.sh's sibling implementation), using possessive quantifiers to fix a PCRE backtracking artifact discovered during verification. Re-baselined C13-C16, added regression cases C20-C22, and corrected a stale fixture comment. Test suite grew from 19 to 22 cases, all green; the sibling snapshot suite's 37 cases are unchanged."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_goals_preamble.md",
+    "agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh",
+    "specs/504_lean_goals_block_harvest_contract/summaries/01_goals-block-harvest-contract-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When porting a plain `grep -oP '^\\s*MARKER\\s*\\K(?:ALTERNATION)+'` single-regex extraction where one branch of ALTERNATION accepts the same character class as the preceding \\s*, PCRE backtracking can donate characters from the \\s* prefix into the alternation to satisfy a `+` quantifier that would otherwise fail to match zero-width content -- producing a spurious non-empty match on input the pattern was meant to reject entirely. Fix: make the prefix quantifiers POSSESSIVE (`\\s*+`) rather than greedy, which forbids backtracking into them. Always verify any single-regex port of a two-step Python re.match/re.match sequence against the exact 'no match at all' input case, not just the 'matches something' cases.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/504_lean_goals_block_harvest_contract/summaries/01_goals-block-harvest-contract-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "grep -P",
+        "PCRE",
+        "possessive quantifier",
+        "backtracking",
+        "regex port"
+      ]
+    },
+    {
+      "content": "Before writing a test assertion against a script's 'which code path was taken' narrative (e.g. 'assert the harvest source'), grep the production script for every echo/print of the variable in question -- it may only be emitted on one of several verdict branches (e.g. only on 'skipped', never on 'passed'/'failed'). When the direct string isn't observable on the branch under test, discharge the assertion structurally instead (exact-set/count assertions that could only hold if the intended code path ran) and document the substitution in the test's own header comment.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/504_lean_goals_block_harvest_contract/summaries/01_goals-block-harvest-contract-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "test assertion",
+        "observability",
+        "verdict path",
+        "structural assertion"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "lean-plan-compliance-check.sh Goals-prose fallback harvest",
+      "predicate": "decision is",
+      "value": "Narrowed the script to match plan-format.md's documented per-bullet leading-identifier-run contract (rejected alternative: widen the document to codify the script's old over-broad behavior). This was the third narrowing of this one harvest, after a reserved-keyword denylist and a colon-optional Goals-range widening -- recorded as evidence that narrowing the harvest, not constraining Goals prose, is this codebase's established remedy pattern for this class of defect.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"
+    },
+    {
+      "subject": "grep -P (PCRE) quantifier backtracking across \\K",
+      "predicate": "finding is",
+      "value": "A pattern of the shape `^\\s*MARKER\\s*\\K(?:X|[\\s,/]|...)+` where the alternation includes a whitespace-matching branch will backtrack the preceding \\s* to donate a character into the `+` alternation whenever the content immediately after MARKER does not itself match any alternative -- producing a one-character spurious match (the donated whitespace) instead of a correct zero-match/no-match result. Possessive quantifiers (`\\s*+`) on the prefix eliminate this backtracking. Confirmed live with `grep -oP` against a real prose-leading-bullet input; the equivalent sequential two-regex form (Python's separate re.match calls for bullet-marker then leading-run) does not exhibit this bug because the two matches are independent operations with no shared backtracking state.",
+      "ko_type": "fact",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"
+    },
+    {
+      "subject": "Claude Code harness Bash tool auto-backgrounding threshold",
+      "predicate": "finding is",
+      "value": "An ordinary foreground Bash call that produces no stdout for roughly 180 seconds gets auto-backgrounded by the harness regardless of the Bash tool's own `timeout` parameter (observed with the parameter explicitly set to 600000ms) and regardless of an inner shell `timeout` set below that value. The effective ceiling for a silent foreground wait appears to be a fixed ~180s idle/runtime threshold, not the declared tool timeout. Workaround: cap the inner shell timeout at ~170s per call and repeat the bounded kill -0 liveness-check call across successive tool invocations until the watched PID exits.",
+      "ko_type": "fact",
+      "confidence": 0.75,
+      "source_loc": null
+    },
+    {
+      "subject": "Two independent Lean plan Goals-block readers (lean-plan-compliance-check.sh, lean-challenge-snapshot.sh)",
+      "predicate": "finding is",
+      "value": "The two readers are deliberately independently implemented (bash/grep vs Python) under a 'SHARED FRAGILITY' cross-reference convention rather than unified into shared code. As of this task they agree on harvest BREADTH (both apply the per-bullet leading-identifier-run rule) but still disagree on accepted Goals-HEADER shape: lean-plan-compliance-check.sh's range anchor does not accept the list-item `- **Goals**:` form that lean-challenge-snapshot.sh's START_RE already accepts. This header-shape gap is a standing, deliberately deferred residual, not a regression from this task.",
+      "ko_type": "fact",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"
+    },
+    {
+      "subject": "verify-touched.sh scoped batch-gate check, run under a concurrent multi-task /orchestrate batch",
+      "predicate": "finding is",
+      "value": "A verify-touched.sh invocation's own overall verdict line can report failure even when the captured/visible test output shows 0 failures, if the run spans several minutes on a shared working tree that concurrent sibling tasks are actively committing to -- the failing section can be above a truncated output window, or the failure can be transient tree-state flux rather than a real regression. An untruncated, full-log re-run immediately after returned a clean result. Lesson: capture verify-touched.sh output to a file in full (never pipe through `tail` when later diagnosis might be needed), and treat a solo failing signal from a long-running check on a shared, concurrently-mutated tree as provisional until corroborated by a clean re-run.",
+      "ko_type": "insight",
+      "confidence": 0.7,
+      "source_loc": null
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795360608_7bb5fd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
+}

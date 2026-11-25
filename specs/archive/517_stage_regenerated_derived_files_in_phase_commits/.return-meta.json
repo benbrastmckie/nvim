@@ -1,0 +1,119 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/517_stage_regenerated_derived_files_in_phase_commits/summaries/01_stage-regenerated-derived-files-summary.md",
+      "summary": "All 4 phases completed: the phase-commit obligation prose, the Site-2 derived-output-prefix staging-admission splice, the non-blocking derived_probe_run_all staleness backstop, and the deploy/verify close with the companion-record recommendation."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Landed decision (c) of the research ruling in full: a declaration-only phase-commit obligation in checkpoint-commit.md with a pointer from general-implementation-agent.md, a Site-2 derived-output-prefix splice in git-commit-phase.sh's Containment Self-Check so a regenerated declared surface is actually stageable, and a non-blocking derived_probe_run_all staleness backstop at the same phase-commit site. Deployed, verified clean (41/41 checks after fixing one lint collision discovered mid-deploy), and the companion consumer-repo recommendation recorded in the summary and issue log."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/checkpoints/checkpoint-commit.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/scripts/git-commit-phase.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/lib/derived-artifact-probe-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-derived-artifact-probe-lib.sh",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "git-commit-phase.sh's Phase-Commit Containment Self-Check has three per-site widenings spliced inside its non-empty file_scope_arr guard (own-task-directory, engine-written-state allowlist, derived-output-prefix), all placed AFTER a deployed-tree strip and ALL inside the same guard -- meaning every one of them is a strict no-op whenever a task declares no file_scope at all, since the whole Self-Check short-circuits before any splice runs. A mechanism meant to run unconditionally on every phase commit (e.g. a non-blocking staleness backstop) cannot rely on that guard having executed and must independently guarantee its own prerequisite (idempotent re-source via `declare -F <fn>` before falling back to a fresh `source`, rather than assuming an earlier conditional splice already ran).",
+      "category": "PATTERN",
+      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/summaries/01_stage-regenerated-derived-files-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "git-commit-phase",
+        "containment-self-check",
+        "idempotent-source",
+        "fail-open",
+        "non-empty-guard"
+      ]
+    },
+    {
+      "content": "lint-scoped-commit-boundary.sh's piped-invocation detector (Rule 2) is a naive line-level heuristic: ANY line containing the literal substring 'git-commit-scoped.sh' or 'git-commit-phase.sh' AND an unescaped pipe character (not part of ||) is flagged as a hidden-exit-code violation, with no awareness of quoted-string context. A test assertion like `echo \"$out\" | grep -q \"...git-commit-phase.sh:...\"` trips this even though no real invocation is piped -- the script name just happens to appear inside the string being matched. Fix: avoid repeating the literal script-name substring in a piped grep pattern inside such a file; a wildcard or a distinguishing message-only substring (without the script name) sidesteps the false positive without weakening the assertion.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/summaries/01_stage-regenerated-derived-files-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "lint-scoped-commit-boundary",
+        "false-positive",
+        "piped-invocation",
+        "shellcheck-adjacent-lint"
+      ]
+    },
+    {
+      "content": "Three independent Containment sites in this codebase (orchestrate-cycle-postflight.sh WORK (h), git-commit-phase.sh's Self-Check, git-commit-scoped.sh's V10) each apply the SAME predicate against a task's declared file_scope, and a per-site widening (engine-written-state allowlist, own-task-directory, derived-output-prefix) must be independently spliced at ALL THREE to take effect everywhere -- a later site's identical widening never rescues an earlier site's drop, because a dropped path is removed from its own pathspec BEFORE being handed to a downstream site. This subsumption-asymmetry pattern (documented in git-staging-scope.md's 'Three Containment sites, not one' section) generalizes to any future per-site widening added to this corpus.",
+      "category": "PATTERN",
+      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/summaries/01_stage-regenerated-derived-files-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "containment-sites",
+        "subsumption-asymmetry",
+        "file_scope",
+        "pathspec-drop"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "lint-scoped-commit-boundary.sh Rule 2 (piped-invocation detector)",
+      "value": "Is a naive line-level string match on the literal substrings 'git-commit-scoped.sh'/'git-commit-phase.sh' plus an unescaped pipe character, with zero quoted-string awareness -- a test assertion whose grep pattern happens to embed the script name inside a string under test trips it as a false positive, even though no real script invocation is piped on that line.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh:410 (classify_pipe_line)"
+    },
+    {
+      "subject": "git-commit-phase.sh's three Containment Self-Check splices (own-task-directory, engine-written-state, derived-output-prefix)",
+      "value": "All three are placed inside the SAME non-empty file_scope_arr guard, after the deployed-tree strip -- meaning the entire Self-Check, and every widening it carries, is a strict no-op whenever a task declares no file_scope at all. A mechanism meant to run unconditionally on every phase commit cannot depend on that guard's having executed.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/git-commit-phase.sh (Phase-Commit Containment Self-Check)"
+    },
+    {
+      "subject": "~/Projects/BimodalLogic's .claude-extensions.json derived-surface declarations",
+      "value": "Declares neither derived_artifact_probes nor coupled_generated_surfaces, confirmed live at both this task's planning time and its implementation time. This means task 517's phase-commit-protocol work, though fully landed in agent-system/**, does not by itself change the outcome of the four cited recurrences in that repository -- a companion record declaring those keys there is still required.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.95,
+      "source_loc": "~/Projects/BimodalLogic/.claude-extensions.json"
+    },
+    {
+      "subject": "git-commit-scoped.sh's V10 derived-output-prefix widening vs. git-commit-phase.sh's new Site-2 splice",
+      "value": "V10 (Site 3) loops derived_probe_output_prefixes' JSON output unconditionally with no type-validation step, while the new Site-2 splice added in this task validates the returned JSON as an array of strings first (mirroring the engine-written-state splice's own validation shape) -- an intentional asymmetry per the implementation plan's own instruction, not an oversight, but worth knowing the two sites differ in strictness.",
+      "predicate": "correction is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/git-commit-scoped.sh:611 vs. agent-system/extensions/core/scripts/git-commit-phase.sh (derived-output-prefix splice)"
+    },
+    {
+      "subject": "deploy-headless.sh's full verification battery as an independent safety net",
+      "value": "Caught a lint-scoped-commit-boundary.sh regression in freshly-written test code (test-git-commit-phase.sh's Case 37) that none of this task's own per-phase verification steps had run, because that specific lint was only in Phase 2's verification list, not Phase 3's -- confirming the value of a whole-tree deploy-time gate independent of any single phase's self-declared verification scope.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "specs/517_stage_regenerated_derived_files_in_phase_commits/progress/phase-4-progress.json"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795391913_f9e5cc",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  },
+  "next_steps": "Task complete. A companion record declaring derived_artifact_probes/coupled_generated_surfaces should be created in ~/Projects/BimodalLogic to actually close the originating incident."
+}

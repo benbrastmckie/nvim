@@ -1,0 +1,108 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 13,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/398_lean_plan_scope_rw_site_unfolding/summaries/01_rw-site-unfold-reachability-summary.md",
+      "summary": "Implementation summary covering all three phases: worked example/probe landed, plan-authoring keyword added, redeploy verified end to end."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Landed the rw-site definitional-unfold worked example and an enumerated, runnable twelve-spelling grep probe in dependency-tracing.md, tagged the file's own index entry with the plan-authoring keyword to make it reachable at plan time, and verified end to end after redeploy that the Stage 4 item 13 query now selects the file for a lean4 plan dispatch."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md",
+    "agent-system/extensions/lean/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When resyncing an index-entries.json entry's line_count field after editing its referenced markdown file, anchor the Edit's old_string on the entry's \"path\" + \"line_count\" line pair together, not a bare \"line_count\": N -- the bare value is frequently non-unique across a multi-entry index file and the Edit tool will refuse an ambiguous match.",
+      "category": "PATTERN",
+      "source_artifact": "specs/398_lean_plan_scope_rw_site_unfolding/summaries/01_rw-site-unfold-reachability-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "index-entries",
+        "line-count",
+        "edit-anchor",
+        "unique-old-string"
+      ]
+    },
+    {
+      "content": "deploy-headless.sh's internal verify-deploy.sh fast-gate sweep can transiently FAIL (e.g. 3 of 41 checks) during a sibling task's in-flight, not-yet-committed edit under a concurrent multi-task /orchestrate batch -- observed as doc-lint content-drift on the sibling's own uncommitted files plus a load-correlated gate6 timeout (explicitly flagged CONTENTION in gate6's own output). Re-running deploy-headless.sh after the sibling's commit lands is the correct recovery, not treating the red as this task's own regression -- check git log/status for the specific failing paths against your own declared file_scope before escalating.",
+      "category": "PATTERN",
+      "source_artifact": "specs/398_lean_plan_scope_rw_site_unfolding/summaries/01_rw-site-unfold-reachability-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "deploy-headless",
+        "verify-deploy",
+        "concurrency",
+        "sibling-contention",
+        "gate6",
+        "transient-failure"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "planner-agent.md Stage 4 item 13 context-discovery gate",
+      "predicate": "mechanism is",
+      "value": "Plan-time discovery of project/** context content runs through exactly one mechanism: planner-agent.md Stage 4 item 13, gated on load_when.task_types[] matching the dispatch's task_type AND keywords[]/topics[] containing the literal string plan-authoring. The task_types axis alone is necessary but not sufficient; load_when.agents[] plays no part in this gate.",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md"
+    },
+    {
+      "subject": "Cross-domain-shared-agent hazard in index-entries.json load_when.agents[]",
+      "predicate": "constraint is",
+      "value": "Naming a cross-domain shared agent (e.g. planner-agent) inside a domain-specific index entry's load_when.agents[] is mechanically prohibited: planner-agent.md itself carries an explicit MUST NOT, and context-discovery.md names this exact scenario as the Cross-Domain-Shared-Agent Hazard -- doing so would pull that domain's content into every other domain's plan dispatch.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/context/patterns/context-discovery.md"
+    },
+    {
+      "subject": "deploy-headless.sh verify-deploy fast-gate transient failures under concurrent batch dispatch",
+      "predicate": "measured fact is",
+      "value": "During a multi-task /orchestrate batch, deploy-headless.sh's internal verify-deploy.sh pass can transiently report FAIL (e.g. 3 of 41 checks) purely from a concurrent sibling task's in-flight, uncommitted edit to its own declared files plus load-correlated gate timeouts (gate6 explicitly self-flags CONTENTION when entry-vs-kill-time load ratio exceeds 2.0). Re-running after the sibling commits clears it to a clean 41/41 pass with no source change on the observing task's side.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/verify-deploy.sh"
+    },
+    {
+      "subject": "index-entries.json line_count coupling",
+      "predicate": "constraint is",
+      "value": "Every indexed context file's entry in index-entries.json carries a line_count field that must track that file's actual wc -l; deploy-headless.sh runs a generate-context-line-counts.sh --write sweep that auto-repairs drift across every extension's source index on each deploy, so an uncorrected manual edit is only ever transiently out of sync, not permanently.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/lean/index-entries.json"
+    },
+    {
+      "subject": "dependency-tracing.md Grep-Based Blast Radius section's pre-existing state",
+      "predicate": "correction is",
+      "value": "The generic rw-site definitional-unfold caveat (grep importers under-counts blast radius; must also grep unfold spellings) was already present in dependency-tracing.md before this task, landed independently by an unrelated cross-repository conclusion-stage dispatch deriving from the identical issue-log entry. The actual gap closed by this task was narrower: a concrete worked example, an enumerated runnable multi-spelling probe, and the file's plan-time reachability (missing plan-authoring keyword) -- not the caveat's substantive absence.",
+      "ko_type": "correction",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md"
+    },
+    {
+      "subject": "git-commit-phase.sh completeness check under concurrent git index.lock contention",
+      "predicate": "measured fact is",
+      "value": "Under a multi-task /orchestrate batch sharing one working tree, a git-commit-phase.sh invocation can hit a transient git index.lock contention from a concurrent sibling's own commit, causing the wrapper's own retry-after-backoff to still leave the completeness check failing (exit 6) because the staged content never actually committed. The correct recovery is to re-run the identical git-commit-phase.sh invocation once the lock clears, never widen the pathspec or fall back to a raw git commit.",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "agent-system/core/scripts/git-commit-phase.sh"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795360608_7bb5fd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
+  }
+}

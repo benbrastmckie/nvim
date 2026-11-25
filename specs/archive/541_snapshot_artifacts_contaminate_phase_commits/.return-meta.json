@@ -1,0 +1,126 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/541_snapshot_artifacts_contaminate_phase_commits/summaries/01_snapshot-artifact-containment-fix-summary.md",
+      "summary": "Closed both halves of the snapshot-artifact containment defect: git-snapshot.sh's --no-revert enumeration is now file_scope-narrowed, and git-commit-phase.sh's fixed stage_paths seed conditionally excludes both snapshot artifact classes; registered untracked-backup-*/ as the 28th ephemeral runtime-file class member; two regression cases demonstrated RED before the fix and green after, deployed clean."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed both cooperating defects that let git-snapshot.sh's --no-revert artifacts contaminate phase commits with other tasks' files: narrowed the untracked-file backup to the dispatching task's file_scope, added conditional exclusion entries to git-commit-phase.sh's fixed staging seed, and registered the backup directory as the 28th ephemeral runtime-file class member. Two regression cases were demonstrated failing against the unmodified scripts before the fix landed and pass after; deploy-headless.sh reported RESULT=landed_verify_clean."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-git-snapshot.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/git-snapshot.sh",
+    "agent-system/extensions/core/scripts/git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/.gitignore",
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "scripts/lib/runtime-file-patterns.sh's runtime_file_dir_basename_for_hit() originally assumed every directory-class ephemeral-runtime-file member has a FIXED basename (e.g. '.lock', '.dispatch'). A member whose directory NAME itself varies per invocation (e.g. a timestamp suffix) needs its RUNTIME_FILE_DIR_BASENAME entry to be a glob pattern instead, and the lookup function generalized to: detect a glob-metacharacter basename, then walk the hit's own path segments (split on '/') testing each against the glob, returning the REAL matched segment (never the pattern) since callers build a 'git rm -r --cached <dir>' path from the return value. This generalization is provably backward-compatible when no pre-existing basename contains a glob metacharacter.",
+      "category": "PATTERN",
+      "source_artifact": "specs/541_snapshot_artifacts_contaminate_phase_commits/summaries/01_snapshot-artifact-containment-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "runtime-file-patterns.sh",
+        "glob basename",
+        "ephemeral class",
+        "dir_basename_for_hit",
+        "directory-class member"
+      ]
+    },
+    {
+      "content": "test-runtime-file-tracking.sh (and the deploy-tree-first/source-store-fallback idiom it shares with check-runtime-file-tracking.sh and init-specs.sh) deliberately prefers the DEPLOYED tree (.claude/) when all three of {check script, lib, standards doc} are present there together, falling back to the source store only otherwise -- documented purpose: never pair a stale deployed doc against a freshly-edited source-store lib. Consequence: running this specific suite against a source-store edit BEFORE a deploy silently validates the stale deployed state, not the edit, with no error. init-specs.sh and check-runtime-file-tracking.sh themselves have NO deploy-root-guard and resolve paths relative to their own SCRIPT_DIR, so invoking the source-store copy of EITHER directly does exercise the fresh edit; generate-context-line-counts.sh needs an explicit REPO_ROOT=$(pwd) env var to bypass its own deploy-root-guard the same way.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/541_snapshot_artifacts_contaminate_phase_commits/summaries/01_snapshot-artifact-containment-fix-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "deploy-tree-first resolution",
+        "source-store verification",
+        "deploy-root-guard bypass",
+        "test-runtime-file-tracking.sh",
+        "REPO_ROOT"
+      ]
+    },
+    {
+      "content": "When git-commit-phase.sh's Phase-Commit Containment Self-Check drops a files_touched path not in the task's declared file_scope, it deposits the path into .return-meta.json's proposed_file_scope and the commit otherwise succeeds (rc=0) minus that path. The correct remedy is ONE scoped follow-up commit of exactly that path via git-commit-scoped.sh directly -- never a second git-commit-phase.sh call for the same path, since that would re-run the identical, still-unwidened Containment Self-Check and drop it again (the wrapper's own file_scope is read fresh from state.json each call, never unioned with proposed_file_scope).",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/541_snapshot_artifacts_contaminate_phase_commits/summaries/01_snapshot-artifact-containment-fix-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "git-commit-phase.sh",
+        "proposed_file_scope",
+        "scoped follow-up commit",
+        "Containment Self-Check",
+        "out-of-scope drop"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "test-runtime-file-tracking.sh's tree-resolution order",
+      "predicate": "finding is",
+      "value": "It deliberately prefers the deployed .claude/ tree over the agent-system source store when both have the check script, lib, and standards doc present together -- a pre-deploy run of this specific suite silently validates stale deployed state rather than fresh source-store edits, with no error signal distinguishing the two cases.",
+      "confidence": 0.85
+    },
+    {
+      "subject": "init-specs.sh and check-runtime-file-tracking.sh deploy-root-guard exemption",
+      "predicate": "finding is",
+      "value": "Neither script sources deploy-root-guard.sh; both resolve paths relative to their own SCRIPT_DIR, so invoking the source-store copy directly (bash agent-system/extensions/core/scripts/<name>.sh) exercises a freshly-edited source-store lib without first redeploying -- unlike generate-context-line-counts.sh, which needs an explicit REPO_ROOT=$(pwd) env var to bypass its own guard the same way.",
+      "confidence": 0.85
+    },
+    {
+      "subject": "__WHOLE_TREE__ file_scope sentinel scope",
+      "predicate": "correction is",
+      "value": "This sentinel is specifically a mechanism for declaring a claim over the whole DEPLOYED tree (.claude/**); it is not a blanket wildcard admitting arbitrary source-store paths outside the task's own explicitly-declared file_scope list. A source-store test file not individually named in file_scope was still dropped by git-commit-phase.sh's Containment Self-Check even with __WHOLE_TREE__ present.",
+      "confidence": 0.85
+    },
+    {
+      "subject": "runtime_file_dir_basename_for_hit() generalization constraint",
+      "predicate": "decision is",
+      "value": "A directory-class ephemeral-runtime-file member whose directory NAME itself varies per invocation (not just its contents) requires the shared library's basename-matching accessor to support a glob-style basename, resolved against the hit's real path segments at lookup time rather than treated as a literal -- the pre-existing 27 members all used fixed literals, so this generalization was previously unneeded.",
+      "confidence": 0.85
+    },
+    {
+      "subject": "git-snapshot.sh --no-revert mode untracked-backup narrowing",
+      "predicate": "decision is",
+      "value": "The untracked-file backup this mode writes is now filtered through the dispatching task's declared file_scope (own directory always admitted), with a named stderr warning and own-directory-only fallback when file_scope cannot be resolved, deliberately weaker than the reverting modes' fail-closed refusal because --no-revert destroys nothing and must stay available on a RED tree.",
+      "confidence": 0.9
+    },
+    {
+      "subject": "git-commit-phase.sh fixed-scope snapshot-artifact exclusion",
+      "predicate": "decision is",
+      "value": "The fixed stage_paths seed now conditionally subtracts working-progress-*.patch and untracked-backup-* via an explicit :(exclude) pathspec entry, injected only when git check-ignore -q does not already report the concrete on-disk hit as covered -- naming an already-ignored path in an explicit exclude entry would make git add abort the whole add.",
+      "confidence": 0.9
+    },
+    {
+      "subject": "untracked-backup-*/ vs working-progress-*.patch ephemeral-class disposition",
+      "predicate": "finding is",
+      "value": "The backup directory joined the canonical ephemeral runtime-file class (28th member) because it is a literal duplicate of content that is itself untracked and never deleted by the --no-revert mode that writes it; the patch file deliberately did not join, since it is the sole durable record of a --no-revert snapshot's tracked-change diff and remains tracked-eligible under the task directory by that script's own documented design.",
+      "confidence": 0.9
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795400947_bb64cf",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
+  },
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
+  ]
+}
