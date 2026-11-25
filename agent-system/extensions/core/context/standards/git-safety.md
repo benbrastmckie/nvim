@@ -124,7 +124,10 @@ already-identified action without the agent itself deciding it is permitted.
 **The design, in one sentence**: a single-use, HMAC-signed grant, minted ONLY by a literal human
 prompt submission (never by anything a model can write), binds the exact action class, remote,
 branch/tag, commit SHA, and force-or-not — so a YES answer to "may I push?" never becomes a
-blank cheque for *some* push, only for *this* push.
+blank cheque for *some* push, only for *this* push. For `push_branch`, the bound commit SHA is
+the named branch's own commit, resolved via `refs/heads/<branch>` at both mint and consume time;
+for every other action class (including `push_tag` and the destructive-guard classes) it is
+`HEAD`'s commit.
 
 **Why the mint path has to be a `UserPromptSubmit` hook**: any grant file the model itself can
 `Write` is forgeable by construction — the model could simply write itself a valid-looking grant.

@@ -140,6 +140,7 @@ ss_refuse() {
 }
 
 SS_DOC=""
+SS_OUT_DOC=""
 
 # ss_load_document <path|-> -- sets SS_DOC to the document's raw JSON text, or refuses.
 ss_load_document() {
@@ -389,12 +390,302 @@ ss_cmd_check() {
   ss_check_bar
 }
 
-ss_cmd_build() {
-  ss_refuse 2 usage_error "build is not yet implemented"
+# ss_slice_diff_entries <id> -- NUL-delimited "<status>\0<path>\0..." pairs: this slice's own
+# subset of the target->work_ref difference (git diff --name-status over the slice's own
+# glob pathspecs). Caller reads two NUL-delimited tokens at a time.
+ss_slice_diff_entries() {
+  local id="$1"
+  local -a globs pathspecs
+  mapfile -d '' -t globs < <(printf '%s' "$SS_DOC" | jq -j --arg id "$id" '
+    .slices[] | select(.id == $id) | (.paths // [])[] | . + "\u0000"')
+  pathspecs=()
+  local g
+  for g in "${globs[@]}"; do
+    [ -n "$g" ] || continue
+    pathspecs+=(":(glob)${g}")
+  done
+  [ "${#pathspecs[@]}" -gt 0 ] || return 0
+  git diff --name-status -z "$SS_TARGET_COMMIT" "$SS_WORK_COMMIT" -- "${pathspecs[@]}" 2>/dev/null
 }
 
+# ss_overlay_slice_tree <id> <base-treeish> -- the overlay primitive, written fresh and
+# self-contained (no `source` of, no extraction from, scripts/review-stack-prepare.sh): a
+# private GIT_INDEX_FILE (a mktemp file removed immediately after write-tree), `read-tree` of
+# the base tree, then per this slice's own difference path either `update-index --cacheinfo`
+# with that path's mode and object id at the work ref, or `update-index --force-remove` for a
+# path the work ref deletes. Echoes the resulting tree object id. Touches no real repo state:
+# HEAD, the shared index, and the working tree are untouched by every command here.
+ss_overlay_slice_tree() {
+  local id="$1" base_treeish="$2"
+  local idx
+  idx="$(mktemp)"
+  GIT_INDEX_FILE="$idx" git read-tree "$base_treeish" >/dev/null
+  local status path
+  while IFS= read -r -d '' status && IFS= read -r -d '' path; do
+    [ -n "$path" ] || continue
+    if [ "$status" = "D" ]; then
+      GIT_INDEX_FILE="$idx" git update-index --force-remove -- "$path" >/dev/null
+    else
+      local line mode oid
+      line="$(git ls-tree "$SS_WORK_COMMIT" -- "$path")"
+      mode="$(printf '%s' "$line" | awk '{print $1}')"
+      oid="$(printf '%s' "$line" | awk '{print $3}')"
+      if [ -n "$mode" ] && [ -n "$oid" ]; then
+        GIT_INDEX_FILE="$idx" git update-index --add --cacheinfo "${mode},${oid},${path}" >/dev/null
+      fi
+    fi
+  done < <(ss_slice_diff_entries "$id")
+  local tree
+  tree="$(GIT_INDEX_FILE="$idx" git write-tree)"
+  rm -f "$idx"
+  printf '%s' "$tree"
+}
+
+# ss_write_pr_body_if_absent <series-id> <slice-id> <title> -- writes a minimal pull-request
+# body beside the series document at specs/.orchestration/slices/<series-id>/<slice-id>.md,
+# only if the file is absent. An existing body is left untouched (it is editable until the
+# request is opened).
+ss_write_pr_body_if_absent() {
+  local series_id="$1" id="$2" title="$3"
+  local dir="specs/.orchestration/slices/${series_id}"
+  local path="${dir}/${id}.md"
+  if [ ! -f "$path" ]; then
+    mkdir -p "$dir"
+    printf '# %s\n\nSlice: %s\nSeries: %s\n' "$title" "$id" "$series_id" >"$path"
+  fi
+}
+
+# ss_cmd_build <document-path|-> -- turns an approved series document into one commit per
+# buildable slice and moves each slice's ref by compare-and-swap. Refuses whatever `check`
+# refuses by calling the exact same validation functions `check` uses, never a duplicated
+# reimplementation. Processes slices in document order; "re-derive, never rebase" means every
+# non-merged slice is freshly overlaid every invocation, with no three-way merge anywhere.
+#
+# TEST HOOK (used only by the suite): if SS_TEST_PRE_SWAP_HOOK names an executable, it is run
+# with the ref name as its one argument immediately after the compare-and-swap "old" value is
+# captured and immediately before the swap is attempted -- the seam a synchronous test needs to
+# simulate a ref moved concurrently between read and write. Unset in ordinary use.
+ss_cmd_build() {
+  local input_path="$1"
+  ss_load_document "$input_path"
+  ss_resolve_commits
+  ss_check_ancestor
+  ss_check_assignment_and_globs
+  ss_check_depends_on
+  ss_check_bar
+
+  local series_id
+  series_id="$(printf '%s' "$SS_DOC" | jq -r '.series_id')"
+
+  SS_OUT_DOC="$SS_DOC"
+
+  local -a ids
+  mapfile -d '' -t ids < <(printf '%s' "$SS_DOC" | jq -j '.slices[].id | . + "\u0000"')
+
+  local -A commit_for=()
+
+  local id
+  for id in "${ids[@]}"; do
+    [ -n "$id" ] || continue
+    local state
+    state="$(printf '%s' "$SS_DOC" | jq -r --arg id "$id" '.slices[] | select(.id == $id) | .state // ""')"
+    if [ "$state" = "merged" ]; then
+      echo "SLICE ${id} already merged; skipped"
+      continue
+    fi
+
+    local -a deps
+    mapfile -d '' -t deps < <(printf '%s' "$SS_DOC" | jq -j --arg id "$id" '
+      .slices[] | select(.id == $id) | (.depends_on // [])[] | . + "\u0000"')
+
+    local -a unmerged_deps=()
+    local d dstate
+    for d in "${deps[@]}"; do
+      [ -n "$d" ] || continue
+      dstate="$(printf '%s' "$SS_DOC" | jq -r --arg id "$d" '.slices[] | select(.id == $id) | .state // ""')"
+      [ "$dstate" = "merged" ] || unmerged_deps+=("$d")
+    done
+
+    local parent=""
+    if [ "${#unmerged_deps[@]}" -ge 2 ]; then
+      echo "SLICE ${id} waiting unmerged_depends_on=$(
+        IFS=,
+        echo "${unmerged_deps[*]}"
+      )"
+      continue
+    elif [ "${#unmerged_deps[@]}" -eq 1 ]; then
+      local dep="${unmerged_deps[0]}"
+      parent="${commit_for[$dep]:-}"
+      if [ -z "$parent" ]; then
+        parent="$(printf '%s' "$SS_DOC" | jq -r --arg id "$dep" '.slices[] | select(.id == $id) | .commit // ""')"
+      fi
+      if [ -z "$parent" ]; then
+        echo "SLICE ${id} waiting unmerged_depends_on=${dep}"
+        continue
+      fi
+    else
+      parent="$SS_TARGET_COMMIT"
+    fi
+
+    local tree
+    tree="$(ss_overlay_slice_tree "$id" "$parent")"
+    local title
+    title="$(printf '%s' "$SS_DOC" | jq -r --arg id "$id" '.slices[] | select(.id == $id) | .title // ""')"
+    local new_commit
+    new_commit="$(printf '%s\n' "$title" | git commit-tree "$tree" -p "$parent")"
+
+    local ref="refs/heads/slice/${series_id}/${id}"
+    local old
+    old="$(git rev-parse -q --verify "$ref" 2>/dev/null || true)"
+    if [ -z "$old" ]; then
+      old="$(printf '0%.0s' $(seq 1 "${#SS_TARGET_COMMIT}"))"
+    fi
+
+    if [ -n "${SS_TEST_PRE_SWAP_HOOK:-}" ] && [ -x "${SS_TEST_PRE_SWAP_HOOK}" ]; then
+      "${SS_TEST_PRE_SWAP_HOOK}" "$ref" || true
+    fi
+
+    local caserr
+    caserr="$(mktemp)"
+    if ! git update-ref "$ref" "$new_commit" "$old" 2>"$caserr"; then
+      local errmsg
+      errmsg="$(cat "$caserr" 2>/dev/null)"
+      rm -f "$caserr"
+      ss_refuse 30 ref_compare_and_swap_conflict "ref '${ref}' moved concurrently since it was read: ${errmsg}"
+    fi
+    rm -f "$caserr"
+
+    commit_for["$id"]="$new_commit"
+
+    local new_state="$state"
+    [ "$new_state" = "proposed" ] && new_state="built"
+
+    SS_OUT_DOC="$(printf '%s' "$SS_OUT_DOC" | jq --arg id "$id" --arg commit "$new_commit" \
+      --arg base "$parent" --arg ref "$ref" --arg state "$new_state" '
+      .slices |= map(if .id == $id then
+        .commit = $commit | .base_commit = $base | .ref = $ref | .state = $state
+      else . end)')"
+
+    ss_write_pr_body_if_absent "$series_id" "$id" "$title"
+
+    echo "SLICE ${id} built commit=${new_commit} ref=${ref} base_commit=${parent}"
+  done
+
+  if [ "$input_path" != "-" ]; then
+    printf '%s\n' "$SS_OUT_DOC" >"$input_path"
+  else
+    echo "document_not_persisted=stdin candidate document has no durable path; updated document follows"
+    printf '%s\n' "$SS_OUT_DOC"
+  fi
+}
+
+# ss_slice_content_matches_target <id> <slice-commit> -- the content-based merged test: true
+# (exit 0) when this slice's own declared paths are byte-identical at the slice's own built
+# commit and at the target's current tip. A content test, never a commit-ancestry test, so a
+# squash merge (no shared history, identical resulting content) is recognised.
+ss_slice_content_matches_target() {
+  local id="$1" slice_commit="$2"
+  local -a globs pathspecs
+  mapfile -d '' -t globs < <(printf '%s' "$SS_DOC" | jq -j --arg id "$id" '
+    .slices[] | select(.id == $id) | (.paths // [])[] | . + "\u0000"')
+  pathspecs=()
+  local g
+  for g in "${globs[@]}"; do
+    [ -n "$g" ] || continue
+    pathspecs+=(":(glob)${g}")
+  done
+  [ "${#pathspecs[@]}" -gt 0 ] || return 1
+  local diff_out
+  diff_out="$(git diff --name-only "$slice_commit" "$SS_TARGET_COMMIT" -- "${pathspecs[@]}" 2>/dev/null)"
+  [ -z "$diff_out" ]
+}
+
+# ss_cmd_status <document-path|-> -- per slice: the local ref and the remote tracking ref
+# against the recorded commit, plus the content-based merged test. Purely a report: never
+# writes to the document, never refuses on a condition `build`/`check` would refuse on (e.g.
+# target not an ancestor of work_ref), since the whole point of `status` is to inform the
+# caller about current reality -- including a reality `commands/slice.md`'s continue step must
+# react to -- without blocking on it. No push, no merge, ever performed here.
 ss_cmd_status() {
-  ss_refuse 2 usage_error "status is not yet implemented"
+  ss_load_document "$1"
+  ss_resolve_commits
+
+  local series_id remote
+  series_id="$(printf '%s' "$SS_DOC" | jq -r '.series_id')"
+  remote="$(printf '%s' "$SS_DOC" | jq -r '.target.remote // empty')"
+
+  local -a ids
+  mapfile -d '' -t ids < <(printf '%s' "$SS_DOC" | jq -j '.slices[].id | . + "\u0000"')
+
+  local id
+  for id in "${ids[@]}"; do
+    [ -n "$id" ] || continue
+    local state ref rec_commit rec_base
+    state="$(printf '%s' "$SS_DOC" | jq -r --arg id "$id" '.slices[] | select(.id == $id) | .state // ""')"
+    ref="$(printf '%s' "$SS_DOC" | jq -r --arg id "$id" '.slices[] | select(.id == $id) | .ref // ""')"
+    [ -n "$ref" ] || ref="refs/heads/slice/${series_id}/${id}"
+    rec_commit="$(printf '%s' "$SS_DOC" | jq -r --arg id "$id" '.slices[] | select(.id == $id) | .commit // ""')"
+    rec_base="$(printf '%s' "$SS_DOC" | jq -r --arg id "$id" '.slices[] | select(.id == $id) | .base_commit // ""')"
+
+    local local_ref_state="absent" local_commit="" local_match="n/a"
+    local_commit="$(git rev-parse -q --verify "$ref" 2>/dev/null || true)"
+    if [ -n "$local_commit" ]; then
+      local_ref_state="exists"
+      if [ -n "$rec_commit" ]; then
+        if [ "$local_commit" = "$rec_commit" ]; then
+          local_match="yes"
+        else
+          local_match="no"
+        fi
+      fi
+    fi
+
+    local remote_ref_state="no_remote" remote_commit="" remote_match="n/a"
+    if [ -n "$remote" ]; then
+      remote_ref_state="absent"
+      remote_commit="$(git rev-parse -q --verify "refs/remotes/${remote}/slice/${series_id}/${id}" 2>/dev/null || true)"
+      if [ -n "$remote_commit" ]; then
+        remote_ref_state="exists"
+        if [ -n "$rec_commit" ]; then
+          if [ "$remote_commit" = "$rec_commit" ]; then
+            remote_match="yes"
+          else
+            remote_match="no"
+          fi
+        fi
+      fi
+    fi
+
+    local merged="no"
+    if [ -n "$local_commit" ] && ss_slice_content_matches_target "$id" "$local_commit"; then
+      merged="yes"
+    fi
+
+    local rebuild_due="no"
+    if [ "$merged" != "yes" ]; then
+      local -a deps
+      mapfile -d '' -t deps < <(printf '%s' "$SS_DOC" | jq -j --arg id "$id" '
+        .slices[] | select(.id == $id) | (.depends_on // [])[] | . + "\u0000"')
+      local -a unmerged_deps=()
+      local d dstate
+      for d in "${deps[@]}"; do
+        [ -n "$d" ] || continue
+        dstate="$(printf '%s' "$SS_DOC" | jq -r --arg id "$d" '.slices[] | select(.id == $id) | .state // ""')"
+        [ "$dstate" = "merged" ] || unmerged_deps+=("$d")
+      done
+      local current_base=""
+      if [ "${#unmerged_deps[@]}" -eq 0 ]; then
+        current_base="$SS_TARGET_COMMIT"
+      elif [ "${#unmerged_deps[@]}" -eq 1 ]; then
+        current_base="$(printf '%s' "$SS_DOC" | jq -r --arg id "${unmerged_deps[0]}" '.slices[] | select(.id == $id) | .commit // ""')"
+      fi
+      if [ -n "$current_base" ] && [ -n "$rec_base" ] && [ "$current_base" != "$rec_base" ]; then
+        rebuild_due="yes"
+      fi
+    fi
+
+    echo "STATUS ${id} state=${state} local_ref=${local_ref_state} local_commit=${local_commit:--} local_matches_recorded=${local_match} remote_ref=${remote_ref_state} remote_commit=${remote_commit:--} remote_matches_recorded=${remote_match} merged=${merged} rebuild_due=${rebuild_due}"
+  done
 }
 
 ss_main() {

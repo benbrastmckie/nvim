@@ -208,7 +208,14 @@ fi
 
 [ -n "$MINT_SOURCE" ] && [ -n "$ACTION_CLASS" ] && [ -n "$REMOTE" ] && [ -n "$REF" ] || exit_ok
 
-HEAD_SHA="$(git rev-parse HEAD 2>/dev/null)" || HEAD_SHA=""
+# HEAD_SHA holds the named ref's own commit for push_branch (REF is always a bare branch name
+# here, never a full ref path, for every grammar form above that can reach this branch), and
+# HEAD's commit for every other action class.
+if [ "$ACTION_CLASS" = "push_branch" ]; then
+  HEAD_SHA="$(git rev-parse --verify --quiet "refs/heads/${REF}" 2>/dev/null)" || HEAD_SHA=""
+else
+  HEAD_SHA="$(git rev-parse HEAD 2>/dev/null)" || HEAD_SHA=""
+fi
 [ -n "$HEAD_SHA" ] || exit_ok
 
 # --- Categorical exclusions, checked BEFORE any mint ------------------------------------------

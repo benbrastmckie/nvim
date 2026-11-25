@@ -30,6 +30,9 @@
 # precedent in scripts/git-snapshot.sh): VERSION, TIMESTAMP, ACTION_CLASS, REMOTE, REF, FORCE,
 # HEAD_SHA, REQUEST_TEXT (base64 -- the one field with unconstrained free-text input, so it
 # cannot inject a newline and desynchronize line-based parsing), MINT_SOURCE, then HMAC last.
+# HEAD_SHA holds the named ref's own commit (resolved via refs/heads/<REF>) for ACTION_CLASS
+# push_branch, and HEAD's commit for every other action class -- the field name is retained
+# unchanged across that split; see pg_grant_mint's and pg_grant_find_match's own binding sites.
 # HMAC-SHA256 is computed with the key from pg_key_path() over every PRECEDING line verbatim
 # (the file's own bytes before the HMAC line is appended) -- recomputed at verify time by
 # `grep -v '^HMAC='` against the file directly, never via a command-substitution round trip,
@@ -450,7 +453,15 @@ pg_grant_find_match() {
   local dir head_sha best_ts best_path f
   dir="$(pg_grant_dir)"
   [ -d "$dir" ] || return 1
-  head_sha="$(git rev-parse HEAD 2>/dev/null)" || return 1
+  # head_sha holds the named ref's own commit for push_branch (ref is always a bare branch
+  # name, never a full ref path, for every grammar form that can reach this class), and HEAD's
+  # commit for every other action class -- must mirror pg_grant_mint's own binding exactly.
+  if [ "$action_class" = "push_branch" ]; then
+    head_sha="$(git rev-parse --verify --quiet "refs/heads/${ref}" 2>/dev/null)" || return 1
+  else
+    head_sha="$(git rev-parse HEAD 2>/dev/null)" || return 1
+  fi
+  [ -n "$head_sha" ] || return 1
   best_ts=-1
   best_path=""
   for f in "$dir"/grant-*.kv; do

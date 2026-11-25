@@ -213,6 +213,7 @@ test-sapience-vault-read.sh	unit	-
 test-scope-excursion-record-lib.sh	unit	-
 test-script-inventory.sh	unit	-
 test-skill-base-lifecycle.sh	integration	invokes:deploy-headless.sh
+test-slice-series.sh	unit	-
 test-source-store-path-lib.sh	unit	-
 test-specs-ignore-lib.sh	unit	-
 test-stall-reprompt-wiring.sh	unit	-
