@@ -1,20 +1,20 @@
 ---
-next_project_number: 706
+next_project_number: 707
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-11-24. Generated from state.json dependency graph.*
+*Updated 2026-11-25. Generated from state.json dependency graph.*
 
 **Goal**: Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,579,580,586,590,599,613,618,629,631,632,640,646,663,664,665,671,674,679,680,684,686,689,696,699 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,577,583,592,593,605,630,702,705 | 383,390,399,410,431,438,452,453,511,519,539,542,551,563,586,599,629,699 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,399,410,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,579,580,586,590,599,613,618,629,631,632,640,646,663,664,665,671,674,679,680,684,686,689,696,699 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,577,583,592,593,605,630,702,705,706 | 383,390,399,410,431,438,452,453,511,519,539,542,551,563,586,599,629,684,699 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,576,588,594,609,703 | 439,479,491,509,533,552,556,570,577,593,702 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641,704 | 454,472,492,539,561,580,594,703 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,571,596,642,688,694 | 501,518,595,641,704 | core-agent-system, orchestrator, agent-system |
@@ -30,7 +30,6 @@ next_project_number: 706
 
 338 [NOT STARTED] — Classify every task-support file as tracked or ignored
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
-421 [NOT STARTED] — Close three gaps in the telemetry --meta evidence consumer
 431 [PLANNED] — Record the gate-enforced verbatim-duplication exclusion class...
   └─ 439 [NOT STARTED] — Rule on the propagation model for the bounded-wait agent contract
     └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
@@ -63,6 +62,7 @@ next_project_number: 706
 664 [NOT STARTED] — Add a /tmp sweep pass to /refresh for dead scratchpad...
 680 [NOT STARTED] — Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged...
 684 [NOT STARTED] — Sweep and fix stale command and sub-mode references across...
+  └─ 706 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/ in...
 699 [PARTIAL] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 702 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
     └─ 703 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
@@ -179,6 +179,65 @@ next_project_number: 706
 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 
 ## Tasks
+
+### 706. Delete memory extension and repoint refs
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 684
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** in /home/benjamin/.config/nvim (resolve via .claude-extensions.json's .extensions.<name>.source_dir). Never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). REDEPLOY afterwards via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description. Sibling records are named below by slug, never by number.
+
+== WHAT THIS RECORD OWNS: DELETE THE MEMORY EXTENSION, REPOINT ITS SURVIVING CITATIONS ==
+
+The operator has ruled the memory extension and its /distill command out of the system. Delete agent-system/extensions/memory/ entirely and repoint every surviving reference to the command that actually owns each capability.
+
+== WHY IT IS SAFE TO DELETE: EVERY SUB-MODE ALREADY LEFT ==
+
+Re-verify each of these against the tree before acting; they were measured 2026-11-24 and fix the shape of the work, not its exact contents.
+
+- --meta, --review and --dream moved to /telemetry. commands/distill.md states this at its own lines 13, 74, 160 and 174.
+- --revise and --learn were retargeted onto the hosted Sapience knowledge store. The extension's own README.md says so at lines 30-32.
+- --auto's vault maintenance (decay scoring, re-confirmation, conflict detection) is, per that same README at line 34, "performed server-side by the hosted store instead".
+- No extension declares memory in its manifest.json dependencies array. It has no dependents.
+- The extension is absent from .claude-extensions.json in this repository, so nothing here deploys it today.
+- The local vault at <project-root>/.memory/ is stale: distill-log.json was last written 2026-09-18.
+
+The extension provides two commands, learn.md and distill.md. Both go. Settle in research whether /learn's capability is wholly covered by the hosted store's own write path (mcp__sapience__sapience_remember plus the postflight note mechanism in scripts/postflight-sapience-notes.sh) or whether some part of it has no successor; if a genuine gap exists, report it rather than quietly dropping the capability.
+
+== THE LOAD-BEARING DAMAGE THIS CLOSES ==
+
+core is loaded and names /distill --meta as the designated consumer of every /orchestrate conclusion-stage proposal, in context/contracts/conclusion-stage.md, context/patterns/orchestrate-batch-results-template.md and context/formats/events-format.md. That consumer does not exist. Measured 2026-11-24: specs/events.jsonl in this repository holds 320 conclusion_proposal_recorded events spanning 2026-11-12 to 2026-11-24 with nothing reading them. Re-count before acting.
+
+A sibling record, sweep_stale_command_and_submode_references, owns the reference-hygiene sweep and the lint change that would have caught this class, and has already ruled that the correct target in all seven /distill --meta occurrences is /telemetry --meta. THIS RECORD MUST NOT DUPLICATE THAT SWEEP. Settle the division of labour in research and state it in the plan: the likely correct split is that the sibling owns the generic validator and the corpus-wide sweep, while this record owns the deletion itself plus any citation that exists only because the memory extension existed. Where the two would touch the same file, add a dependency edge and sequence rather than both editing it.
+
+== THE 320 STRANDED PROPOSALS NEED A DISPOSITION ==
+
+Repointing the prose makes /telemetry --meta the named consumer, but it does not make the existing backlog of events readable to it. Rule on this explicitly and state the verdict in the plan; do not silently leave it:
+
+(a) Whether /telemetry --meta, as it exists today, can already ingest conclusion_proposal_recorded events from specs/events.jsonl, or whether its reader needs a change. If it needs one, decide whether that change belongs here or in its own record -- a behaviour change to a telemetry sub-mode is plausibly out of this record's reference-hygiene-plus-deletion scope.
+(b) Whether the 320 accumulated events are worth consuming at all or should be marked consumed-without-action. They are real evidence from twelve days of orchestration, so discarding them is a decision, not a default.
+
+Note that the task which previously owned the --meta consumer's behaviour (its dedup against already-open tasks, its per-invocation proposal cap, its consolidation channel) has been abandoned: its entire design cited a specification file, patterns/distill-meta-submode.md, that does not exist, for a sub-mode that had already moved. That substance is NOT carried here. If it is still wanted it belongs in a fresh record against /telemetry --meta, and surfacing that as a recommendation is in scope for this record's research; building it is not.
+
+== ALSO DEAD, SAME CAUSE ==
+
+state.json carries a memory_health object (last_distilled 2026-09-18, distill_count 3, total_memories 8) documented as maintained by /distill in context/reference/state-management-schema.md line 72 and declared in context/schemas/state-schema.json around line 85. With the command gone the field has no writer. Decide whether to remove it from both the schema and live state or to leave it as inert historical data, and say which in the plan. A schema change needs its own suite check; confirm which suite owns state-schema.json validation.
+
+scripts/validate-context-budgets.sh carries "/distill" and "/learn" in its dlc_direct_commands array (around line 363). Both entries go.
+
+scripts/sweep-invalidated-claims.sh's header comment (around line 27) describes "/distill --learn's retroactive batch sweep against the hosted knowledge store" as the mechanism that rediscovers an invalidated claim. With /distill gone that sentence names no live mechanism; repoint it to whatever actually performs that sweep now, or state plainly that nothing does.
+
+== VERIFICATION ==
+
+- agent-system/extensions/memory/ does not exist.
+- No reference to /distill, skill-distill, /learn or skill-learn survives anywhere under agent-system/**, except where a deliberate historical account names the removal and is marked as such.
+- The sibling sweep's lint, run over the full extensions corpus, reports zero findings at landing.
+- scripts/lint/lint-extension-readme-table.sh and the context-reachability check both pass: deleting an extension removes index-entries.json rows and README table rows that other checks assert on.
+- deploy-headless.sh completes with verification clean, and the deployed tree no longer carries a memory extension.
+- Note that verify-touched.sh resolves run-all.sh from the deployed .claude/ mirror in preference to the source store, so a pre-redeploy gate run silently tests stale code. Run suite files directly against the source store for genuine pre-redeploy verification, or redeploy first.
+
+---
 
 ### 705. Slice size signoff at proposal prompt
 - **Status**: [NOT STARTED]
@@ -1002,11 +1061,38 @@ Q3. Does a reference inside a runtime error message (M2) warrant a stronger verd
 
 Q4. How does the validator treat a historical mention (M4) without either rewriting it or drowning the report in it? Fix the rule before touching any of the 38.
 
+== AMENDED 2026-11-24 BY THE OPERATOR: THE MEMORY EXTENSION IS BEING DELETED ==
+
+When this record was filed, the assumption was that /distill survives and only its stale
+citations need repointing. The operator has since ruled the memory extension and /distill out of
+the system entirely. A sibling record, delete_memory_extension_and_repoint_refs, owns the
+deletion and is ordered AFTER this one.
+
+What this changes here, and what it does not:
+
+- M1's verdict is UNCHANGED and still correct: the seven /distill --meta occurrences are
+  repointed to /telemetry --meta, which is the command that actually accepts the flag. Repointing
+  is not made redundant by the deletion -- the citations live in core, which stays, and must name
+  a live command whether or not the memory extension exists.
+- The lint change is UNCHANGED and is the durable half of this work. Its value does not depend on
+  /distill: the flag-versus-mention discrimination (Q1), the duplicate-basename verdict (Q2), the
+  runtime-error-message severity question (Q3) and the historical-mention rule (Q4) all stand on
+  their own and guard every future sub-mode migration.
+- The false-pass fixture MUST NOT be built out of /distill --meta, which will shortly cease to
+  exist and would rot the fixture. Use a synthetic command file that mentions a flag only in a
+  moved/removed sentence, as the VERIFICATION section already requires.
+- The verification line reading "No occurrence of /distill --meta remains anywhere under
+  agent-system/**" stays satisfiable by this record alone. Do NOT widen it to "no occurrence of
+  /distill" -- that is the sibling's deletion scope, not this record's.
+- Where this record and the sibling would edit the same file, the dependency edge means this one
+  lands first. The sibling's own description states that the division of labour is to be settled
+  in its research; nothing here needs to pre-empt it.
+
 == CONSTRAINTS ==
 
 - Repo-agnostic: no consumer-repo-specific path or literal in any deliverable.
 - The lint's existing verdicts must not regress: whatever it catches today it still catches after.
-- An adjacent open task covers the BEHAVIOR of the --meta evidence consumer (its dedup, cap and consolidation channel). This task is reference hygiene only and must not change what --meta does. Their declared file_scopes do not intersect; keep it that way.
+- This task is reference hygiene only and must not change what any --meta sub-mode DOES. The record that previously owned the --meta evidence consumer's behaviour (its dedup against already-open tasks, its per-invocation proposal cap, its consolidation channel) has been abandoned: its design cited a specification file, memory/context/project/memory/patterns/distill-meta-submode.md, that does not exist, for a sub-mode that had already moved to /telemetry. No open record owns that behaviour now. Do not absorb it here; surfacing it as a recommendation against /telemetry --meta is in scope, building it is not.
 - The working tree of the source-store repository carried uncommitted edits to core/context/contracts/conclusion-stage.md and core/context/patterns/orchestrate-batch-results-template.md when this task was filed. Rebase onto whatever those edits became; do not assume the probed line numbers still hold.
 - git push and pull-request creation stay prohibited for agents (rules/pr-prohibition.md).
 
@@ -10016,98 +10102,6 @@ DUPLICATE CHECK PERFORMED. No active or archived record covers a durable exclusi
 FILE_SCOPE NOTE -- PLACEMENT NOT YET FIXED. Per docs/reference/standards/multi-task-creation-standard.md's Unknown-Footprint Convention, a directory root is NOT declared as a placeholder for the undecided placement (it manufactures false collisions against every record touching anything beneath it, and validate-state.sh Check 8 detects exactly that pattern). The declared scope names only the narrowest currently-known files, including ONE concrete candidate path for the new record. If the placement decision in SCOPE lands the record elsewhere, the chosen path is added through the research-postflight proposed_file_scope channel (additive union-merge, per context/formats/return-metadata-file.md and update-task-status.sh's --file-scope-add), not by widening the declaration to a directory.
 
 INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensions/core/index-entries.json is claimed by four other active records (the books-extension context-corpus refactor, which is on HOLD, and the three lean4 guidance records, which are already chained to one another). No edge is declared onto them: this record's change to that file is a single additive array append sharing no key with any other append, and an edge onto a HOLD-state record would block this one indefinitely, since HOLD is not resumable by an ordinary command. If a conflict does materialize at implement time, the correct response is an edge then, not a pre-emptive block now. The same reasoning covers docs/reference/standards/agent-frontmatter-standard.md, whose only other active claimant is that same HOLD record.
-
----
-
-### 421. Close three gaps in the telemetry --meta evidence consumer
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 312, Task 402
-- **Parent**: Task 402
-
-**Description**: Retarget the existing /distill --meta sub-mode into the deliberate, batched, dedup-aware consumer of accumulated agent-system evidence, with a consolidation bias and a net-deletion posture. Do NOT build a new command, skill or agent for this.
-
-SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/memory/** (and agent-system/extensions/core/** only where a shared library genuinely must change) -- never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
-
-== WHY NOT A NEW COMMAND ==
-
-The capability being asked for already exists and is already nearly correctly aimed. /distill --meta is specified completely in agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md and already does all of the following: cross-repo agent-system improvement proposals; target resolution via the existing $GLOBAL_ROOT mechanism with a --local opt-out; discovery driven by recurring (three-strikes) deviation/blocker signal; delegation of task creation to meta-builder-agent rather than reimplementing the /task primitive; interactive confirmation; exclusion from --auto; and its own run bookkeeping in .memory/meta-log.json.
-
-Adding a parallel command for "systematically upgrade the agent system" would itself be the cruft this task exists to prevent -- a second mechanism beside a first, with two discovery paths, two ledgers and two sets of drift. The work is to close three specific gaps in the sub-mode that already owns this job.
-
-== GAP 1: IT CANNOT SEE THE CONCLUSION STAGE'S EVIDENCE ==
-
---meta reads the resolved repo's specs/events.jsonl and reflections. The orchestration conclusion stage's evidence lives in per-task specs/{NNN}_{SLUG}/issues.jsonl (schema: context/formats/issue-log.md, writer: scripts/issue-record.sh), which --meta does not read at all. Once the conclusion stage stops converting proposals into tasks and starts recording classifications instead (its own separate task), that store becomes the primary signal -- and today's consumer is blind to it.
-
-REQUIRED: --meta must additionally ingest issues.jsonl across tasks, reusing scripts/orchestrate-conclusion-aggregate.sh --aggregate, which ALREADY performs the cross-task grouping-by-class, the open/worked_around/null filter predicate, the win/non-win split, the unknown-class tally and the implicit-open tally. Consume that aggregator; do not reimplement its grouping.
-
-Measured scale from one invocation over one task: 42 issue-log entries yielding 12 grouped proposals, 8 wins, 19 classes outside the 15-class seed enum, and an implicit_open_count of 29 (entries reaching classification because resolution was null rather than explicitly "open" -- most of which were in fact already fixed inline). That last figure is the key signal quality problem: the raw proposal count materially overstates the actionable set, so a consumer that does not discriminate will propose work that is already done.
-
-== GAP 2: NO DEDUP AGAINST ALREADY-OPEN TASKS ==
-
-Measured live 2026-10-15: of eight proposals a conclusion stage put to the user, FIVE already had open tasks covering them (the commit-scope containment chokepoint, cross-session gate-run coordination, the verdict-extraction contract, the gate cost model, and the gate20 eager-load overage). This was caught only because the orchestrator checked specs/state.json by hand immediately before dispatch. Nothing in the pipeline does this.
-
-REQUIRED: before presenting any proposal, --meta must match it against non-terminal entries in specs/state.json and report the match rather than proposing a duplicate. A proposal whose concern is already covered must render as a cross-reference to the existing task number (optionally contributing its fresh citations to that task's evidence), never as a new proposal. Match on the concern, not on string similarity of titles alone; state the matching heuristic chosen and pin it with a fixture containing a known-duplicate pair.
-
-== GAP 3: THE POSTURE IS ADDITIVE ==
-
---meta inherits "Improvement Proposals" framing, where every output is something to ADD. The backlog this produces is measurably lopsided: across the agent-system topics roughly sixteen non-terminal tasks add machinery (a lint, gate, guard, warning, chokepoint or enforcement) against roughly three that reduce it. Corpus growth over twelve days, same probe both times: non-test shell scripts 197 -> 243 (+23%), non-test shell lines 72,761 -> 94,916 (+30%), test suites 85 -> 145 (+71%).
-
-REQUIRED, three parts:
-
-(a) A CONSOLIDATION CHANNEL. --meta must be able to propose REMOVING or MERGING: retiring a lint subsumed by another, deleting a document no longer referenced, merging near-duplicate scripts, collapsing two gates into one. Recurring-class evidence is exactly the right input for this -- a class recurring across many tasks is as likely to indicate an over-complex mechanism as a missing guard. Feed the script-inventory.sh duplication ranking in as a signal alongside the issue logs.
-
-(b) A PER-INVOCATION CAP. A bounded number of proposals per run (recommended: at most three, severity-ordered), so the consumer cannot reproduce the pump at a slower cadence. State the cap in the sub-mode's own specification.
-
-(c) A STANDING SIZE REPORT. Each run reports the corpus-size delta since the previous run from .memory/meta-log.json, so additive drift is visible to the person deciding. If the gate-set size probe (scoped in the corpus-consolidation task) exists by then, read its output rather than re-measuring.
-
-== EXPLICIT NON-GOALS ==
-
-- No new command, skill, agent, slash command or evidence format. Reuse: distill-meta-submode.md, orchestrate-conclusion-aggregate.sh, issues.jsonl, events.jsonl, script-inventory.sh, meta-builder-agent, .memory/meta-log.json.
-- Do not weaken the conclusion stage's three-gate approval invariant, and do not give --meta the ability to execute its own proposals: it proposes, meta-builder-agent creates tasks, implementation stays a separate dispatch. The evaluator-outside-the-loop rule in context/project/memory/telemetry-guardrails.md binds here.
-- Do not close the documented cross-repo aggregation limitation (events.jsonl is per-repo and events-query.sh's --repo filter operates within a single file). It is named as out of scope in telemetry-guardrails.md and stays out of scope here.
-
-== VERIFICATION ==
-
-- Given a fixture repo whose issues.jsonl contains a class already covered by a non-terminal state.json entry, --meta renders a cross-reference to that task number and creates nothing.
-- Given a fixture with more than the cap's worth of qualifying proposals, exactly the cap's worth are presented, severity-ordered, and the remainder are reported as deferred with a count.
-- At least one consolidation-channel proposal is produced from a fixture carrying both duplication-ranking signal and recurring-class signal, demonstrating the channel is reachable rather than merely specified.
-- A run against a repo with no qualifying signal returns early with the existing no-signal message and writes no proposals (the existing early-return behaviour must survive).
-- Net line count for this change is reported. A positive net is acceptable here -- this task deliberately adds one mechanism -- but it must be stated, and the sub-mode specification must not grow by more than the capability it gains.
-
-CONSUMER, NOT AUTHOR, OF THE MATCHING IMPLEMENTATION -- added 2026-11-03. The "match it against non-terminal entries in specs/state.json" requirement above is NOT this record's to invent. Task 312 (`backlog_reconciliation_required_at_task_creation`) designs exactly that mechanism, and designs it as a SHARED one: its deliverable 2 is "a single shared implementation, `scripts/audit-open-tasks.sh`, that every creation surface calls rather than each re-implementing", returning a fixed verdict vocabulary (genuinely-new; duplicate-of-N; subset-of-N; superset-of-N; overlaps-N-add-edge; narrow-N) and reusing the existing overlap predicate for its mechanical pass rather than forking it. Its deliverable 3 is the semantic/intent pass that catches the hard class this record's Gap 2 is about -- a proposal whose concern is already covered but whose declared paths barely intersect. A dependency edge onto 312 is declared for this reason.
-CONSEQUENCE FOR THIS RECORD'S SCOPE: `/distill --meta` should CALL that implementation and render its verdicts, not build a second heuristic with a second fixture. Taken literally and in isolation, the Gap 2 sentence "state the matching heuristic chosen and pin it with a fixture containing a known-duplicate pair" reads as an instruction to author one here; read it instead as an instruction to state WHICH verdicts this surface renders and how, and to pin THAT with a fixture.
-THE RULING IS DELIBERATELY NOT PRE-MADE, and it is the one thing to settle before planning: whether consuming `audit-open-tasks.sh` is MANDATORY for this surface, or whether a lighter concern-match local to `--meta` is admissible because its input is a proposal set rather than a task-creation attempt. Argue it both ways and record the verdict. Against a local heuristic: two implementations of "is this concern already open" is precisely the duplicate-mechanism outcome 312 exists to prevent, and this record's own consolidation bias and net-deletion posture argue against adding a second one. For a local heuristic: 312's enforcement hook fires at task-CREATION time, and this surface needs the verdict EARLIER, at proposal-RENDER time, which may not be the same call shape. If the verdict is "consume it", say so and let the edge carry the ordering; if it is "a local match is admissible", state what keeps the two from drifting.
-
-SCOPE FOLLOW-ON (owner decision, 2026-11-03): THE MATCHER NOW COVERS CLOSED RECORDS, AND THIS
-SURFACE MUST RENDER THAT CASE. Gap 2 above says "match it against non-terminal entries in
-specs/state.json". That is now too narrow: task 312's shared matcher was widened by owner decision
-to compare a proposal against closed records as well -- 380 in specs/archive/state.json plus the
-completed-status entries still in the live state file, 415 at the time of the decision. Read Gap 2's
-"non-terminal" as superseded by that wider contract.
-WHAT CHANGES FOR THIS RECORD specifically: an open match and a closed match are DIFFERENT
-renderings, and `--meta` owns both. An open match renders as a cross-reference to the live record,
-as Gap 2 already says. A closed match renders as a cross-reference to the DISCHARGING ARTIFACT --
-the report, plan or summary that settled it -- carrying the closed record's project_name, never a
-bare archived task number, because vault operations renumber archived records and a number can rot
-into unrelated work.
-AND A CLOSED MATCH DOES NOT AUTO-SUPPRESS THE PROPOSAL. This matters more here than at the
-creation surface, because this record's whole posture is consolidation-biased and net-deletion, and
-that posture makes silent suppression tempting. A concern can legitimately recur after the record
-addressing it closed: a defect worked around by hand inside a completed phase rather than fixed, a
-contract recorded but never enforced, a fix that landed for one call site and not its siblings.
-Render the match and the artifact; surface the ruling. A proposal suppressed because some closed
-record once touched the same area is unfalsifiable from the proposal side, which is a worse
-failure than the duplication Gap 2 is about.
-ACCEPTANCE, EXTENDED: given a fixture whose issues.jsonl carries a class discharged by a CLOSED
-record, `--meta` renders a cross-reference to that record's project_name and the discharging
-artifact's path, creates nothing, and does NOT drop the proposal silently.
-== TARGET RELOCATION (read before planning; do not re-derive) ==
-
-The sub-mode this task retargets NO LONGER LIVES IN THE MEMORY EXTENSION. The vault-independent telemetry sub-modes were promoted into core: `--meta`, `--review` and `--dream` are dispatched by `/telemetry`, not `/distill`. `agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md` has been DELETED; its successor is `agent-system/extensions/core/context/patterns/telemetry-meta-submode.md`, and the owning skill is `agent-system/extensions/core/skills/skill-telemetry/SKILL.md`. The memory extension's `skill-distill/SKILL.md` now only points at that relocation.
-
-Every reference below to `/distill --meta`, to the memory extension as the edit target, or to the deleted spec path should be read as naming `/telemetry --meta` and its core-resident files instead. The three gaps this task closes are unaffected by the move -- they are properties of the sub-mode's logic, not of its location. file_scope has been retargeted accordingly.
 
 ---
 
